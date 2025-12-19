@@ -138,16 +138,21 @@ class LibraryBooksRepository @Inject constructor(
         }
     }
 
-    suspend fun searchBooks(query: String, page: Int = 0): Flow<List<Book>>{
+    suspend fun searchBooks(query: String, page: Int = 0): Flow<Response<List<Book>>>{
         return flow {
-            val result = bookApi.searchBooks(
-                page = page,
-                searchBody = SearchBooksBody(
-                    keyword = query
+            try {
+                val result = bookApi.searchBooks(
+                    page = page,
+                    searchBody = SearchBooksBody(
+                        keyword = query
+                    )
                 )
-            )
-            val books = result.content.toDomainListFromContent()
-            emit(books)
+                val books = result.content.toDomainListFromContent()
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "searchBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
         }
     }
 

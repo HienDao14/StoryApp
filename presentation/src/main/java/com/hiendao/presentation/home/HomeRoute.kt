@@ -1,5 +1,6 @@
 package com.hiendao.presentation.home
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -7,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,7 +34,9 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import kotlinx.coroutines.launch
 import com.hiendao.coreui.theme.toTheme
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +45,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -57,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,6 +71,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hiendao.coreui.R
 import com.hiendao.domain.model.Book
 import com.hiendao.domain.model.Category
+import com.hiendao.domain.utils.Response
 import com.hiendao.presentation.home.autoSwipe.AutoSwipeSection
 import com.hiendao.presentation.home.viewModel.HomeViewModel
 
@@ -88,15 +95,23 @@ fun HomeRoute(
 
     val homeViewModel: HomeViewModel = hiltViewModel()
 
-    LaunchedEffect(true) {
-        homeViewModel.reload()
-    }
-
+    val voiceState = homeViewModel.voiceState.collectAsStateWithLifecycle()
     val homeState = homeViewModel.homeState.collectAsStateWithLifecycle()
     val books = homeState.value.allBooks
     val newestBooks = homeState.value.newestBooks
     val recentlyReadBooks = homeState.value.recentlyRead
     val featureBooks = books.take(5)
+
+    when(voiceState.value){
+        is Response.Success -> {
+            Toast.makeText(context, "Voice created successfully", Toast.LENGTH_SHORT).show()
+        }
+        else -> Unit
+    }
+
+    LaunchedEffect(true) {
+        homeViewModel.reload()
+    }
 
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -317,128 +332,131 @@ fun HomeRoute(
             }
         ) { innerPadding ->
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
 
-                // ----- Feature Carousel -----
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    AutoSwipeSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        sectionType = "Feature Books",
-                        listMedia = featureBooks,
-                        onBookClick = {
-                            onBookClick.invoke(it)
+                        // ----- Feature Carousel -----
+                        item {
+                            Spacer(Modifier.height(8.dp))
+                            AutoSwipeSection(
+                                modifier = Modifier.fillMaxWidth(),
+                                sectionType = stringResource(R.string.featured_stories),
+                                listMedia = featureBooks,
+                                onBookClick = {
+                                    onBookClick.invoke(it)
+                                }
+                            )
+                            Spacer(Modifier.height(8.dp))
                         }
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
 
-                // ----- Categories (chips tròn) -----
-                if (categories.isNotEmpty()) {
-                    item {
-                        CategorySection(
-                            title = "Danh mục",
-                            categories = categories,
-                            onCategoryClick = { category ->
-                                onCategoryClick(category.id, category.name)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-
-                if(newestBooks.isNotEmpty()) {
-                    item {
-                        FavouriteSection(
-                            modifier = Modifier.fillMaxWidth(),
-                            title = context.getString(R.string.newest),
-                            listBooks = newestBooks,
-                            onBookClick = {
-                                onBookClick.invoke(it)
-                            },
-                            onSeeAllClick = {
-                                onCategoryClick("newest", "Truyện mới nhất")
-                            },
-                            onLoadMore = {
-                                homeViewModel.getNewestBooks(
-                                    homeState.value.newestBooksPage + 1
+                        // ----- Categories (chips tròn) -----
+                        if (categories.isNotEmpty()) {
+                            item {
+                                CategorySection(
+                                    title = stringResource(R.string.category),
+                                    categories = categories,
+                                    onCategoryClick = { category ->
+                                        onCategoryClick(category.id, category.name)
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-                            },
-                            uiState = homeState.value
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-
-                if(recentlyReadBooks.isNotEmpty()) {
-                    item {
-                        FavouriteSection(
-                            modifier = Modifier.fillMaxWidth(),
-                            title = context.getString(R.string.recently_read),
-                            listBooks = recentlyReadBooks,
-                            onBookClick = {
-                                onBookClick.invoke(it)
-                            },
-                            onSeeAllClick = {
-                                onCategoryClick("recentlyRead", "Truyện gần đây")
-                            },
-                            onLoadMore = {
-                                homeViewModel.getRecentlyReadBooks(
-                                    homeState.value.recentlyReadPage + 1
-                                )
-                            },
-                            uiState = homeState.value
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-
-                if(homeState.value.favouriteBooks.isNotEmpty()){
-                    item {
-                        FavouriteSection(
-                            modifier = Modifier.fillMaxWidth(),
-                            title = context.getString(R.string.favourite),
-                            listBooks = homeState.value.favouriteBooks,
-                            onBookClick = {
-                                onBookClick.invoke(it)
-                            },
-                            onSeeAllClick = {
-                                onCategoryClick("favourite", "Truyện yêu thích")
-                            },
-                            onLoadMore = {
-                                homeViewModel.getFavouriteBooks(
-                                    homeState.value.favouriteBooksPage + 1
-                                )
-                            },
-                            uiState = homeState.value
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-
-                // ----- Grid 2 cột (cuộn cùng màn) -----
-                item {
-                    BookGridFlow(
-                        title = "Tất cả truyện",
-                        books = homeState.value.allBooks,
-                        onBookClick = {
-                            onBookClick.invoke(it)
-                        },
-                        onPlayClick = {
-                            onVoiceClick.invoke(it)
-                        },
-                        onFavouriteClick = { book ->
-                            homeViewModel.toggleFavourite(book)
+                                Spacer(Modifier.height(8.dp))
+                            }
                         }
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
+
+                        if(newestBooks.isNotEmpty()) {
+                            item {
+                                FavouriteSection(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    title = stringResource(R.string.newest),
+                                    listBooks = newestBooks,
+                                    onBookClick = {
+                                        onBookClick.invoke(it)
+                                    },
+                                    onSeeAllClick = {
+                                        onCategoryClick("newest", context.getString(R.string.newest))
+                                    },
+                                    onLoadMore = {
+                                        homeViewModel.getNewestBooks(
+                                            homeState.value.newestBooksPage + 1
+                                        )
+                                    },
+                                    uiState = homeState.value,
+                                    isEndReached = homeState.value.isNewestBooksEnd
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
+                        }
+
+                        if(recentlyReadBooks.isNotEmpty()) {
+                            item {
+                                FavouriteSection(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    title = stringResource(R.string.recently_read),
+                                    listBooks = recentlyReadBooks,
+                                    onBookClick = {
+                                        onBookClick.invoke(it)
+                                    },
+                                    onSeeAllClick = {
+                                        onCategoryClick("recentlyRead", context.getString(R.string.recently_read))
+                                    },
+                                    onLoadMore = {
+                                        homeViewModel.getRecentlyReadBooks(
+                                            homeState.value.recentlyReadPage + 1
+                                        )
+                                    },
+                                    uiState = homeState.value,
+                                    isEndReached = homeState.value.isRecentlyReadEnd
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
+                        }
+
+                        if(homeState.value.favouriteBooks.isNotEmpty()){
+                            item {
+                                FavouriteSection(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    title = stringResource(R.string.favourite),
+                                    listBooks = homeState.value.favouriteBooks,
+                                    onBookClick = {
+                                        onBookClick.invoke(it)
+                                    },
+                                    onSeeAllClick = {
+                                        onCategoryClick("favourite", context.getString(R.string.favourite))
+                                    },
+                                    onLoadMore = {
+                                        homeViewModel.getFavouriteBooks(
+                                            homeState.value.favouriteBooksPage + 1
+                                        )
+                                    },
+                                    uiState = homeState.value,
+                                    isEndReached = homeState.value.isFavouriteBooksEnd
+                                )
+                                Spacer(Modifier.height(8.dp))
+                            }
+                        }
+
+                        // ----- Grid 2 cột (cuộn cùng màn) -----
+                        item {
+                            BookGridFlow(
+                                title = stringResource(R.string.all_stories),
+                                books = homeState.value.allBooks,
+                                onBookClick = {
+                                    onBookClick.invoke(it)
+                                },
+                                onPlayClick = {
+                                    onVoiceClick.invoke(it)
+                                },
+                                onFavouriteClick = { book ->
+                                    homeViewModel.toggleFavourite(book)
+                                }
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
             }
         }
     }
@@ -506,11 +524,11 @@ fun ExpandableFab(
                 // Generate Story Button
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Generate Story",
+                        text = stringResource(R.string.generate_story),
                         modifier = Modifier.padding(end = 8.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
-                    androidx.compose.material3.SmallFloatingActionButton(
+                    SmallFloatingActionButton(
                         onClick = {
                             isExpanded = false
                             onCreateStoryClick()
@@ -524,11 +542,11 @@ fun ExpandableFab(
                 // Create Voice Button
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Create Voice",
+                        text = stringResource(R.string.create_new_voice_title),
                         modifier = Modifier.padding(end = 8.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
-                    androidx.compose.material3.SmallFloatingActionButton(
+                    SmallFloatingActionButton(
                         onClick = {
                             isExpanded = false
                             onCreateVoiceClick()
@@ -541,7 +559,7 @@ fun ExpandableFab(
             }
         }
 
-        androidx.compose.material3.FloatingActionButton(
+        FloatingActionButton(
             onClick = { isExpanded = !isExpanded },
             containerColor = MaterialTheme.colorScheme.primary
         ) {

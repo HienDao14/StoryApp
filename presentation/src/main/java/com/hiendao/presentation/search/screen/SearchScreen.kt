@@ -32,7 +32,10 @@ import com.hiendao.domain.utils.rememberResolvedBookImagePath
 fun SearchScreen(
     list: List<Book>,
     onClick: (Book) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLoadMore: () -> Unit = {},
+    isLoading: Boolean = false,
+    isEndReached: Boolean = false
 ) {
 
 
@@ -67,6 +70,9 @@ fun SearchScreen(
                         .background(ColorAccent, ImageBorderShape)
                         .padding(4.dp)
                 )
+            }
+            if (list.indexOf(it) >= list.size - 1 && !isLoading && !isEndReached) {
+                onLoadMore.invoke()
             }
         }
     }

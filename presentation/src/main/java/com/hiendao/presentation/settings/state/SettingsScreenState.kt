@@ -9,6 +9,7 @@ import com.hiendao.domain.translator.TranslationModelState
 data class SettingsScreenState(
     val followsSystemTheme: State<Boolean>,
     val currentTheme: State<Themes>,
+    val currentLanguage: State<String>,
     val isTranslationSettingsVisible: State<Boolean>,
     val translationModelsStates: SnapshotStateList<TranslationModelState>
 )

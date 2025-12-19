@@ -42,7 +42,7 @@ internal fun SettingsTranslationModels(
                 Text(text = stringResource(id = R.string.settings_translations_models_main_description))
             },
             leadingContent = {
-                Icon(Icons.Outlined.Translate, null, tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(Icons.Outlined.Translate, null, tint = MaterialTheme.colorScheme.primary)
             },
             modifier = Modifier.clickable { isDialogVisible = true }
         )

@@ -44,4 +44,16 @@ class LoginRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun logout(refreshToken: String): Flow<Response<Unit>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                loginAPI.logout(refreshToken)
+                emit(Response.Success(Unit))
+            } catch (e : Exception){
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
 }

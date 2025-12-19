@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hiendao.coreui.theme.ColorAccent
-import com.hiendao.presentation.R
+import com.hiendao.coreui.R
 
 @Composable
 internal fun MoreSettingDialog(
@@ -46,7 +46,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.TouchApp,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -54,9 +54,9 @@ internal fun MoreSettingDialog(
                     checked = allowTextSelection,
                     onCheckedChange = onAllowTextSelectionChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
@@ -72,7 +72,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.LightMode,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -80,9 +80,9 @@ internal fun MoreSettingDialog(
                     checked = keepScreenOn,
                     onCheckedChange = onKeepScreenOn,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
@@ -98,7 +98,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.Fullscreen,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -106,9 +106,9 @@ internal fun MoreSettingDialog(
                     checked = fullScreen,
                     onCheckedChange = onFullScreen,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }

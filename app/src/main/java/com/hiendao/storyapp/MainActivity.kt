@@ -1,5 +1,6 @@
 package com.hiendao.storyapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,6 +23,7 @@ import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.coreui.theme.InternalTheme
 import com.hiendao.coreui.theme.Theme
 import com.hiendao.coreui.theme.ThemeProvider
+import com.hiendao.coreui.utils.LocaleHelper
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.domain.mockData.MockData
 import com.hiendao.domain.model.*
@@ -53,6 +55,11 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appPreferences: AppPreferences
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -71,6 +78,16 @@ class MainActivity : ComponentActivity() {
                     },
                     appPreferences
                 )
+            }
+        }
+        
+        lifecycleScope.launch {
+            appPreferences.APP_LANGUAGE.flow().collect {
+                val currentLang = com.hiendao.coreui.utils.LocaleHelper.getLanguage(this@MainActivity)
+                if (currentLang != it) {
+                    LocaleHelper.setLocale(this@MainActivity, it)
+                    recreate()
+                }
             }
         }
     }

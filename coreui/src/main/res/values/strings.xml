@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="recently_read">Recently Read</string>
+
+    <string name="language">Language</string>
+    <string name="choose_language">Choose language</string>
+    <string name="lang_vi">Tiếng Việt</string>
+    <string name="lang_en">English</string>
+    <string name="lang_zh">Tiếng Trung</string>
     <string name="app_name">Story App</string>
     <string name="completed">Completed</string>
     <string name="reload">Reload</string>
@@ -206,5 +213,48 @@
     <string name="newest">Newest</string>
     <string name="favourite">Favourite</string>
     <string name="generate_story">Generate Story</string>
-    <string name="recently_read">Recently Read</string>
+
+    <!-- Login -->
+    <string name="login_title_text">Story Speaker</string>
+    <string name="login_subtitle">Sign in to continue</string>
+    <string name="continue_with_facebook">Continue with Facebook</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="terms_agreement">By continuing, you agree to our\n</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="content_desc_facebook">Facebook logo</string>
+    <string name="content_desc_google">Google logo</string>
+    <string name="content_desc_app_icon">App icon</string>
+
+    <!-- HomeItem -->
+    <string name="action_play">Play</string>
+    <string name="content_desc_poster">poster</string>
+    <string name="content_desc_no_image">No image</string>
+    <string name="text_and">" and "</string>
+
+    <!-- Create Voice Screen -->
+    <string name="create_new_voice_title">Create New Voice</string>
+    <string name="voice_name_label">Voice Name</string>
+    <string name="voice_name_placeholder">Enter voice name...</string>
+    <string name="action_save_voice">Save Voice</string>
+    <string name="press_to_record">Press to start recording</string>
+    <string name="content_desc_start_recording">Start Recording</string>
+    <string name="content_desc_stop_recording">Stop Recording</string>
+    <string name="status_recording">Recording...</string>
+    <string name="content_desc_stop">Stop</string>
+    <string name="action_stop_listening">Stop Listening</string>
+    <string name="content_desc_play">Play</string>
+    <string name="action_preview_voice">Preview Voice</string>
+    <string name="status_recorded">Recorded: %1$s</string>
+    <string name="hint_record_again">Tap to record again if not satisfied</string>
+    <string name="label_instructions">Instructions:</string>
+    <string name="instruction_1">Record at least 30 seconds</string>
+    <string name="instruction_2">Speak clearly and naturally</string>
+    <string name="instruction_3">Avoid background noise</string>
+    <string name="content_desc_back">Back</string>
+    <string name="featured_stories">Feature Stories</string>
+    <string name="category">Category</string>
+    <string name="all_stories">All Stories</string>
+    <string name="str_default">Default</string>
+    <string name="title_home">Home</string>
 </resources>

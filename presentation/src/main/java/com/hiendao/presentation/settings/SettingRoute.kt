@@ -58,6 +58,7 @@ fun SettingRoute(
                 state = viewModel.state,
                 onFollowSystem = viewModel::onFollowSystemChange,
                 onThemeSelected = viewModel::onThemeChange,
+                onLanguageSelected = viewModel::onLanguageChange,
                 onDownloadTranslationModel = viewModel::downloadTranslationModel,
                 onRemoveTranslationModel = viewModel::removeTranslationModel,
                 modifier = Modifier.padding(innerPadding),

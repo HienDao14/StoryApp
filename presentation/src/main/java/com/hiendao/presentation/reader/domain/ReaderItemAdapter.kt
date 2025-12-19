@@ -17,6 +17,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.hiendao.domain.text_to_speech.Utterance
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.presentation.R
+import com.hiendao.coreui.R as CoreR
 import com.hiendao.presentation.databinding.ActivityReaderListItemBodyBinding
 import com.hiendao.presentation.databinding.ActivityReaderListItemDividerBinding
 import com.hiendao.presentation.databinding.ActivityReaderListItemErrorBinding
@@ -198,7 +199,7 @@ internal class ReaderItemAdapter(
         }
 
         bind.specialTitle.updateTextSelectability()
-        bind.specialTitle.text = ctx.getString(R.string.reader_no_more_chapters)
+        bind.specialTitle.text = ctx.getString(CoreR.string.reader_no_more_chapters)
         bind.specialTitle.typeface = currentTypefaceBold()
         return bind.root
     }
@@ -218,7 +219,7 @@ internal class ReaderItemAdapter(
         }
 
         bind.specialTitle.updateTextSelectability()
-        bind.specialTitle.text = ctx.getString(R.string.reader_first_chapter)
+        bind.specialTitle.text = ctx.getString(CoreR.string.reader_first_chapter)
         bind.specialTitle.typeface = currentTypefaceBold()
         return bind.root
     }
@@ -246,7 +247,7 @@ internal class ReaderItemAdapter(
             else -> ActivityReaderListItemTranslatingBinding.bind(convertView)
         }
         bind.text.text = context.getString(
-            R.string.translating_from_lang_a_to_lang_b,
+            CoreR.string.translating_from_lang_a_to_lang_b,
             item.sourceLang,
             item.targetLang
         )

@@ -32,7 +32,7 @@ import com.hiendao.coreui.utils.Extra_String
 import com.hiendao.coreui.utils.dpToPx
 import com.hiendao.coreui.utils.fadeIn
 import com.hiendao.domain.text_to_speech.Utterance
-import com.hiendao.presentation.R
+import com.hiendao.coreui.R
 import com.hiendao.presentation.databinding.ActivityReaderBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

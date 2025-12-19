@@ -24,6 +24,7 @@ import com.hiendao.presentation.bookDetail.ChaptersRepository
 import com.hiendao.presentation.bookDetail.state.ChaptersScreenState
 import com.hiendao.presentation.reader.manager.ReaderManager
 import com.hiendao.presentation.reader.ui.ReaderScreenState
+import com.hiendao.presentation.voice.ReadingVoiceRepository
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState.BookState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -317,7 +318,6 @@ internal class VoiceViewModel @Inject constructor(
         readerViewHandlersActions.maintainLastVisiblePosition = { it() }
         readerViewHandlersActions.forceUpdateListViewState = { }
         readerViewHandlersActions.setInitialPosition = { }
-
     }
 
     fun reload(){

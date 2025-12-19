@@ -15,4 +15,9 @@ interface LoginAPI {
     suspend fun refreshToken(
         @Body refreshToken: String
     ): LoginResponse
+
+    @POST("auth/logout")
+    suspend fun logout(
+        @Body refreshToken: String
+    ): String
 }

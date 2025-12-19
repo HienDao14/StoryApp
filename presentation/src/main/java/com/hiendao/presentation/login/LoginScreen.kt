@@ -27,6 +27,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hiendao.presentation.R
+import com.hiendao.coreui.R as CoreR
+import androidx.compose.ui.res.stringResource
 
 // Brand colors
 private val FacebookBlue = Color(0xFF1877F2)
@@ -60,26 +62,26 @@ fun LoginScreen(
                 AppLogoBox()
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = "Story Speaker",
+                    text = stringResource(CoreR.string.login_title_text),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = Color(0xFF111827)
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "Sign in to continue",
+                    text = stringResource(CoreR.string.login_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
                 Spacer(Modifier.height(28.dp))
 
                 SocialButton(
-                    text = "Continue with Facebook",
+                    text = stringResource(CoreR.string.continue_with_facebook),
                     borderColor = FacebookBlue.copy(alpha = 0.5f),
                     textColor = FacebookBlue,
                     icon = {
                         Icon(
                             painter = painterResource(id = R.drawable.icon_facebook),
-                            contentDescription = "Facebook logo",
+                            contentDescription = stringResource(CoreR.string.content_desc_facebook),
                             tint = Color.Unspecified, // giữ màu gốc của icon
                             modifier = Modifier
                                 .size(24.dp)
@@ -92,13 +94,13 @@ fun LoginScreen(
                 Spacer(Modifier.height(12.dp))
 
                 SocialButton(
-                    text = "Continue with Google",
+                    text = stringResource(CoreR.string.continue_with_google),
                     borderColor = DividerGrey,
                     textColor = Color(0xFF111827),
                     icon = {
                         Icon(
                         painter = painterResource(id = R.drawable.icon_google),
-                        contentDescription = "Google logo",
+                        contentDescription = stringResource(CoreR.string.content_desc_google),
                         tint = Color.Unspecified, // giữ màu gốc của icon
                         modifier = Modifier
                             .size(24.dp)
@@ -115,10 +117,10 @@ fun LoginScreen(
 }
 
 @Composable
-private fun AppLogoBox() {
+internal fun AppLogoBox() {
     Image(
         painter = painterResource(id = R.drawable.icon_app),
-        contentDescription = "App icon",
+        contentDescription = stringResource(CoreR.string.content_desc_app_icon),
         modifier = Modifier
             .size(100.dp)
             .clip(RoundedCornerShape(32.dp))
@@ -175,16 +177,16 @@ private fun SocialButton(
 private fun TermsAndPrivacy() {
     val txt = buildAnnotatedString {
         withStyle(SpanStyle(color = TextSecondary)) {
-            append("By continuing, you agree to our\n")
+            append(stringResource(CoreR.string.terms_agreement))
         }
         withStyle(SpanStyle(color = Color(0xFF111827), fontWeight = FontWeight.SemiBold)) {
-            append("Terms of Service")
+            append(stringResource(CoreR.string.terms_of_service))
         }
         withStyle(SpanStyle(color = TextSecondary)) {
-            append("  and  ")
+            append(stringResource(CoreR.string.text_and))
         }
         withStyle(SpanStyle(color = Color(0xFF111827), fontWeight = FontWeight.SemiBold)) {
-            append("Privacy Policy")
+            append(stringResource(CoreR.string.privacy_policy))
         }
     }
     Text(

@@ -38,7 +38,7 @@ fun MyOutlinedTextField(
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
         ),
         interactionSource = remember { MutableInteractionSource() }
     )

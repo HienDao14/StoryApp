@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -15,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hiendao.coreui.R
@@ -34,6 +38,8 @@ fun SearchRoute(
     val searchList = searchViewModel.searchList.collectAsStateWithLifecycle()
     var searchInput = searchViewModel.query.collectAsStateWithLifecycle()
     var isLoading = searchViewModel.isLoading.collectAsStateWithLifecycle()
+    var isEndReached = searchViewModel.isEndReached.collectAsStateWithLifecycle()
+    var error = searchViewModel.error.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
         snapAnimationSpec = null,
@@ -54,10 +60,19 @@ fun SearchRoute(
                     scrollBehavior = scrollBehavior,
                 )
 
-                if(isLoading.value == true){
+                if(isLoading.value == true && !searchList.value.isNotEmpty()){
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth(),
                         color = ColorAccent
+                    )
+                }
+
+                if(!error.value.isNullOrEmpty()){
+                    Text(
+                        text = error.value!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 }
             }
@@ -68,8 +83,14 @@ fun SearchRoute(
                 modifier = Modifier.padding(innerPadding),
                 onClick = {
                     onBookClick
-                }
+                },
+                onLoadMore = {
+                    searchViewModel.searchBooks(isLoadMore = true)
+                },
+                isLoading = isLoading.value,
+                isEndReached = isEndReached.value
             )
         }
     )
+
 }

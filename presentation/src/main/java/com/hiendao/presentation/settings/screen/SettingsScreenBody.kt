@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -54,6 +55,7 @@ internal fun SettingsScreenBody(
     modifier: Modifier = Modifier,
     onFollowSystem: (Boolean) -> Unit,
     onThemeSelected: (Themes) -> Unit,
+    onLanguageSelected: (String) -> Unit,
     onDownloadTranslationModel: (lang: String) -> Unit,
     onRemoveTranslationModel: (lang: String) -> Unit,
     onLogout: () -> Unit = {}
@@ -69,6 +71,55 @@ internal fun SettingsScreenBody(
             onFollowSystemChange = onFollowSystem,
             onCurrentThemeChange = onThemeSelected
         )
+        // Language Selection
+        val languageMap = mapOf(
+            "vi" to stringResource(R.string.lang_vi),
+            "en" to stringResource(R.string.lang_en),
+            "zh" to stringResource(R.string.lang_zh)
+        )
+        val showLanguageDialog = remember { mutableStateOf(false) }
+        
+        ListItem(
+            modifier = Modifier.clickable { showLanguageDialog.value = true },
+            headlineContent = { Text(text = stringResource(R.string.language)) },
+            supportingContent = { 
+                Text(text = languageMap[state.currentLanguage.value] ?: state.currentLanguage.value) 
+            },
+            leadingContent = {
+                Icon(Icons.Outlined.Translate, null, tint = MaterialTheme.colorScheme.primary)
+            }
+        )
+
+        if (showLanguageDialog.value) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showLanguageDialog.value = false },
+                title = { Text(text = stringResource(R.string.choose_language)) },
+                text = {
+                    Column {
+                        languageMap.forEach { (code, name) ->
+                            ListItem(
+                                modifier = Modifier.clickable {
+                                    onLanguageSelected(code)
+                                    showLanguageDialog.value = false
+                                },
+                                headlineContent = { Text(text = name) },
+                                leadingContent = {
+                                    androidx.compose.material3.RadioButton(
+                                        selected = state.currentLanguage.value == code,
+                                        onClick = null
+                                    )
+                                }
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { showLanguageDialog.value = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
+            )
+        }
         if (state.isTranslationSettingsVisible.value) {
             HorizontalDivider()
             SettingsTranslationModels(
@@ -94,7 +145,7 @@ internal fun SettingsScreenBody(
                 Icon(
                     Icons.AutoMirrored.Outlined.Logout,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -129,10 +180,12 @@ private fun Preview() {
                     followsSystemTheme = remember { derivedStateOf { true } },
                     currentTheme = theme,
                     isTranslationSettingsVisible = remember { mutableStateOf(true) },
-                    translationModelsStates = remember { mutableStateListOf() }
+                    translationModelsStates = remember { mutableStateListOf() },
+                    currentLanguage = remember { mutableStateOf("en") }
                 ),
                 onFollowSystem = { },
                 onThemeSelected = { },
+                onLanguageSelected = { },
                 onDownloadTranslationModel = { },
                 onRemoveTranslationModel = { }
             )

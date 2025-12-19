@@ -59,7 +59,8 @@ fun FavouriteSection(
     onBookClick: (Book) -> Unit = {},
     onSeeAllClick: () -> Unit = {},
     onLoadMore: () -> Unit = {},
-    uiState: HomeState
+    uiState: HomeState,
+    isEndReached: Boolean = false
 ) {
     val context = LocalContext.current
 
@@ -106,13 +107,14 @@ fun FavouriteSection(
                         modifier = Modifier.bounceOnPressed(interactionSource)
                     )
                 }
-                if (it >= listBooks.size - 1 && !uiState.isLoading) {
+                if (it >= listBooks.size - 1 && !uiState.isLoading && !isEndReached) {
                     onLoadMore.invoke()
                 }
             }
         }
     }
 }
+
 
 // ====== 2) Categories (hình tròn + tên) ======
 @Composable

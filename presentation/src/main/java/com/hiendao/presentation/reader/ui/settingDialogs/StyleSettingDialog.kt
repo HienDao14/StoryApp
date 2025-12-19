@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.hiendao.coreui.theme.ColorAccent
 import com.hiendao.coreui.theme.Themes
-import com.hiendao.presentation.R
+import com.hiendao.coreui.R
 import com.hiendao.presentation.component.MySlider
 import com.hiendao.presentation.reader.tools.FontsLoader
 import com.hiendao.presentation.reader.ui.ReaderScreenState
@@ -93,7 +93,7 @@ internal fun StyleSettingDialog(
                 },
                 leadingContent = { Icon(Icons.Filled.TextFields, null) },
                 colors = ListItemDefaults.colors(
-                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    leadingIconColor = MaterialTheme.colorScheme.primary
                 ),
             )
             DropdownMenu(
@@ -131,7 +131,7 @@ internal fun StyleSettingDialog(
                 Icon(
                     Icons.Outlined.AutoAwesome,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -139,9 +139,9 @@ internal fun StyleSettingDialog(
                     checked = state.followSystem.value,
                     onCheckedChange = onFollowSystemChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             },
@@ -171,7 +171,7 @@ internal fun StyleSettingDialog(
                 Icon(
                     Icons.Outlined.ColorLens,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             colors = ListItemDefaults.colors(

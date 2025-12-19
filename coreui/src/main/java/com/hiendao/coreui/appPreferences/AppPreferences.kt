@@ -167,6 +167,10 @@ class AppPreferences @Inject constructor(
             override var value by SharedPreference_Int(name, preferences, 24)
         }
 
+    val APP_LANGUAGE = object : Preference<String>("APP_LANGUAGE") {
+        override var value by SharedPreference_String(name, preferences, "vi")
+    }
+
 
     @Deprecated("Removed", level = DeprecationLevel.HIDDEN)
     val LOCAL_SOURCES_URI_DIRECTORIES =

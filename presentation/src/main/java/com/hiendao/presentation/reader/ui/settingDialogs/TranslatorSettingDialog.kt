@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.hiendao.coreui.theme.clickableWithUnboundedIndicator
 import com.hiendao.coreui.theme.ifCase
-import com.hiendao.presentation.R
+import com.hiendao.coreui.R
 import com.hiendao.presentation.reader.features.LiveTranslationSettingData
 
 @Composable

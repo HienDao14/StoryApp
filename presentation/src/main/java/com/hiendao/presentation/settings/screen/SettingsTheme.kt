@@ -50,7 +50,7 @@ internal fun SettingsTheme(
                 Icon(
                     Icons.Outlined.AutoAwesome,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -58,9 +58,9 @@ internal fun SettingsTheme(
                     checked = currentFollowSystem,
                     onCheckedChange = onFollowSystemChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
@@ -80,7 +80,7 @@ internal fun SettingsTheme(
 
             },
             leadingContent = {
-                Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.primary)
             }
         )
     }

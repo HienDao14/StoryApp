@@ -27,7 +27,7 @@ android {
 
         buildConfigField("String", "SERVER_CLIENT_ID", properties.getProperty("server_client_id"))
 
-        resourceConfigurations += listOf("en", "vi")
+        resourceConfigurations += listOf("en", "vi", "zh")
     }
 
     buildTypes {

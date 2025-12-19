@@ -1,0 +1,4 @@
+    private fun mergeBooks(current: List<Book>, new: List<Book>): MutableList<Book> {
+        val newIds = new.map { it.id }.toSet()
+        return (current.filter { it.id !in newIds } + new).toMutableList()
+    }

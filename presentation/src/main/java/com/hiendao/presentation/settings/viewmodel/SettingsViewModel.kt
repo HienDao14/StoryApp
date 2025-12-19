@@ -43,6 +43,7 @@ internal class SettingsViewModel @Inject constructor(
     val state = SettingsScreenState(
         followsSystemTheme = appPreferences.THEME_FOLLOW_SYSTEM.state(viewModelScope),
         currentTheme = derivedStateOf { themeId.toTheme },
+        currentLanguage = appPreferences.APP_LANGUAGE.state(viewModelScope),
         isTranslationSettingsVisible = mutableStateOf(translationManager.available),
         translationModelsStates = translationManager.models
     )
@@ -79,6 +80,10 @@ internal class SettingsViewModel @Inject constructor(
 
     fun onThemeChange(themes: Themes) {
         appPreferences.THEME_ID.value = themes.toPreferenceTheme
+    }
+
+    fun onLanguageChange(lang: String) {
+        appPreferences.APP_LANGUAGE.value = lang
     }
 }
 

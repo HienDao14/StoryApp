@@ -24,6 +24,7 @@ import android.content.Context
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.coreui.theme.toPreferenceTheme
 import com.hiendao.domain.utils.Response
+import com.hiendao.presentation.voice.ReadingVoiceRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
@@ -36,7 +37,8 @@ class HomeViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val appPreferences: AppPreferences,
     private val toasty: Toasty,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val readingVoiceRepository: ReadingVoiceRepository
 ): ViewModel()  {
 
     val currentTheme = appPreferences.THEME_ID.state(viewModelScope)
@@ -47,6 +49,18 @@ class HomeViewModel @Inject constructor(
 
     private val _homeState : MutableStateFlow<HomeState> = MutableStateFlow(HomeState())
     val homeState = _homeState.asStateFlow()
+
+    private val _voiceState: MutableStateFlow<Response<Boolean>> = MutableStateFlow(Response.None)
+    val voiceState = _voiceState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val response = readingVoiceRepository.getAllVoices()
+            if (response is Response.Success) {
+                _voiceState.emit(Response.Success(true))
+            }
+        }
+    }
 
     fun reload(){
         getAllBooks()
@@ -65,8 +79,8 @@ class HomeViewModel @Inject constructor(
                     }
                     is Response.Success -> {
                         val allBooks = _homeState.value.allBooks
-                        allBooks.addAll(response.data)
-                        _homeState.update { it.copy(isLoading = false, allBooksPage = page, allBooks = allBooks) }
+                        val mergedBooks = mergeBooks(allBooks, response.data)
+                        _homeState.update { it.copy(isLoading = false, allBooksPage = page, allBooks = mergedBooks, isAllBooksEnd = response.data.isEmpty()) }
                     }
                     is Response.Error -> {
                         _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
@@ -86,8 +100,8 @@ class HomeViewModel @Inject constructor(
                     }
                     is Response.Success -> {
                         val newestBooks = _homeState.value.newestBooks
-                        newestBooks.addAll(response.data)
-                        _homeState.update { it.copy(isLoading = false, newestBooksPage = page, newestBooks = newestBooks) }
+                        val mergedBooks = mergeBooks(newestBooks, response.data)
+                        _homeState.update { it.copy(isLoading = false, newestBooksPage = page, newestBooks = mergedBooks, isNewestBooksEnd = response.data.isEmpty()) }
                     }
                     is Response.Error -> {
                         _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
@@ -107,8 +121,8 @@ class HomeViewModel @Inject constructor(
                     }
                     is Response.Success -> {
                         val favoriteBooks = _homeState.value.favouriteBooks
-                        favoriteBooks.addAll(response.data)
-                        _homeState.update { it.copy(isLoading = false, favouriteBooksPage = page, favouriteBooks = favoriteBooks) }
+                        val mergedBooks = mergeBooks(favoriteBooks, response.data)
+                        _homeState.update { it.copy(isLoading = false, favouriteBooksPage = page, favouriteBooks = mergedBooks, isFavouriteBooksEnd = response.data.isEmpty()) }
                     }
                     is Response.Error -> {
                         _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
@@ -128,8 +142,8 @@ class HomeViewModel @Inject constructor(
                     }
                     is Response.Success -> {
                         val recentlyRead = _homeState.value.recentlyRead
-                        recentlyRead.addAll(response.data)
-                        _homeState.update { it.copy(isLoading = false, recentlyReadPage = page, recentlyRead = recentlyRead) }
+                        val mergedBooks = mergeBooks(recentlyRead, response.data)
+                        _homeState.update { it.copy(isLoading = false, recentlyReadPage = page, recentlyRead = mergedBooks, isRecentlyReadEnd = response.data.isEmpty()) }
                     }
                     is Response.Error -> {
                         _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
@@ -212,6 +226,10 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    private fun mergeBooks(current: List<Book>, new: List<Book>): MutableList<Book> {
+        val newIds = new.map { it.id }.toSet()
+        return (current.filter { it.id !in newIds } + new).toMutableList()
+    }
 }
 
 data class HomeState(
@@ -229,4 +247,8 @@ data class HomeState(
     var newestBooksPage: Int = 0,
     var favouriteBooksPage: Int = 0,
     var recentlyReadPage: Int = 0,
+    var isNewestBooksEnd: Boolean = false,
+    var isAllBooksEnd: Boolean = false,
+    var isFavouriteBooksEnd: Boolean = false,
+    var isRecentlyReadEnd: Boolean = false
 )

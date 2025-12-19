@@ -66,7 +66,7 @@ fun LibraryRoute(
                 ),
                 title = {
                     Text(
-                        text = stringResource(id = R.string.app_name),
+                        text = stringResource(id = R.string.title_library),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
@@ -103,7 +103,7 @@ fun LibraryRoute(
         },
         content = { innerPadding ->
             LibraryScreenBody(
-                tabs = listOf("Default", "Completed", "Favourite"),
+                tabs = listOf(context.getString(R.string.str_default), context.getString(R.string.completed), context.getString(R.string.favourite)),
                 innerPadding = innerPadding,
                 topAppBarState = scrollBehavior.state,
                 onBookClick = { book ->

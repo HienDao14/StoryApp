@@ -155,8 +155,8 @@ internal fun VoiceReaderSettingDialog(
                         onClick = debouncedAction { state.playFirstVisibleItem() },
                         leadingIcon = { Icon(Icons.Filled.CenterFocusWeak, null) },
                         colors = AssistChipDefaults.assistChipColors(
-                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.primary,
                         ),
                     )
                     AssistChip(
@@ -164,8 +164,8 @@ internal fun VoiceReaderSettingDialog(
                         onClick = debouncedAction { state.scrollToActiveItem() },
                         leadingIcon = { Icon(Icons.Filled.CenterFocusStrong, null) },
                         colors = AssistChipDefaults.assistChipColors(
-                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.primary,
                         ),
                     )
                     AssistChip(
@@ -173,8 +173,8 @@ internal fun VoiceReaderSettingDialog(
                         onClick = { openVoicesDialog = !openVoicesDialog },
                         leadingIcon = { Icon(Icons.Filled.RecordVoiceOver, null) },
                         colors = AssistChipDefaults.assistChipColors(
-                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.primary,
                         ),
                     )
                     AssistChip(
@@ -186,8 +186,8 @@ internal fun VoiceReaderSettingDialog(
                         },
                         leadingIcon = { Icon(Icons.Filled.Bookmarks, null) },
                         colors = AssistChipDefaults.assistChipColors(
-                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                            disabledLeadingIconContentColor = MaterialTheme.colorScheme.primary,
                         ),
                     )
                     Box {

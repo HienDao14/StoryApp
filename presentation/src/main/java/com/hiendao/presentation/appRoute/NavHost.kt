@@ -39,6 +39,7 @@ import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 import com.hiendao.presentation.voice.viewModel.VoiceViewModel
 import com.hiendao.presentation.categoryDetail.CategoryDetailRoute
 import com.hiendao.presentation.categoryDetail.viewModel.CategoryDetailViewModel
+import com.hiendao.presentation.logout.LogoutViewModel
 import com.hiendao.presentation.story.create.CreateStoryRoute
 
 import com.hiendao.presentation.voice.create.CreateVoiceRoute
@@ -73,7 +74,7 @@ fun AppNavHost(
     onBookOpen: ((bookId: String, chapterUrl: String) -> Unit)? = null,
     appPreferences: AppPreferences
 ) {
-    val libraryViewModel = hiltViewModel<LibraryViewModel>()
+    val logoutViewModel: LogoutViewModel = hiltViewModel()
     // val loggedIn = appPreferences.LOGGED_IN.value -> Checked in SplashViewModel
     var isLoggedIn by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -103,11 +104,17 @@ fun AppNavHost(
                 LoginRoute(
                     modifier = modifier,
                     onLoginSuccess = { accessToken, refreshToken ->
-
                         appPreferences.LOGGED_IN.value = true
                         appPreferences.ACCESS_TOKEN.value = accessToken
                         appPreferences.REFRESH_TOKEN.value = refreshToken
                         // Vào main và clear toàn bộ auth khỏi back stack
+                        navController.navigate(Routes.MAIN) {
+                            popUpTo(Routes.AUTH) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onLoginWithoutToken = {
+                        appPreferences.LOGGED_IN.value = true
                         navController.navigate(Routes.MAIN) {
                             popUpTo(Routes.AUTH) { inclusive = true }
                             launchSingleTop = true
@@ -147,6 +154,7 @@ fun AppNavHost(
                             },
                             onNavigate = { route -> bottomNavigate(navController, route) },
                             onLogout = {
+                                logoutViewModel.logout()
                                 isLoggedIn = false
                                 navController.navigate(Routes.AUTH) {
                                     popUpTo(Routes.MAIN) { inclusive = true }
@@ -156,6 +164,7 @@ fun AppNavHost(
                         )
                     },
                     onLogout = {
+                        logoutViewModel.logout()
                         isLoggedIn = false
                         navController.navigate(Routes.AUTH) {
                             popUpTo(Routes.MAIN) { inclusive = true }
@@ -180,6 +189,7 @@ fun AppNavHost(
                         )
                     },
                     onLogout = {
+                        logoutViewModel.logout()
                         isLoggedIn = false
                         navController.navigate(Routes.AUTH) {
                             popUpTo(Routes.MAIN) { inclusive = true }
@@ -196,6 +206,7 @@ fun AppNavHost(
                         SettingRoute(
                             modifier = Modifier.fillMaxSize(),
                             onLogout = {
+                                logoutViewModel.logout()
                                 navController.navigate(Routes.AUTH) {
                                     popUpTo(Routes.MAIN) { inclusive = true }
                                     launchSingleTop = true
@@ -204,6 +215,7 @@ fun AppNavHost(
                         )
                     },
                     onLogout = {
+                        logoutViewModel.logout()
                         isLoggedIn = false
                         navController.navigate(Routes.AUTH) {
                             popUpTo(Routes.MAIN) { inclusive = true }

@@ -18,7 +18,8 @@ import com.hiendao.domain.utils.Response
 @Composable
 fun LoginRoute(
     modifier: Modifier = Modifier,
-    onLoginSuccess: (String, String) -> Unit
+    onLoginSuccess: (String, String) -> Unit,
+    onLoginWithoutToken: () -> Unit = {}
 ) {
     val viewModel: LoginViewModel = hiltViewModel()
 
@@ -58,7 +59,7 @@ fun LoginRoute(
     Box{
         LoginScreen(
             onFacebookClick = {
-
+                onLoginWithoutToken.invoke()
             },
             onGoogleClick = {
                 viewModel.signInWithGoogle(googleAuthUIClient)

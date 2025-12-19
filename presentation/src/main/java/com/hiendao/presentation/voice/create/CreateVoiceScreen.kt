@@ -60,7 +60,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.hiendao.coreui.components.MyOutlinedTextField
+import com.hiendao.coreui.R as CoreR
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,10 +80,10 @@ fun CreateVoiceScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tạo Giọng Đọc Mới") },
+                title = { Text(stringResource(CoreR.string.create_new_voice_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(CoreR.string.content_desc_back))
                     }
                 }
             )
@@ -116,12 +118,12 @@ fun CreateVoiceScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text("Tên giọng đọc", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(CoreR.string.voice_name_label), style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(8.dp))
             MyOutlinedTextField(
                 value = state.voiceName,
                 onValueChange = onNameChange,
-                placeHolderText = "Nhập tên giọng đọc...",
+                placeHolderText = stringResource(CoreR.string.voice_name_placeholder),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -152,7 +154,7 @@ fun CreateVoiceScreen(
                         .height(50.dp),
                     shape = RoundedCornerShape(4.dp)
                 ) {
-                    Text("Hủy", color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(CoreR.string.cancel), color = MaterialTheme.colorScheme.onSurface)
                 }
                 Button(
                     onClick = onCreateVoice,
@@ -169,7 +171,7 @@ fun CreateVoiceScreen(
                     if (state.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.surface)
                     } else {
-                        Text("Lưu Giọng")
+                        Text(stringResource(CoreR.string.action_save_voice))
                     }
                 }
             }
@@ -204,13 +206,13 @@ fun RecordingSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Mic,
-                    contentDescription = "Start Recording",
+                    contentDescription = stringResource(CoreR.string.content_desc_start_recording),
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Nhấn để bắt đầu ghi âm", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text(stringResource(CoreR.string.press_to_record), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
         } else if (state.isRecording) {
             // Recording State
             Box(
@@ -223,13 +225,13 @@ fun RecordingSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Stop,
-                    contentDescription = "Stop Recording",
+                    contentDescription = stringResource(CoreR.string.content_desc_stop_recording),
                     modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Đang ghi âm...", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(CoreR.string.status_recording), style = MaterialTheme.typography.bodyMedium)
             Text(
                 text = String.format("%02d : %02d", state.recordingDuration / 60, state.recordingDuration % 60),
                 style = MaterialTheme.typography.titleMedium
@@ -258,19 +260,19 @@ fun RecordingSection(
             ) {
                 OutlinedButton(onClick = onPlayRecording) {
                     if (state.isPlaying) {
-                        Icon(Icons.Default.Stop, contentDescription = "Stop")
+                        Icon(Icons.Default.Stop, contentDescription = stringResource(CoreR.string.content_desc_stop))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Dừng Nghe", color = MaterialTheme.colorScheme.onBackground)
+                        Text(stringResource(CoreR.string.action_stop_listening), color = MaterialTheme.colorScheme.onBackground)
                     } else {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(CoreR.string.content_desc_play))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Nghe Thử Giọng", color = MaterialTheme.colorScheme.onBackground)
+                        Text(stringResource(CoreR.string.action_preview_voice), color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Đã ghi âm: ${state.recordedFile?.name}", 
+                stringResource(CoreR.string.status_recorded, state.recordedFile?.name ?: ""), 
                 style = MaterialTheme.typography.bodySmall, 
                 color = Color.Gray
             )
@@ -314,7 +316,7 @@ fun RecordingSection(
              
              Spacer(modifier = Modifier.height(8.dp))
              Text(
-                text = "Nhấn ghi âm lại nếu chưa ưng ý",
+                text = stringResource(CoreR.string.hint_record_again),
                  style = MaterialTheme.typography.bodySmall,
                  color = MaterialTheme.colorScheme.onBackground,
                  modifier = Modifier.clickable(onClick = onStartRecording)
@@ -331,12 +333,12 @@ fun RecordingSection(
             .background(Color.LightGray.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
-        Text("Hướng dẫn:", style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(CoreR.string.label_instructions), style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(8.dp))
         val instructions = listOf(
-            "Ghi âm ít nhất 30 giây",
-            "Nói rõ ràng và tự nhiên",
-            "Tránh tiếng ồn xung quanh"
+            stringResource(CoreR.string.instruction_1),
+            stringResource(CoreR.string.instruction_2),
+            stringResource(CoreR.string.instruction_3)
         )
         instructions.forEach {
             Text("•  $it", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
