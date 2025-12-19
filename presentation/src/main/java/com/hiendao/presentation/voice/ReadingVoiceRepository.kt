@@ -37,7 +37,7 @@ class ReadingVoiceRepository @Inject constructor(
             voiceId = this.id,
             pitch = 1f,
             speed = 1f,
-            modelPath = this.modelPath,
+            modelPath = this.modelId,
             modelId = this.modelId
         )
     }

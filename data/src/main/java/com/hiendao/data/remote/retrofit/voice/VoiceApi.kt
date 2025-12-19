@@ -2,6 +2,7 @@ package com.hiendao.data.remote.retrofit.voice
 
 import com.hiendao.data.remote.retrofit.voice.model.TrainModelResponse
 import com.hiendao.data.remote.retrofit.voice.model.VoiceResponse
+import com.hiendao.data.remote.retrofit.voice.model.VoiceResponseItem
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.GET
@@ -22,5 +23,5 @@ interface VoiceApi {
     ): TrainModelResponse
 
     @GET("ai/my-voices")
-    suspend fun getMyVoices(): VoiceResponse
+    suspend fun getMyVoices(): ArrayList<VoiceResponseItem>
 }
