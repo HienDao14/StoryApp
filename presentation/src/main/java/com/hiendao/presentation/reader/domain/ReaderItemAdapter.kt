@@ -114,8 +114,15 @@ internal class ReaderItemAdapter(
 
         bind.body.updateTextSelectability()
         bind.root.background = getItemReadingStateBackground(item)
-        val paragraph = item.textToDisplay + "\n"
-        bind.body.text = paragraph
+        if (item.isHtml) {
+            bind.body.text = androidx.core.text.HtmlCompat.fromHtml(
+                item.textToDisplay,
+                androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+            )
+        } else {
+            val paragraph = item.textToDisplay + "\n"
+            bind.body.text = paragraph
+        }
         bind.body.textSize = currentFontSize()
         bind.body.typeface = currentTypeface()
 
@@ -139,7 +146,14 @@ internal class ReaderItemAdapter(
         }
 
         bind.image.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            dimensionRatio = "1:${item.image.yrel}"
+            val ratio = item.image.yrel
+            if (ratio > 0) {
+                dimensionRatio = "1:$ratio"
+                height = 0 // Match constraint
+            } else {
+                dimensionRatio = null
+                height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+            }
         }
 
         val imageModel = appFileResolver.resolvedBookImagePath(

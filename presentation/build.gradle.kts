@@ -114,6 +114,7 @@ dependencies {
     implementation(libs.retrofit)
 
     implementation(libs.compose.coil)
+    implementation(libs.jsoup)
 
     // Room components
     implementation(libs.androidx.room.runtime)

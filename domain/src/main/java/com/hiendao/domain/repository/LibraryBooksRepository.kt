@@ -3,23 +3,31 @@ package com.hiendao.domain.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.room.withTransaction
+import com.hiendao.data.local.dao.ChapterBodyDao
+import com.hiendao.data.local.dao.ChapterDao
 import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.data.local.entity.BookEntity
+import com.hiendao.data.local.entity.ChapterBodyEntity
 import com.hiendao.data.remote.retrofit.book.BookApi
+import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
 import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.data.utils.fileImporter
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.map.toDomainList
+import com.hiendao.domain.map.toDomainListFromContent
 import com.hiendao.domain.map.toEntity
 import com.hiendao.domain.model.Book
+import com.hiendao.domain.utils.Response
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -66,7 +74,36 @@ class LibraryBooksRepository @Inject constructor(
             chapterUrl = lastReadChapterUrl
         )
 
-    suspend fun getAll() = libraryDao.getAll()
+    suspend fun getAll(
+        page: Int = 0
+    ): List<Book> {
+        return try {
+            bookApi.getBooks(page).content.toDomainListFromContent()
+        } catch (e : Exception){
+            emptyList()
+        }
+    }
+
+    suspend fun getAllBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>>{
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
     suspend fun getAllInLibrary() = libraryDao.getAllInLibrary()
     suspend fun existInLibrary(url: String) = libraryDao.existInLibrary(url)
     suspend fun toggleBookmark(
@@ -101,35 +138,110 @@ class LibraryBooksRepository @Inject constructor(
         }
     }
 
-    suspend fun searchBooks(query: String): Flow<List<Book>>{
+    suspend fun searchBooks(query: String, page: Int = 0): Flow<List<Book>>{
         return flow {
-            val books = libraryDao.searchBooks(query).map { it.toDomain() }
+            val result = bookApi.searchBooks(
+                page = page,
+                searchBody = SearchBooksBody(
+                    keyword = query
+                )
+            )
+            val books = result.content.toDomainListFromContent()
             emit(books)
         }
     }
 
-    suspend fun getNewestBooks(
-        page: Int = 1
-    ): List<Book> {
+    suspend fun getNewestBooksNormal(
+        page: Int = 0
+    ): List<Book>{
         return try {
-            bookApi.getNewestBooks(page).results.toDomainList()
+            bookApi.getNewestBooks(page).content.toDomainListFromContent()
         } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
             emptyList()
         }
     }
-    suspend fun getFavoriteBooks(
-        page: Int = 1
+
+    suspend fun getNewestBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getNewestBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+    suspend fun getFavoriteBooksNormal(
+        page: Int = 0
     ): List<Book> {
         return try {
-            bookApi.getFavouriteBooks(page).results.toDomainList()
+            bookApi.getFavouriteBooks(page).content.toDomainListFromContent()
         } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
             emptyList()
+        }
+    }
+
+    suspend fun getRecentlyReadBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getRecentlyReadBooks(page)
+                val content = result.content
+                val books = content.toDomainListFromContent()
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
+    suspend fun getRecentlyReadBooksNormal(
+        page: Int = 0
+    ): List<Book> {
+        return try {
+            bookApi.getRecentlyReadBooks(page).content.toDomainListFromContent()
+        } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+            emptyList()
+        }
+    }
+
+    suspend fun getFavoriteBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getFavouriteBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
         }
     }
 
     suspend fun getFeaturedBooks(): List<Book> {
         return try {
-            bookApi.getFeatureBooks().results.toDomainList()
+            bookApi.getNewestBooks().content.toDomainListFromContent()
         } catch (e : Exception){
             emptyList()
         }
@@ -137,7 +249,7 @@ class LibraryBooksRepository @Inject constructor(
 
     suspend fun getBooksByCategory(
         categoryId: String,
-        page: Int = 1
+        page: Int = 0
     ): List<Book> {
         return try {
             bookApi.getBookOfCategory(categoryId, page).results.toDomainList()

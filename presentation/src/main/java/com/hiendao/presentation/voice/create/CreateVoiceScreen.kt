@@ -72,7 +72,8 @@ fun CreateVoiceScreen(
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
     onPlayRecording: () -> Unit,
-    onCreateVoice: () -> Unit
+    onCreateVoice: () -> Unit,
+    onDismissSuccessDialog: () -> Unit
 ) {
     Scaffold(
         topBar = {

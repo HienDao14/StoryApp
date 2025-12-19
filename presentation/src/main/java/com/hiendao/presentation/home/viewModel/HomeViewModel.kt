@@ -23,7 +23,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.coreui.theme.toPreferenceTheme
+import com.hiendao.domain.utils.Response
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -49,28 +51,92 @@ class HomeViewModel @Inject constructor(
     fun reload(){
         getAllBooks()
         getNewestBooks()
+        getRecentlyReadBooks()
         getFavouriteBooks()
         getAllCategories()
     }
 
-    fun getAllBooks(page: Int = 1){
+    fun getAllBooks(page: Int = 0){
         viewModelScope.launch {
-            val allBooks = libraryBooksRepository.getAll().map { it.toDomain() }
-            _homeState.update { it.copy(allBooksPage = page, allBooks = allBooks) }
+            libraryBooksRepository.getAllBooks().collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _homeState.update { it.copy(isLoading = true) }
+                    }
+                    is Response.Success -> {
+                        val allBooks = _homeState.value.allBooks
+                        allBooks.addAll(response.data)
+                        _homeState.update { it.copy(isLoading = false, allBooksPage = page, allBooks = allBooks) }
+                    }
+                    is Response.Error -> {
+                        _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
+                    }
+                    is Response.None -> Unit
+                }
+            }
         }
     }
 
-    fun getNewestBooks(page: Int = 1){
+    fun getNewestBooks(page: Int = 0){
         viewModelScope.launch {
-            val newestBooks = libraryBooksRepository.getNewestBooks(page)
-            _homeState.update { it.copy(newestBooksPage = page, newestBooks = newestBooks) }
+            libraryBooksRepository.getNewestBooks(page).collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _homeState.update { it.copy(isLoading = true) }
+                    }
+                    is Response.Success -> {
+                        val newestBooks = _homeState.value.newestBooks
+                        newestBooks.addAll(response.data)
+                        _homeState.update { it.copy(isLoading = false, newestBooksPage = page, newestBooks = newestBooks) }
+                    }
+                    is Response.Error -> {
+                        _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
+                    }
+                    is Response.None -> Unit
+                }
+            }
         }
     }
 
-    fun getFavouriteBooks(page: Int = 1) {
+    fun getFavouriteBooks(page: Int = 0) {
         viewModelScope.launch {
-            val favoriteBooks = libraryBooksRepository.getFavoriteBooks(page)
-            _homeState.update { it.copy(favouriteBooksPage = page, favouriteBooks = favoriteBooks) }
+            libraryBooksRepository.getFavoriteBooks(page).collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _homeState.update { it.copy(isLoading = true) }
+                    }
+                    is Response.Success -> {
+                        val favoriteBooks = _homeState.value.favouriteBooks
+                        favoriteBooks.addAll(response.data)
+                        _homeState.update { it.copy(isLoading = false, favouriteBooksPage = page, favouriteBooks = favoriteBooks) }
+                    }
+                    is Response.Error -> {
+                        _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
+                    }
+                    is Response.None -> Unit
+                }
+            }
+        }
+    }
+
+    fun getRecentlyReadBooks(page: Int = 0) {
+        viewModelScope.launch {
+            libraryBooksRepository.getRecentlyReadBooks(page).collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _homeState.update { it.copy(isLoading = true) }
+                    }
+                    is Response.Success -> {
+                        val recentlyRead = _homeState.value.recentlyRead
+                        recentlyRead.addAll(response.data)
+                        _homeState.update { it.copy(isLoading = false, recentlyReadPage = page, recentlyRead = recentlyRead) }
+                    }
+                    is Response.Error -> {
+                        _homeState.update { it.copy(isLoading = false, errorMsg = response.message) }
+                    }
+                    is Response.None -> Unit
+                }
+            }
         }
     }
 
@@ -78,13 +144,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val categories = categoryRepository.getAllCategories()
             _homeState.update { it.copy(categories = categories) }
-        }
-    }
-
-    fun getFeaturedBooks() {
-        viewModelScope.launch {
-            val featuredBooks = libraryBooksRepository.getFeaturedBooks()
-            _homeState.update { it.copy(featuredBooks = featuredBooks) }
         }
     }
 
@@ -159,13 +218,15 @@ data class HomeState(
     val isLoading: Boolean = false,
     val isRefresh: Boolean = false,
     val errorMsg: String? = null,
-    val allBooks: List<Book> = emptyList(),
-    val newestBooks: List<Book> = emptyList(),
-    val favouriteBooks: List<Book> = emptyList(),
-    val featuredBooks: List<Book> = emptyList(),
+    val allBooks: MutableList<Book> = mutableListOf(),
+    val newestBooks: MutableList<Book> = mutableListOf(),
+    val favouriteBooks: MutableList<Book> = mutableListOf(),
+    val featuredBooks: MutableList<Book> = mutableListOf(),
+    val recentlyRead: MutableList<Book> = mutableListOf(),
     val categories: List<Category> = emptyList(),
 
-    var allBooksPage: Int = 1,
-    var newestBooksPage: Int = 1,
-    var favouriteBooksPage: Int = 1
+    var allBooksPage: Int = 0,
+    var newestBooksPage: Int = 0,
+    var favouriteBooksPage: Int = 0,
+    var recentlyReadPage: Int = 0,
 )

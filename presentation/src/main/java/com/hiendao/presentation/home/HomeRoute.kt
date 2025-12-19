@@ -94,10 +94,10 @@ fun HomeRoute(
 
     val homeState = homeViewModel.homeState.collectAsStateWithLifecycle()
     val books = homeState.value.allBooks
+    val newestBooks = homeState.value.newestBooks
+    val recentlyReadBooks = homeState.value.recentlyRead
+    val featureBooks = books.take(5)
 
-    var isShowMenu by remember { mutableStateOf(false) }
-    var isShowSearchScreen by remember { mutableStateOf(false) }
-    var searchMode by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue(
@@ -323,13 +323,14 @@ fun HomeRoute(
                     .padding(innerPadding),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
+
                 // ----- Feature Carousel -----
                 item {
                     Spacer(Modifier.height(8.dp))
                     AutoSwipeSection(
                         modifier = Modifier.fillMaxWidth(),
                         sectionType = "Feature Books",
-                        listMedia = filtered.take(10),
+                        listMedia = featureBooks,
                         onBookClick = {
                             onBookClick.invoke(it)
                         }
@@ -352,53 +353,80 @@ fun HomeRoute(
                     }
                 }
 
-                item {
-                    FavouriteSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = context.getString(R.string.newest),
-                        listBooks = filtered.take(10),
-                        onBookClick = {
-                            onBookClick.invoke(it)
-                        },
-                        onSeeAllClick = {
-                            onCategoryClick("newest", "Truyện mới nhất")
-                        },
-                        onLoadMore = {
-                            homeViewModel.getNewestBooks(
-                                homeState.value.newestBooksPage + 1
-                            )
-                        },
-                        uiState = homeState.value
-                    )
-                    Spacer(Modifier.height(8.dp))
+                if(newestBooks.isNotEmpty()) {
+                    item {
+                        FavouriteSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = context.getString(R.string.newest),
+                            listBooks = newestBooks,
+                            onBookClick = {
+                                onBookClick.invoke(it)
+                            },
+                            onSeeAllClick = {
+                                onCategoryClick("newest", "Truyện mới nhất")
+                            },
+                            onLoadMore = {
+                                homeViewModel.getNewestBooks(
+                                    homeState.value.newestBooksPage + 1
+                                )
+                            },
+                            uiState = homeState.value
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
                 }
 
-                item {
-                    FavouriteSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = context.getString(R.string.favourite),
-                        listBooks = filtered.take(10),
-                        onBookClick = {
-                            onBookClick.invoke(it)
-                        },
-                        onSeeAllClick = {
-                            onCategoryClick("favourite", "Truyện yêu thích")
-                        },
-                        onLoadMore = {
-                            homeViewModel.getFavouriteBooks(
-                                homeState.value.favouriteBooksPage + 1
-                            )
-                        },
-                        uiState = homeState.value
-                    )
-                    Spacer(Modifier.height(8.dp))
+                if(recentlyReadBooks.isNotEmpty()) {
+                    item {
+                        FavouriteSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = context.getString(R.string.recently_read),
+                            listBooks = recentlyReadBooks,
+                            onBookClick = {
+                                onBookClick.invoke(it)
+                            },
+                            onSeeAllClick = {
+                                onCategoryClick("recentlyRead", "Truyện gần đây")
+                            },
+                            onLoadMore = {
+                                homeViewModel.getRecentlyReadBooks(
+                                    homeState.value.recentlyReadPage + 1
+                                )
+                            },
+                            uiState = homeState.value
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+
+                if(homeState.value.favouriteBooks.isNotEmpty()){
+                    item {
+                        FavouriteSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = context.getString(R.string.favourite),
+                            listBooks = homeState.value.favouriteBooks,
+                            onBookClick = {
+                                onBookClick.invoke(it)
+                            },
+                            onSeeAllClick = {
+                                onCategoryClick("favourite", "Truyện yêu thích")
+                            },
+                            onLoadMore = {
+                                homeViewModel.getFavouriteBooks(
+                                    homeState.value.favouriteBooksPage + 1
+                                )
+                            },
+                            uiState = homeState.value
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
                 }
 
                 // ----- Grid 2 cột (cuộn cùng màn) -----
                 item {
                     BookGridFlow(
                         title = "Tất cả truyện",
-                        books = filtered,
+                        books = homeState.value.allBooks,
                         onBookClick = {
                             onBookClick.invoke(it)
                         },

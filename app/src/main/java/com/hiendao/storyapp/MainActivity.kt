@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.coreui.theme.InternalTheme
 import com.hiendao.coreui.theme.Theme
 import com.hiendao.coreui.theme.ThemeProvider
@@ -50,6 +51,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var themeProvider: ThemeProvider
 
+    @Inject
+    lateinit var appPreferences: AppPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -65,7 +68,8 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize(),
                     onBookOpen = { bookId, chapterUrl ->
                         openBookAtChapter(chapterUrl, bookId)
-                    }
+                    },
+                    appPreferences
                 )
             }
         }

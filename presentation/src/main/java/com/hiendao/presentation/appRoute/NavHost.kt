@@ -1,7 +1,9 @@
 package com.hiendao.presentation.appRoute
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -9,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.coreui.composableActions.onDoAskForImage
 import com.hiendao.presentation.bookDetail.screen.ChaptersScreen
 import com.hiendao.presentation.bookDetail.viewModel.ChaptersViewModel
@@ -38,6 +42,8 @@ import com.hiendao.presentation.categoryDetail.viewModel.CategoryDetailViewModel
 import com.hiendao.presentation.story.create.CreateStoryRoute
 
 import com.hiendao.presentation.voice.create.CreateVoiceRoute
+import com.hiendao.presentation.splash.SplashRoute
+
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -56,6 +62,7 @@ object Routes {
     const val CATEGORY_DETAIL = "category_detail"
     const val CREATE_STORY = "create_story"
     const val CREATE_VOICE = "create_voice"
+    const val SPLASH = "splash"
 }
 
 /** ----- Nav Host ----- **/
@@ -63,21 +70,43 @@ object Routes {
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    onBookOpen: ((bookId: String, chapterUrl: String) -> Unit)? = null
+    onBookOpen: ((bookId: String, chapterUrl: String) -> Unit)? = null,
+    appPreferences: AppPreferences
 ) {
     val libraryViewModel = hiltViewModel<LibraryViewModel>()
+    // val loggedIn = appPreferences.LOGGED_IN.value -> Checked in SplashViewModel
     var isLoggedIn by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     NavHost(
         navController = navController,
-        startDestination = if (isLoggedIn) Routes.MAIN else Routes.AUTH
+        startDestination = Routes.SPLASH
     ) {
+        composable(Routes.SPLASH) {
+            SplashRoute(
+                modifier = modifier,
+                onNavigateToMain = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
         navigation(startDestination = Routes.LOGIN, route = Routes.AUTH) {
             composable(Routes.LOGIN) {
                 LoginRoute(
                     modifier = modifier,
-                    onLoginSuccess = {
-                        isLoggedIn = true
+                    onLoginSuccess = { accessToken, refreshToken ->
+
+                        appPreferences.LOGGED_IN.value = true
+                        appPreferences.ACCESS_TOKEN.value = accessToken
+                        appPreferences.REFRESH_TOKEN.value = refreshToken
                         // Vào main và clear toàn bộ auth khỏi back stack
                         navController.navigate(Routes.MAIN) {
                             popUpTo(Routes.AUTH) { inclusive = true }
@@ -207,45 +236,62 @@ fun AppNavHost(
                     delay(500)
                 }
 
-                ChaptersScreen(
-                    bookId = bookId,
-                    state = chaptersViewModel.state,
-                    onFavouriteToggle = chaptersViewModel::toggleBookmark,
-                    onResumeReading = {
-                        scope.launch {
-                            val lastReadChapter = chaptersViewModel.getLastReadChapter()
-                                ?: chaptersViewModel.state.chapters.minByOrNull { it.chapter.position }?.chapter?.id
-                                ?: return@launch
-                            onBookOpen?.invoke(chaptersViewModel.bookUrl.value, lastReadChapter)
-                        }
-                    },
-                    onPressBack = {
-                        navController.navigateUp()
-                    },
-                    onSelectedDeleteDownloads = chaptersViewModel::deleteDownloadsSelected,
-                    onSelectedDownload = {},
-                    onSelectedSetRead = chaptersViewModel::setAsReadSelected,
-                    onSelectedSetReadUpToChapterRead = chaptersViewModel::setAsReadUpToSelected,
-                    onSelectedSetReadUpToChapterUnread = chaptersViewModel::setAsReadUpToUnSelected,
-                    onSelectedSetUnread = chaptersViewModel::setAsUnreadSelected,
-                    onSelectedInvertSelection = chaptersViewModel::invertSelection,
-                    onSelectAllChapters = chaptersViewModel::selectAll,
-                    onCloseSelectionBar = chaptersViewModel::unselectAll,
-                    onChapterClick = { chapter ->
-                        onBookOpen?.invoke(chaptersViewModel.bookUrl.value, chapter.chapter.id)
-                    },
-                    onChapterLongClick = chaptersViewModel::onChapterLongClick,
-                    onSelectionModeChapterClick = chaptersViewModel::onSelectionModeChapterClick,
-                    onSelectionModeChapterLongClick = chaptersViewModel::onSelectionModeChapterLongClick,
-                    onChapterDownload = {},
-                    onPullRefresh = chaptersViewModel::onPullRefresh,
-                    onCoverLongClick = {},
-                    onChangeCover = onDoAskForImage { chaptersViewModel.saveImageAsCover(it) },
-                    onGlobalSearchClick = {},
-                    onCategoryClick = { id, name ->
-                        navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
+                Box {
+                    if (chaptersViewModel.state.isLoading.value) {
+                        // Show loading indicator or placeholder if needed
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        ChaptersScreen(
+                            bookId = bookId,
+                            state = chaptersViewModel.state,
+                            onFavouriteToggle = chaptersViewModel::toggleBookmark,
+                            onResumeReading = {
+                                scope.launch {
+                                    val lastReadChapter = chaptersViewModel.getLastReadChapter()
+                                        ?: chaptersViewModel.state.chapters.minByOrNull { it.chapter.position }?.chapter?.id
+                                        ?: return@launch
+                                    launch {
+                                        chaptersViewModel.getChapterDetail(bookId, lastReadChapter)
+                                    }
+                                    onBookOpen?.invoke(chaptersViewModel.bookUrl.value, lastReadChapter)
+                                }
+                            },
+                            onPressBack = {
+                                navController.navigateUp()
+                            },
+                            onSelectedDeleteDownloads = chaptersViewModel::deleteDownloadsSelected,
+                            onSelectedDownload = {},
+                            onSelectedSetRead = chaptersViewModel::setAsReadSelected,
+                            onSelectedSetReadUpToChapterRead = chaptersViewModel::setAsReadUpToSelected,
+                            onSelectedSetReadUpToChapterUnread = chaptersViewModel::setAsReadUpToUnSelected,
+                            onSelectedSetUnread = chaptersViewModel::setAsUnreadSelected,
+                            onSelectedInvertSelection = chaptersViewModel::invertSelection,
+                            onSelectAllChapters = chaptersViewModel::selectAll,
+                            onCloseSelectionBar = chaptersViewModel::unselectAll,
+                            onChapterClick = { chapter ->
+                               scope.launch {
+                                   launch {
+                                       chaptersViewModel.getChapterDetail(chaptersViewModel.bookUrl.value, chapter.chapter.id)
+                                   }
+                                   onBookOpen?.invoke(chaptersViewModel.bookUrl.value, chapter.chapter.id)
+                               }
+                            },
+                            onChapterLongClick = chaptersViewModel::onChapterLongClick,
+                            onSelectionModeChapterClick = chaptersViewModel::onSelectionModeChapterClick,
+                            onSelectionModeChapterLongClick = chaptersViewModel::onSelectionModeChapterLongClick,
+                            onChapterDownload = {},
+                            onPullRefresh = chaptersViewModel::onPullRefresh,
+                            onCoverLongClick = {},
+                            onChangeCover = onDoAskForImage { chaptersViewModel.saveImageAsCover(it) },
+                            onGlobalSearchClick = {},
+                            onCategoryClick = { id, name ->
+                                navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
+                            }
+                        )
                     }
-                )
+                }
 
             }
 
@@ -261,7 +307,6 @@ fun AppNavHost(
                         defaultValue = ""
                     })
             ) { entry ->
-
                 val bookId = entry.arguments?.getString("bookId")
                 val bookTitle = entry.arguments?.getString("bookTitle")
                 requireNotNull(bookId)

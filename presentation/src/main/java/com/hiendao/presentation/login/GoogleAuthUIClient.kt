@@ -48,6 +48,7 @@ class GoogleAuthUIClient(
 
             try {
                 val tokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                println(tag + "id token: ${tokenCredential.idToken}")
                 println(tag + "name: ${tokenCredential.displayName}")
                 println(tag + "email: ${tokenCredential.id}")
                 println(tag + "image: ${tokenCredential.profilePictureUri}")

@@ -35,7 +35,18 @@ class AppPreferences @Inject constructor(
     private val preferencesChangeListeners =
         mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
+    val LOGGED_IN = object : Preference<Boolean>("LOGGED_IN") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
+    }
+
+    val USER_ID = object : Preference<String>("USER_ID") {
+        override var value by SharedPreference_String(name, preferences, "")
+    }
     val ACCESS_TOKEN = object : Preference<String>("ACCESS_TOKEN") {
+        override var value by SharedPreference_String(name, preferences, "")
+    }
+
+    val REFRESH_TOKEN = object : Preference<String>("REFRESH_TOKEN") {
         override var value by SharedPreference_String(name, preferences, "")
     }
 

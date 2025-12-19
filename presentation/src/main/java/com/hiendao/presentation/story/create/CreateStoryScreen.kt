@@ -53,16 +53,7 @@ fun CreateStoryRoute(
         onTitleChange = viewModel::onTitleChange,
         onFreeTextChange = viewModel::onFreeTextChange,
         onDurationChange = viewModel::onDurationChange,
-        onReadingLevelChange = viewModel::onReadingLevelChange,
-        onGenreChange = viewModel::onGenreChange,
-        onToneChange = viewModel::onToneChange,
-        onKeyMessageAdd = viewModel::onKeyMessageAdd,
-        onKeyMessageRemove = viewModel::onKeyMessageRemove,
-        onCharacterAdd = viewModel::onCharacterAdd,
-        onCharacterRemove = viewModel::onCharacterRemove,
-        onIncludeSoundCuesChange = viewModel::onIncludeSoundCuesChange,
         onLanguageChange = viewModel::onLanguageChange,
-        onAdditionalInstructionsChange = viewModel::onAdditionalInstructionsChange,
         onGenerate = viewModel::generateStory
     )
 }
@@ -75,16 +66,7 @@ fun CreateStoryScreen(
     onTitleChange: (String) -> Unit,
     onFreeTextChange: (String) -> Unit,
     onDurationChange: (Int) -> Unit,
-    onReadingLevelChange: (String) -> Unit,
-    onGenreChange: (String) -> Unit,
-    onToneChange: (String) -> Unit,
-    onKeyMessageAdd: (String) -> Unit,
-    onKeyMessageRemove: (Int) -> Unit,
-    onCharacterAdd: (String, String) -> Unit,
-    onCharacterRemove: (Int) -> Unit,
-    onIncludeSoundCuesChange: (Boolean) -> Unit,
     onLanguageChange: (String) -> Unit,
-    onAdditionalInstructionsChange: (String) -> Unit,
     onGenerate: () -> Unit
 ) {
     Scaffold(
@@ -133,31 +115,6 @@ fun CreateStoryScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Reading Level
-            // Simple validation or text input for now as per minimal friction
-            MyOutlinedTextField(
-                value = state.readingLevel,
-                onValueChange = onReadingLevelChange,
-                placeHolderText = "Reading Level (e.g. 5-10)"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Genre
-            MyOutlinedTextField(
-                value = state.genre,
-                onValueChange = onGenreChange,
-                placeHolderText = "Genre"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Tone
-             MyOutlinedTextField(
-                value = state.tone,
-                onValueChange = onToneChange,
-                placeHolderText = "Tone"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
             // Language
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Language: ", style = MaterialTheme.typography.bodyMedium)
@@ -179,98 +136,7 @@ fun CreateStoryScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Sound Cues
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Include Sound Cues")
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = state.includeSoundCues,
-                    onCheckedChange = onIncludeSoundCuesChange
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Characters Section
-            Text(text = "Characters", style = MaterialTheme.typography.titleMedium)
-            state.characters.forEachIndexed { index, char ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Name: ${char.name}", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Desc: ${char.shortDescription}", style = MaterialTheme.typography.bodySmall)
-                    }
-                    IconButton(onClick = { onCharacterRemove(index) }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Remove")
-                    }
-                }
-            }
-            // Add Character Input (Simple local state)
-            var newCharName by remember { mutableStateOf("") }
-            var newCharDesc by remember { mutableStateOf("") }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                     MyOutlinedTextField(
-                        value = newCharName,
-                        onValueChange = { newCharName = it },
-                        placeHolderText = "Char Name"
-                    )
-                     MyOutlinedTextField(
-                        value = newCharDesc,
-                        onValueChange = { newCharDesc = it },
-                        placeHolderText = "Char Desc"
-                    )
-                }
-                IconButton(onClick = {
-                    onCharacterAdd(newCharName, newCharDesc)
-                    newCharName = ""
-                    newCharDesc = ""
-                }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Key Messages
-            Text(text = "Key Messages", style = MaterialTheme.typography.titleMedium)
-             state.keyMessages.forEachIndexed { index, msg ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "- $msg", modifier = Modifier.weight(1f))
-                    IconButton(onClick = { onKeyMessageRemove(index) }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Remove")
-                    }
-                }
-            }
-             var newMsg by remember { mutableStateOf("") }
-             Row(verticalAlignment = Alignment.CenterVertically) {
-                 MyOutlinedTextField(
-                    value = newMsg,
-                    onValueChange = { newMsg = it },
-                    placeHolderText = "New Message",
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = {
-                    onKeyMessageAdd(newMsg)
-                    newMsg = ""
-                }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Additional Instructions
-            MyOutlinedTextField(
-                value = state.additionalInstructions,
-                onValueChange = onAdditionalInstructionsChange,
-                placeHolderText = "Additional Instructions"
-            )
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Generate Button
             if (state.isLoading) {

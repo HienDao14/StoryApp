@@ -7,17 +7,22 @@ import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.data.remote.interceptor.MyInterceptor
 import com.hiendao.data.remote.retrofit.book.BookApi
+import com.hiendao.data.remote.retrofit.chapter.ChapterApi
+import com.hiendao.data.remote.retrofit.login.LoginAPI
 import com.hiendao.data.remote.retrofit.story.StoryApi
 import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.repository.BooksRepository
 import com.hiendao.domain.repository.StoryRepository
 import com.hiendao.domain.repository.StoryRepositoryImpl
 import com.hiendao.data.remote.retrofit.voice.VoiceApi
+import com.hiendao.domain.repository.LoginRepository
 import com.hiendao.domain.repository.VoiceRepository
 import com.hiendao.domain.repository.VoiceRepositoryImpl
 import com.hiendao.navigation.NavigationRoutes
 import com.hiendao.storyapp.AppNavigationRoutes
 import com.hiendao.storyapp.Constants
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -87,16 +92,29 @@ object AppModule {
 
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        val moshi = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
         return Retrofit.Builder()
             .baseUrl(Constants.BASE_API_URL)
             .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
+    }
+
+    @Provides
+    fun provideLoginApi(retrofit: Retrofit): LoginAPI {
+        return retrofit.create(LoginAPI::class.java)
     }
 
     @Provides
     fun provideBookApi(retrofit: Retrofit): BookApi {
         return retrofit.create(BookApi::class.java)
+    }
+
+    @Provides
+    fun provideChapterApi(retrofit: Retrofit): ChapterApi {
+        return retrofit.create(ChapterApi::class.java)
     }
 
     @Provides
@@ -127,6 +145,12 @@ object AppModule {
     fun provideNovelRepository(
         @ApplicationContext context: Context
     ): BooksRepository = BooksRepository(context)
+
+    @Provides
+    @Singleton
+    fun provideLoginRepository(
+        loginAPI: LoginAPI
+    ): LoginRepository = LoginRepository(loginAPI)
 
     @Provides
     @Singleton

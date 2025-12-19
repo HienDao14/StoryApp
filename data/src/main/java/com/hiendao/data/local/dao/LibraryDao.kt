@@ -24,6 +24,9 @@ abstract class LibraryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(book: BookEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsertBook(book: BookEntity)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(book: List<BookEntity>)
 

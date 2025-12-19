@@ -60,6 +60,9 @@ abstract class ChapterDao {
     @Query("UPDATE ChapterEntity SET read = 0 WHERE id in (:chaptersUrl)")
     abstract suspend fun setAsUnread(chaptersUrl: List<String>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertChapter(chapter: ChapterEntity)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(chapters: List<ChapterEntity>)
 
@@ -86,4 +89,44 @@ abstract class ChapterDao {
     """
     )
     abstract fun getChaptersWithContextFlow(bookUrl: String): Flow<List<ChapterWithContext>>
+
+
+    @Query("""
+        INSERT OR REPLACE INTO ChapterEntity (
+            id,
+            title,
+            bookId,
+            position,
+            read,
+            lastReadPosition,
+            lastReadOffset
+        )
+        VALUES (
+            :id,
+            :title,
+            :bookId,
+            :position,
+            COALESCE(
+                (SELECT read FROM ChapterEntity WHERE id = :id),
+                :read
+            ),
+            COALESCE(
+                (SELECT lastReadPosition FROM ChapterEntity WHERE id = :id),
+                :lastReadPosition
+            ),
+            COALESCE(
+                (SELECT lastReadOffset FROM ChapterEntity WHERE id = :id),
+                :lastReadOffset
+            )
+        )
+    """)
+    abstract suspend fun upsertKeepingLocalState(
+        id: String,
+        title: String,
+        bookId: String,
+        position: Int,
+        read: Boolean = false,
+        lastReadPosition: Int = 0,
+        lastReadOffset: Int = 0
+    )
 }

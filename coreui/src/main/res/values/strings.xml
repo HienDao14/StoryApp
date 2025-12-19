@@ -206,4 +206,5 @@
     <string name="newest">Newest</string>
     <string name="favourite">Favourite</string>
     <string name="generate_story">Generate Story</string>
+    <string name="recently_read">Recently Read</string>
 </resources>

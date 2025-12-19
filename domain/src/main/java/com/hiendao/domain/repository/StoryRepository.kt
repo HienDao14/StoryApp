@@ -14,7 +14,7 @@ class StoryRepositoryImpl @Inject constructor(
     override suspend fun createStory(request: CreateStoryRequest): Result<String> {
         return try {
             val response = storyApi.createStory(request)
-            Result.success(response)
+            Result.success(response.id)
         } catch (e: Exception) {
             Result.failure(e)
         }

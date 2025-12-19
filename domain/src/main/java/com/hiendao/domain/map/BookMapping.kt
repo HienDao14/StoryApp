@@ -2,7 +2,27 @@ package com.hiendao.domain.map
 
 import com.hiendao.data.local.entity.BookEntity
 import com.hiendao.data.remote.retrofit.book.model.BookDTO
+import com.hiendao.data.remote.retrofit.book.model.BookResponseDTO
+import com.hiendao.data.remote.retrofit.book.model.Content
+import com.hiendao.data.utils.Constants
+import com.hiendao.data.utils.toMillisLegacy
 import com.hiendao.domain.model.Book
+
+fun Content.toDomain(): Book {
+    return Book(
+        id = this.id,
+        title = this.title,
+        author = this.author,
+        url = this.id,
+        coverImageUrl = this.coverImageUrl ?: "",
+        completed = this.status == Constants.BookStatus.COMPLETED,
+        isFavourite = isFavorite
+    )
+}
+
+fun List<Content>.toDomainListFromContent(): List<Book> {
+    return this.map { it.toDomain() }
+}
 
 fun BookEntity.toDomain(): Book {
     return Book(
@@ -58,3 +78,31 @@ fun List<BookDTO>.toDomainList(): List<Book> {
     return this.map { it.toBook() }
 }
 
+fun BookResponseDTO.toDomain(): Book {
+    return Book(
+        id = this.id ?: "",
+        title = this.title ?: "",
+        author = this.author ?: "",
+        url = this.id ?: "",
+        coverImageUrl = this.coverImageUrl ?: "",
+        description = this.description ?: "",
+        totalChapters = this.chapters?.size ?: 0,
+        completed = this.status == Constants.BookStatus.COMPLETED,
+        createdAt = this.createDate?.toMillisLegacy() ?: 0L,
+        updatedAt = this.lastUpdateDate?.toMillisLegacy() ?: 0L,
+        isFavourite = this.isFavorite ?: false,
+        inLibrary = false
+    )
+}
+
+fun BookResponseDTO.toEntity(): BookEntity {
+    return BookEntity(
+        id = this.id ?: "",
+        title = this.title ?: "",
+        coverImageUrl = this.coverImageUrl ?: "",
+        description = this.description ?: "",
+        completed = this.status == Constants.BookStatus.COMPLETED,
+        isFavourite = this.isFavorite ?: false,
+        inLibrary = false
+    )
+}
