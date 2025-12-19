@@ -3,14 +3,11 @@ package com.hiendao.domain.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.room.withTransaction
-import com.hiendao.data.local.dao.ChapterBodyDao
-import com.hiendao.data.local.dao.ChapterDao
 import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.data.local.entity.BookEntity
-import com.hiendao.data.local.entity.ChapterBodyEntity
+import com.hiendao.data.local.entity.BookWithContext
 import com.hiendao.data.remote.retrofit.book.BookApi
 import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
 import com.hiendao.data.utils.AppCoroutineScope
@@ -19,10 +16,12 @@ import com.hiendao.data.utils.fileImporter
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.map.toDomainList
 import com.hiendao.domain.map.toDomainListFromContent
+import com.hiendao.domain.map.toDomainListFromContentLibrary
 import com.hiendao.domain.map.toEntity
 import com.hiendao.domain.model.Book
 import com.hiendao.domain.utils.Response
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -156,6 +155,10 @@ class LibraryBooksRepository @Inject constructor(
         }
     }
 
+    suspend fun toggleFavourite(bookId: String) {
+        bookApi.toggleFavorite(bookId)
+    }
+
     suspend fun getNewestBooksNormal(
         page: Int = 0
     ): List<Book>{
@@ -260,6 +263,26 @@ class LibraryBooksRepository @Inject constructor(
             bookApi.getBookOfCategory(categoryId, page).results.toDomainList()
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    suspend fun getLibraryBooks(
+        page: Int = 0
+    ): Flow<Response<List<BookWithContext>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getLibraryBooks(page)
+                val content = result.content
+                val books = content.toDomainListFromContentLibrary()
+                val booksEntity = books.map { it.toEntity() }
+                libraryDao.insert(booksEntity)
+                val booksWithContext = libraryDao.getBooksInLibraryWithContext()
+                emit(Response.Success(booksWithContext))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getLibraryBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
         }
     }
 }

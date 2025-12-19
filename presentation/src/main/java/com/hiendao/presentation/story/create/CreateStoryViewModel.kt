@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hiendao.data.remote.retrofit.story.model.CreateStoryRequest
 import com.hiendao.domain.repository.StoryRepository
+import com.hiendao.domain.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -49,11 +50,18 @@ class CreateStoryViewModel @Inject constructor(
                 language = state.language,
             )
 
-            val result = storyRepository.createStory(request)
-            if (result.isSuccess) {
-                _uiState.update { it.copy(isLoading = false, successMessage = "Story generated successfully!") }
-            } else {
-                _uiState.update { it.copy(isLoading = false, errorMessage = result.exceptionOrNull()?.message ?: "Unknown error") }
+            storyRepository.createStory(request).collect { response ->
+                when(response) {
+                    is Response.Loading -> {
+
+                    }
+                    is Response.Success -> {
+                        _uiState.update { it.copy(isLoading = false, successMessage = "Story generated successfully!") }
+                    }
+                    is Response.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = response.message) } }
+                    else -> Unit
+                }
             }
         }
     }

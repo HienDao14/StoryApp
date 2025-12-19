@@ -1,5 +1,6 @@
 package com.hiendao.data.remote.retrofit.voice
 
+import com.hiendao.data.remote.retrofit.voice.model.TrainModelResponse
 import com.hiendao.data.remote.retrofit.voice.model.VoiceResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -18,7 +19,7 @@ interface VoiceApi {
         @Part("epochsNumber") epochsNumber: RequestBody,
         @Part("userId") userId: RequestBody,
         @Part("trainAt") trainAt: RequestBody
-    ): String
+    ): TrainModelResponse
 
     @GET("ai/my-voices")
     suspend fun getMyVoices(): VoiceResponse

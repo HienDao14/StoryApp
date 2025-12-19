@@ -176,6 +176,22 @@ fun CreateVoiceScreen(
                 }
             }
         }
+
+        if (state.showSuccessDialog) {
+            val title = if (state.successMessage != null) stringResource(CoreR.string.notification) else stringResource(CoreR.string.notification)
+            val message = state.successMessage ?: "Đang trong quá trình tạo giọng. Sẽ mất 1 khoảng thời gian nên người dùng có thể sử dụng tính năng khác, tôi sẽ thông báo sau khi thành công."
+
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = onDismissSuccessDialog,
+                title = { Text(title) },
+                text = { Text(message) },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = onDismissSuccessDialog) {
+                        Text(stringResource(CoreR.string.str_ok))
+                    }
+                }
+            )
+        }
     }
 }
 

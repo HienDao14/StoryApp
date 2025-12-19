@@ -4,6 +4,9 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.hiendao.coreui.appPreferences.AppPreferences
+import com.hiendao.data.local.dao.ChapterBodyDao
+import com.hiendao.data.local.dao.ChapterDao
+import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.data.remote.interceptor.MyInterceptor
 import com.hiendao.data.remote.retrofit.book.BookApi
@@ -155,8 +158,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideStoryRepository(
-        storyApi: StoryApi
-    ): StoryRepository = StoryRepositoryImpl(storyApi)
+        storyApi: StoryApi,
+        libraryDao: LibraryDao,
+        chapterDao: ChapterDao,
+        chapterBodyDao: ChapterBodyDao
+    ): StoryRepository = StoryRepositoryImpl(storyApi, libraryDao, chapterDao, chapterBodyDao)
 
     @Provides
     @Singleton

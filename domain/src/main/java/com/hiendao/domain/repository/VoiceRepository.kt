@@ -1,6 +1,7 @@
 package com.hiendao.domain.repository
 
 import com.hiendao.data.remote.retrofit.voice.VoiceApi
+import com.hiendao.data.remote.retrofit.voice.model.TrainModelResponse
 import com.hiendao.domain.model.CreateVoiceRequest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -9,13 +10,13 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 interface VoiceRepository {
-    suspend fun createVoice(request: CreateVoiceRequest): Result<String>
+    suspend fun createVoice(request: CreateVoiceRequest): Result<TrainModelResponse>
 }
 
 class VoiceRepositoryImpl @Inject constructor(
     private val voiceApi: VoiceApi
 ) : VoiceRepository {
-    override suspend fun createVoice(request: CreateVoiceRequest): Result<String> {
+    override suspend fun createVoice(request: CreateVoiceRequest): Result<TrainModelResponse> {
         return try {
             val namePart = request.name.toRequestBody(null)
             val f0MethodPart = request.f0Method.toRequestBody(null)

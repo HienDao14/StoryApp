@@ -145,7 +145,8 @@ fun CreateStoryScreen(
                 MyButton(
                     text = "Generate Story",
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onGenerate
+                    onClick = onGenerate,
+                    backgroundColor = MaterialTheme.colorScheme.primary
                 )
             }
             

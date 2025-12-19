@@ -21,6 +21,7 @@ import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.data.utils.isContentUri
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.repository.AppRepository
+import com.hiendao.domain.repository.LibraryBooksRepository
 import com.hiendao.presentation.bookDetail.ChaptersRepository
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.domain.utils.Response
@@ -59,7 +60,8 @@ internal class ChaptersViewModel @Inject constructor(
     appPreferences: AppPreferences,
     appFileResolver: AppFileResolver,
     stateHandle: SavedStateHandle,
-    private val chaptersRepository: ChaptersRepository
+    private val chaptersRepository: ChaptersRepository,
+    private val libraryBooksRepository: LibraryBooksRepository
 ) : BaseViewModel() {
     @Volatile
     private var loadChaptersJob: Job? = null
@@ -157,6 +159,9 @@ internal class ChaptersViewModel @Inject constructor(
 
     fun toggleBookmark() {
         viewModelScope.launch {
+            launch {
+                libraryBooksRepository.toggleFavourite(bookUrl.value)
+            }
             val isBookmarked =
                 appRepository.toggleBookmark(bookTitle = bookTitle.value, bookUrl = bookUrl.value)
             val msg = if (isBookmarked) R.string.added_to_library else R.string.removed_from_library

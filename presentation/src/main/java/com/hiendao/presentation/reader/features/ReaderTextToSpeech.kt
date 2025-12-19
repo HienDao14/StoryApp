@@ -502,8 +502,17 @@ internal class ReaderTextToSpeech(
     private fun speakItem(item: ReaderItem) {
         when (item) {
             is ReaderItem.Text -> {
+                val textToSpeak = if (item is ReaderItem.Body && item.isHtml) {
+                    androidx.core.text.HtmlCompat.fromHtml(
+                        item.textToDisplay,
+                        androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+                    ).toString()
+                } else {
+                    item.textToDisplay
+                }
+
                 manager.speak(
-                    text = item.textToDisplay,
+                    text = textToSpeak,
                     textSynthesis = TextSynthesis(
                         itemPos = item,
                         playState = Utterance.PlayState.PLAYING

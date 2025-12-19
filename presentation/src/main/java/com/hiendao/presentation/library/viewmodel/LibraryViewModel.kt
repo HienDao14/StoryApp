@@ -17,6 +17,7 @@ import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.model.Book
 import com.hiendao.domain.repository.AppRepository
+import com.hiendao.domain.repository.LibraryBooksRepository
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.domain.utils.Response
 import com.hiendao.presentation.bookDetail.ChaptersRepository
@@ -41,7 +42,8 @@ import kotlin.text.get
 internal class LibraryViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val preferences: AppPreferences,
-    private val toasty: Toasty
+    private val toasty: Toasty,
+    private val libraryBooksRepository: LibraryBooksRepository
 ) : BaseViewModel() {
 
     private var _allBooks = MutableStateFlow<Response<List<BookWithContext>>>(Response.None)
@@ -166,9 +168,22 @@ internal class LibraryViewModel @Inject constructor(
 
     fun initBooksFlow(onDone: () -> Unit = {}) { // Đổi tên để phản ánh mục đích khởi tạo Flow
         viewModelScope.launch(Dispatchers.IO) {
-            appRepository.libraryBooks.getBooksInLibraryWithContextFlow.collect {
-                _allBooks.emit(Response.Success(it))
-                onDone.invoke()
+            libraryBooksRepository.getLibraryBooks().collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _allBooks.emit(Response.Loading)
+                    }
+                    is Response.Error -> {
+                        _allBooks.emit(Response.Error(response.message ?: "Unknown Error", response.exception))
+                        onDone.invoke()
+                    }
+                    is Response.Success -> {
+                        _allBooks.emit(Response.Success(response.data))
+                        onDone.invoke()
+                    }
+                    else -> Unit
+
+                }
             }
         }
     }

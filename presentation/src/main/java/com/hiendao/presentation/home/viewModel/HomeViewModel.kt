@@ -163,6 +163,9 @@ class HomeViewModel @Inject constructor(
 
     fun toggleFavourite(book: Book) {
         viewModelScope.launch {
+            launch {
+                libraryBooksRepository.toggleFavourite(book.id)
+            }
             val isBookmarked =
                 appRepository.toggleBookmark(bookTitle = book.title, bookUrl = book.url)
             val msg = if (isBookmarked) R.string.added_to_library else R.string.removed_from_library

@@ -19,6 +19,7 @@ import com.hiendao.data.local.entity.ChapterWithContext
 import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.repository.AppRepository
+import com.hiendao.domain.repository.LibraryBooksRepository
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.presentation.bookDetail.ChaptersRepository
 import com.hiendao.presentation.bookDetail.state.ChaptersScreenState
@@ -49,7 +50,8 @@ internal class VoiceViewModel @Inject constructor(
     stateHandle: SavedStateHandle,
     private val chaptersRepository: ChaptersRepository,
     private val readerManager: ReaderManager,
-    private val readerViewHandlersActions: ReaderViewHandlersActions
+    private val readerViewHandlersActions: ReaderViewHandlersActions,
+    private val libraryBooksRepository: LibraryBooksRepository
 ) : ViewModel(){
     private var _bookUrl = MutableStateFlow<String>("")
     val bookUrl = _bookUrl.asStateFlow()
@@ -345,6 +347,9 @@ internal class VoiceViewModel @Inject constructor(
 
     fun toggleBookmark() {
         viewModelScope.launch {
+            launch {
+                libraryBooksRepository.toggleFavourite(bookUrl.value)
+            }
             val isBookmarked =
                 appRepository.toggleBookmark(bookTitle = bookTitle.value, bookUrl = bookUrl.value)
             val msg = if (isBookmarked) R.string.added_to_library else R.string.removed_from_library

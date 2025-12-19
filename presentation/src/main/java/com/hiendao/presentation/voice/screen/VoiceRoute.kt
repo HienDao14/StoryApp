@@ -141,24 +141,6 @@ internal fun VoiceRoute(
                 onPlayClick = { onPlayClick.invoke() },
                 onPauseClick = { onPauseClick.invoke() }
             )
-//            VoiceScreen(
-//                modifier = Modifier,
-//                paddingValues = innerPadding,
-//                state = state,
-//                onPlayClick = {
-//                    textToSpeech?.setPlaying(true)
-//                },
-//                onPauseClick = {
-//                    textToSpeech?.setPlaying(false)
-//                },
-//                onNextClick = {
-//                    textToSpeech?.playNextChapter()
-//                },
-//                onPreviousClick = {
-//                    textToSpeech?.playPreviousChapter()
-//                },
-//                onChapterSelected = onChapterSelected
-//            )
         }
     )
 }

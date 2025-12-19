@@ -1,6 +1,5 @@
 package com.hiendao.data.remote.retrofit.book
 
-import com.hiendao.data.remote.retrofit.book.model.BookResponse
 import com.hiendao.data.remote.retrofit.book.model.BookResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.BooksResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.ListBookResponse
@@ -8,7 +7,6 @@ import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -67,4 +65,9 @@ interface BookApi {
         @Query("sort") sort: String = "createDate",
         @Body searchBody: SearchBooksBody
     ): BooksResponseDTO
+
+    @POST("stories/{id}/favorite")
+    suspend fun toggleFavorite(
+        @Path("id") bookId: String
+    )
 }

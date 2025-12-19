@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateVoiceViewModel @Inject constructor(
-    private val voiceRepository: VoiceRepository,
+    private val voiceGenerationManager: VoiceGenerationManager,
     private val appPreferences: AppPreferences,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -38,6 +38,15 @@ class CreateVoiceViewModel @Inject constructor(
     private var audioFile: File? = null
     private var timerJob: Job? = null
     private var playbackJob: Job? = null
+
+    init {
+        // Observe persistent generation state
+        viewModelScope.launch {
+            voiceGenerationManager.isGenerating.collect { isGenerating ->
+                _uiState.update { it.copy(isFeatureDisabled = isGenerating, isLoading = isGenerating) }
+            }
+        }
+    }
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(voiceName = name) }
@@ -129,51 +138,45 @@ class CreateVoiceViewModel @Inject constructor(
     fun createVoice() {
         val state = _uiState.value
         if (state.voiceName.isBlank() || state.recordedFile == null) return
+        if (state.isFeatureDisabled) return 
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            
-            // Validation and Formatting
-            val formattedName = StringUtils.removeAccents(state.voiceName).replace(" ", "")
-            val userId = if(appPreferences.USER_ID.value.isNullOrEmpty()) "739ed90d-4bb6-40a8-91c1-384ff4578192" else appPreferences.USER_ID.value!!
-            val trainAt = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-            
-            val request = CreateVoiceRequest(
-                name = formattedName,
-                audioFile = state.recordedFile,
-                userId = userId,
-                trainAt = trainAt
-            )
-            
-            val timerJob = launch {
-                delay(1000)
-                if (_uiState.value.isLoading) {
-                    _uiState.update { it.copy(showSuccessDialog = true, isFeatureDisabled = true) }
+        _uiState.update { it.copy(errorMessage = null) }
+        
+        // Validation and Formatting
+        val formattedName = StringUtils.removeAccents(state.voiceName).replace(" ", "")
+        val userId = if(appPreferences.USER_ID.value.isNullOrEmpty()) "739ed90d-4bb6-40a8-91c1-384ff4578192" else appPreferences.USER_ID.value!!
+        val trainAt = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+        
+        val request = CreateVoiceRequest(
+            name = formattedName,
+            audioFile = state.recordedFile,
+            userId = userId,
+            trainAt = trainAt
+        )
+        
+        voiceGenerationManager.createVoice(
+            request = request,
+            onLongRunning = {
+                // If this callback runs, we are in the middle of generation (2s passed)
+               _uiState.update { it.copy(showSuccessDialog = true) } 
+               // Note: Reuse showSuccessDialog boolean to trigger "Dialog", but we need to handle content.
+               // Currently Screen logic shows a specific success dialog? No, I need to check Screen logic.
+               // Previously we planned: showLongProcessingData
+            },
+            onSuccess = {
+                _uiState.update { 
+                    it.copy(
+                        successMessage = "Voice created successfully!", 
+                        // If dialog is already showing (Processing), this update might change it?
+                        // If dialog is NOT showing (fast response), we might want to show Success Dialog.
+                        showSuccessDialog = true 
+                    ) 
                 }
+            },
+            onError = { msg ->
+                _uiState.update { it.copy(errorMessage = msg) }
             }
-
-            val result = voiceRepository.createVoice(request)
-            timerJob.cancel()
-            
-            if (result.isSuccess) {
-                // If not already disabled by timer, show success. 
-                // If already disabled/shown dialog, we might update message or just keep it "Processing"
-                // User requirement: "Disable feature" after dialog.
-                if (!_uiState.value.isFeatureDisabled) {
-                     _uiState.update { it.copy(isLoading = false, successMessage = "Voice created successfully!", showSuccessDialog = true, isFeatureDisabled = true) }
-                } else {
-                     _uiState.update { it.copy(isLoading = false) }
-                }
-            } else {
-                if (!_uiState.value.isFeatureDisabled) {
-                     _uiState.update { it.copy(isLoading = false, errorMessage = result.exceptionOrNull()?.message) }
-                } else {
-                     // Request failed but we already told user it's processing...
-                     // Maybe silent fail or log? For now, keep state.
-                     _uiState.update { it.copy(isLoading = false) }
-                }
-            }
-        }
+        )
     }
     
     fun dismissSuccessDialog() {

@@ -1,6 +1,7 @@
 package com.hiendao.domain.map
 
 import com.hiendao.data.local.entity.BookEntity
+import com.hiendao.data.local.entity.BookWithContext
 import com.hiendao.data.remote.retrofit.book.model.BookDTO
 import com.hiendao.data.remote.retrofit.book.model.BookResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.Content
@@ -8,7 +9,7 @@ import com.hiendao.data.utils.Constants
 import com.hiendao.data.utils.toMillisLegacy
 import com.hiendao.domain.model.Book
 
-fun Content.toDomain(): Book {
+fun Content.toDomain(inLibrary: Boolean = false): Book {
     return Book(
         id = this.id,
         title = this.title,
@@ -16,12 +17,17 @@ fun Content.toDomain(): Book {
         url = this.id,
         coverImageUrl = this.coverImageUrl ?: "",
         completed = this.status == Constants.BookStatus.COMPLETED,
-        isFavourite = isFavorite
+        isFavourite = isFavorite,
+        inLibrary = inLibrary
     )
 }
 
 fun List<Content>.toDomainListFromContent(): List<Book> {
     return this.map { it.toDomain() }
+}
+
+fun List<Content>.toDomainListFromContentLibrary(): List<Book> {
+    return this.map { it.toDomain(inLibrary = true) }
 }
 
 fun BookEntity.toDomain(): Book {
@@ -95,7 +101,7 @@ fun BookResponseDTO.toDomain(): Book {
     )
 }
 
-fun BookResponseDTO.toEntity(): BookEntity {
+fun BookResponseDTO.toEntity(inLibrary: Boolean = false): BookEntity {
     return BookEntity(
         id = this.id ?: "",
         title = this.title ?: "",
@@ -103,6 +109,6 @@ fun BookResponseDTO.toEntity(): BookEntity {
         description = this.description ?: "",
         completed = this.status == Constants.BookStatus.COMPLETED,
         isFavourite = this.isFavorite ?: false,
-        inLibrary = false
+        inLibrary = inLibrary
     )
 }
