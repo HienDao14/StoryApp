@@ -82,7 +82,7 @@ fun SearchRoute(
                 list = searchList.value,
                 modifier = Modifier.padding(innerPadding),
                 onClick = {
-                    onBookClick
+                    onBookClick.invoke(it)
                 },
                 onLoadMore = {
                     searchViewModel.searchBooks(isLoadMore = true)

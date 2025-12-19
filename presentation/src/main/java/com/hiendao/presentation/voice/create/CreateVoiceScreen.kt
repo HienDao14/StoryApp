@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -181,7 +182,7 @@ fun CreateVoiceScreen(
             val title = if (state.successMessage != null) stringResource(CoreR.string.notification) else stringResource(CoreR.string.notification)
             val message = state.successMessage ?: "Đang trong quá trình tạo giọng. Sẽ mất 1 khoảng thời gian nên người dùng có thể sử dụng tính năng khác, tôi sẽ thông báo sau khi thành công."
 
-            androidx.compose.material3.AlertDialog(
+            AlertDialog(
                 onDismissRequest = onDismissSuccessDialog,
                 title = { Text(title) },
                 text = { Text(message) },
@@ -189,7 +190,8 @@ fun CreateVoiceScreen(
                     androidx.compose.material3.TextButton(onClick = onDismissSuccessDialog) {
                         Text(stringResource(CoreR.string.str_ok))
                     }
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
     }

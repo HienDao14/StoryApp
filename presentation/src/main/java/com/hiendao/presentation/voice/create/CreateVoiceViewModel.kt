@@ -144,7 +144,7 @@ class CreateVoiceViewModel @Inject constructor(
         
         // Validation and Formatting
         val formattedName = StringUtils.removeAccents(state.voiceName).replace(" ", "")
-        val userId = if(appPreferences.USER_ID.value.isNullOrEmpty()) "739ed90d-4bb6-40a8-91c1-384ff4578192" else appPreferences.USER_ID.value!!
+        val userId = appPreferences.USER_ID.value
         val trainAt = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
         
         val request = CreateVoiceRequest(
