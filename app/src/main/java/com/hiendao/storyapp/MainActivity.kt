@@ -1,10 +1,12 @@
 package com.hiendao.storyapp
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import com.hiendao.domain.model.*
 import com.hiendao.domain.repository.BooksRepository
 import com.hiendao.navigation.NavigationRoutes
 import com.hiendao.presentation.appRoute.AppHomeScreen
+import com.hiendao.presentation.login.LoginViewModel
 import com.hiendao.storyapp.ui.theme.StoryAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +61,18 @@ class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
+
+    private val viewModel: LoginViewModel by viewModels()
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        viewModel.getCallbackManager()
+            .onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

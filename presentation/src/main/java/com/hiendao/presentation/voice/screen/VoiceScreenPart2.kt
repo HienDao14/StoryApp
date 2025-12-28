@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.window.Popup
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,8 @@ import com.hiendao.presentation.reader.domain.ReaderItem
 import com.hiendao.presentation.voice.screen.components.SearchableSelectionDialog
 import com.hiendao.presentation.voice.screen.components.progressBorder
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState
+
+import com.hiendao.presentation.utils.parseHtml
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,21 +91,150 @@ internal fun VoiceScreenPart2(
          audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
     }
 
+    // Popup states
+    var showVolumePopup by remember { mutableStateOf(false) }
+    var showSettingsPopup by remember { mutableStateOf(false) }
+
     Scaffold(
-        // Removed TopAppBar as requested
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 8.dp,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Volume Control
+                    Box {
+                        IconButton(onClick = { showVolumePopup = true }) {
+                            Icon(Icons.AutoMirrored.Filled.VolumeUp, "Volume")
+                        }
+                        if (showVolumePopup) {
+                            Popup(
+                                alignment = Alignment.BottomStart,
+                                onDismissRequest = { showVolumePopup = false },
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    tonalElevation = 8.dp,
+                                    modifier = Modifier.padding(bottom = 48.dp).width(200.dp) // Offset above the button
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text("Volume", style = MaterialTheme.typography.labelMedium)
+                                        Slider(
+                                            value = currentVolume,
+                                            onValueChange = { setVolume(it) }
+                                        )
+                                        DataControlSlider(
+                                            icon = Icons.AutoMirrored.Filled.VolumeUp,
+                                            label = "Volume",
+                                            value = currentVolume,
+                                            onValueChange = { setVolume(it) },
+                                            valueRange = 0f..10f,
+                                            displayValue = String.format("%.1fx", currentVolume)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Playback Controls
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }) {
+                            Icon(Icons.Filled.SkipPrevious, "Prev Chapter", modifier = Modifier.size(28.dp))
+                         }
+                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }) {
+                            Icon(Icons.Filled.FastRewind, "Rewind", modifier = Modifier.size(24.dp))
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable { if (isPlaying) onPauseClick() else onPlayClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                contentDescription = "Play/Pause",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }) {
+                            Icon(Icons.Filled.FastForward, "Forward", modifier = Modifier.size(24.dp))
+                        }
+                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }) {
+                            Icon(Icons.Filled.SkipNext, "Next Chapter", modifier = Modifier.size(28.dp))
+                         }
+                    }
+
+                    // Settings Control
+                    Box {
+                        IconButton(onClick = { showSettingsPopup = true }) {
+                            Icon(Icons.Default.Tune, "Settings")
+                        }
+                        if (showSettingsPopup) {
+                            Popup(
+                                alignment = Alignment.BottomEnd,
+                                onDismissRequest = { showSettingsPopup = false }
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    tonalElevation = 8.dp,
+                                    modifier = Modifier.padding(bottom = 48.dp).width(250.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        DataControlSlider(
+                                            icon = Icons.Default.Speed,
+                                            label = "Speed",
+                                            value = textToSpeech?.voiceSpeed?.value ?: 1f,
+                                            onValueChange = { textToSpeech?.setVoiceSpeed?.invoke(it) },
+                                            valueRange = 0.5f..3.0f,
+                                            displayValue = String.format("%.1fx", textToSpeech?.voiceSpeed?.value ?: 1f)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        DataControlSlider(
+                                            icon = Icons.Default.GraphicEq,
+                                            label = "Pitch",
+                                            value = textToSpeech?.voicePitch?.value ?: 1f,
+                                            onValueChange = { textToSpeech?.setVoicePitch?.invoke(it) },
+                                            valueRange = 0.5f..2.0f,
+                                            displayValue = String.format("%.1f", textToSpeech?.voicePitch?.value ?: 1f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp)) // Extra top spacing since TopBar is gone
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 1. Cover Art
+            // 1. Cover Art (Reduced Size)
             Box(
                 modifier = Modifier
                     .size(240.dp)
@@ -121,32 +253,33 @@ internal fun VoiceScreenPart2(
                      Icon(
                         imageVector = Icons.Default.MusicNote,
                         contentDescription = "Default Cover",
-                        modifier = Modifier.size(80.dp),
+                        modifier = Modifier.size(40.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 2. Title & Chapter
             Text(
                 text = book.title, 
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 textAlign = TextAlign.Center,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(4.dp))
              Text(
                 text = audioProgress?.chapterTitle ?: "Select a Chapter", 
-                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary),
-                 textAlign = TextAlign.Center
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),
+                 textAlign = TextAlign.Center,
+                 maxLines = 1,
+                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            // 3. Selection Dialog Triggers
+            // 3. Selection Dialog Triggers (Compact)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -155,27 +288,23 @@ internal fun VoiceScreenPart2(
                 OutlinedButton(
                     onClick = { showChapterDialog = true },
                     modifier = Modifier.weight(1f),
-                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.List, null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Chapters", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(text = "Chapters", maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
                 }
                 
                 // Voice Selector
                 OutlinedButton(
                     onClick = { showVoiceDialog = true },
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Icon(Icons.Default.RecordVoiceOver, null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = activeVoice?.language ?: "Voice", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(text = activeVoice?.language ?: "Voice", maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
                 }
             }
             
-            // Dialogs
-            if (showChapterDialog) {
+            // Dialogs (Keep as is)
+             if (showChapterDialog) {
                 SearchableSelectionDialog(
                     title = "Select Chapter",
                     items = chapters,
@@ -210,26 +339,22 @@ internal fun VoiceScreenPart2(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 4. Current Text with Progress Border
-            // Determine progress: 0-1.
-            // audioProgress?.progressPercentage is 0-100?
-            // Actually progress border should probably track ITEM progress?
-            // User said "progress from 0-100%" - presumably Chapter progress.
+            // 4. Current Text (Flexible Weight)
             val progress = (audioProgress?.progressPercentage ?: 0f) / 100f
             
             Box(
                 modifier = Modifier
+                    .weight(1f) // Take remaining space
                     .fillMaxWidth()
-                    .heightIn(min = 120.dp)
                     .progressBorder(
                         progress = progress, 
                         color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 4.dp
+                        strokeWidth = 3.dp
                     )
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f), RoundedCornerShape(0.dp)) // Border is rectangular, keeping bg rectangular.
-                    .padding(20.dp),
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f), RoundedCornerShape(0.dp))
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                  val textToDisplay = currentTextPlaying?.itemPos?.let { itemPos ->
@@ -239,83 +364,24 @@ internal fun VoiceScreenPart2(
                      }
                  } ?: "..."
                  
+                val scrollState = rememberScrollState()
+                
+                LaunchedEffect(textToDisplay) {
+                    scrollState.scrollTo(0)
+                }
+
                 Text(
-                    text = textToDisplay,
+                    text = textToDisplay.parseHtml(),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium),
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
                 )
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // 5. Sliders and Controls (Same as before)
-            // Volume
-            DataControlSlider(
-                icon = Icons.AutoMirrored.Filled.VolumeUp,
-                label = "Volume",
-                value = currentVolume,
-                onValueChange = { setVolume(it) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            // Speed
-            DataControlSlider(
-                icon = Icons.Default.Speed,
-                label = "Speed",
-                value = textToSpeech?.voiceSpeed?.value ?: 1f,
-                onValueChange = { textToSpeech?.setVoiceSpeed?.invoke(it) },
-                valueRange = 0.5f..3.0f,
-                displayValue = String.format("%.1fx", textToSpeech?.voiceSpeed?.value ?: 1f)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-             // Pitch
-            DataControlSlider(
-                icon = Icons.Default.GraphicEq,
-                label = "Pitch",
-                value = textToSpeech?.voicePitch?.value ?: 1f,
-                onValueChange = { textToSpeech?.setVoicePitch?.invoke(it) },
-                valueRange = 0.5f..2.0f,
-                displayValue = String.format("%.1f", textToSpeech?.voicePitch?.value ?: 1f)
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 6. Playback Controls Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                 IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }) {
-                    Icon(Icons.Filled.SkipPrevious, "Prev Chapter", modifier = Modifier.size(32.dp))
-                 }
-                 IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }) {
-                    Icon(Icons.Filled.FastRewind, "Rewind", modifier = Modifier.size(32.dp)) 
-                 }
-                 Box(
-                     modifier = Modifier
-                         .size(72.dp)
-                         .clip(CircleShape)
-                         .background(MaterialTheme.colorScheme.primary)
-                         .clickable { if (isPlaying) onPauseClick() else onPlayClick() },
-                     contentAlignment = Alignment.Center
-                 ) {
-                     Icon(
-                         imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                         contentDescription = "Play/Pause",
-                         tint = MaterialTheme.colorScheme.onPrimary,
-                         modifier = Modifier.size(40.dp)
-                     )
-                 }
-                 IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }) {
-                    Icon(Icons.Filled.FastForward, "Forward", modifier = Modifier.size(32.dp))
-                 }
-                 IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }) {
-                    Icon(Icons.Filled.SkipNext, "Next Chapter", modifier = Modifier.size(32.dp))
-                 }
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

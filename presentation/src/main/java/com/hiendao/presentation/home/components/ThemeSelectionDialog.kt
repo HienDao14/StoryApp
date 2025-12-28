@@ -36,6 +36,7 @@ fun ThemeSelectionDialog(
     onDismissRequest: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {

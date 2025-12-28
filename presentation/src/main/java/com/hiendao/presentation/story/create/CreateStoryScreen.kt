@@ -116,23 +116,39 @@ fun CreateStoryScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Language
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Language: ", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.width(8.dp))
-                // Simple Toggle for demonstration since only 2 langs
-                MyButton(
-                    text = "VI",
-                    selected = state.language == "vi",
-                    onClick = { onLanguageChange("vi") },
-                    modifier = Modifier.weight(1f)
+            var expanded by remember { mutableStateOf(false) }
+            val languages = listOf("Vietnam" to "vi", "English" to "en", "Chinese" to "zh") // Display to Value
+            val selectedLanguageDisplay = languages.find { it.second == state.language }?.first ?: "Vietnam"
+
+            androidx.compose.material3.ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                MyOutlinedTextField(
+                    value = selectedLanguageDisplay,
+                    onValueChange = {},
+                    placeHolderText = "Language",
+                    readOnly = true,
+                    trailingIcon = {
+                        androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                MyButton(
-                    text = "EN",
-                    selected = state.language == "en",
-                    onClick = { onLanguageChange("en") },
-                    modifier = Modifier.weight(1f)
-                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    languages.forEach { (display, value) ->
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { Text(text = display) },
+                            onClick = {
+                                onLanguageChange(value)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -144,7 +160,7 @@ fun CreateStoryScreen(
             } else {
                 MyButton(
                     text = "Generate Story",
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.align(Alignment.CenterHorizontally), 
                     onClick = onGenerate,
                     backgroundColor = MaterialTheme.colorScheme.primary
                 )

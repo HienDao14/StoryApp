@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material3.AlertDialog
 import kotlinx.coroutines.launch
 import com.hiendao.coreui.theme.toTheme
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -105,6 +106,7 @@ fun HomeRoute(
     when(voiceState.value){
         is Response.Success -> {
             Toast.makeText(context, "Voice created successfully", Toast.LENGTH_SHORT).show()
+            homeViewModel.resetVoiceState()
         }
         else -> Unit
     }
@@ -139,6 +141,9 @@ fun HomeRoute(
             onDismissRequest = { showThemeDialog = false }
         )
     }
+
+    // Logout Confirmation Dialog State
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
 
@@ -284,7 +289,7 @@ fun HomeRoute(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        onLogout()
+                        showLogoutDialog = true
                     },
                     icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, null) }, // Need ExitToApp
                     modifier = Modifier.padding(12.dp)
@@ -292,6 +297,31 @@ fun HomeRoute(
             }
         }
     ) {
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(text = stringResource(R.string.logout_confirmation_title)) },
+                text = { Text(text = stringResource(R.string.logout_confirmation_message)) },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            onLogout()
+                        }
+                    ) {
+                        Text(stringResource(R.string.log_out))
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = { showLogoutDialog = false }
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        }
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(

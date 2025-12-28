@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">StoryApp</string>
+    <string name="facebook_app_id" translatable="false">1179823517652603</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb1234</string>
+    <string name="facebook_client_token" translatable="false">605e7679fa4f7c88195da7d2972da150</string>
 </resources>

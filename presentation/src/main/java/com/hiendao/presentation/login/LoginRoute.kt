@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -13,6 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.hiendao.domain.utils.Response
 
 @Composable
@@ -56,10 +61,28 @@ fun LoginRoute(
         }
     }
 
+    LaunchedEffect(Unit) {
+        LoginManager.getInstance().registerCallback(
+            viewModel.getCallbackManager(),
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    viewModel.onFacebookLoginResult(result)
+                }
+
+                override fun onCancel() {}
+
+                override fun onError(error: FacebookException) {
+                    viewModel.onFacebookLoginError(error.message ?: "")
+                }
+            }
+        )
+    }
+
     Box{
         LoginScreen(
             onFacebookClick = {
                 onLoginWithoutToken.invoke()
+//                viewModel.loginWithFacebook(activity = context as android.app.Activity)
             },
             onGoogleClick = {
                 viewModel.signInWithGoogle(googleAuthUIClient)

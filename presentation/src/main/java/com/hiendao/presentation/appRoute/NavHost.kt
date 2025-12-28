@@ -270,6 +270,9 @@ fun AppNavHost(
                                     onBookOpen?.invoke(chaptersViewModel.bookUrl.value, lastReadChapter)
                                 }
                             },
+                            onListenToBook = {
+                                navController.navigate("${Routes.BOOK_VOICE}?bookId=${bookId}?bookTitle=${bookTitle}")
+                            },
                             onPressBack = {
                                 navController.navigateUp()
                             },

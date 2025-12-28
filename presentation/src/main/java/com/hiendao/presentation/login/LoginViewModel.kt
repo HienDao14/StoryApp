@@ -1,7 +1,13 @@
 package com.hiendao.presentation.login
 
+import android.app.Activity
 import androidx.lifecycle.viewModelScope
+import com.facebook.CallbackManager
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import com.hiendao.coreui.BaseViewModel
 import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.domain.repository.LoginRepository
@@ -58,5 +64,35 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             googleAuthUIClient.signIn()
         }
+    }
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val callbackManager = CallbackManager.Factory.create()
+
+    fun getCallbackManager(): CallbackManager = callbackManager
+
+    fun loginWithFacebook(activity: Activity) {
+        LoginManager.getInstance()
+            .logInWithReadPermissions(
+                activity,
+                listOf("email", "public_profile")
+            )
+    }
+
+    fun onFacebookLoginResult(result: LoginResult) {
+        val credential =
+            FacebookAuthProvider.getCredential(result.accessToken.token)
+
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener {
+                _loginState.value = Response.Success(Pair(auth.currentUser?.email ?: "", auth.currentUser?.uid ?: ""))
+            }
+            .addOnFailureListener {
+                _loginState.value = Response.Error(it.message ?: "Login failed", Exception(it))
+            }
+    }
+
+    fun onFacebookLoginError(message: String) {
+        _loginState.value = Response.Error(message, Exception(message))
     }
 }

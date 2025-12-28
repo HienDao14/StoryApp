@@ -213,6 +213,8 @@
     <string name="newest">Newest</string>
     <string name="favourite">Favourite</string>
     <string name="generate_story">Generate Story</string>
+    <string name="logout_confirmation_title">Logout</string>
+    <string name="logout_confirmation_message">Are you sure you want to log out?</string>
 
     <!-- Login -->
     <string name="login_title_text">Story Speaker</string>
@@ -259,4 +261,8 @@
     <string name="title_home">Home</string>
     <string name="notification">Notification</string>
     <string name="str_ok">OK</string>
+    <string name="continue_reading">Continue reading</string>
+    <string name="continue_listening">Continue listening</string>
+    <string name="delete_story_title">Delete Story</string>
+    <string name="delete_story_confirmation">Are you sure you want to delete this story?</string>
 </resources>

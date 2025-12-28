@@ -23,5 +23,5 @@ interface VoiceApi {
     ): TrainModelResponse
 
     @GET("ai/my-voices")
-    suspend fun getMyVoices(): ArrayList<VoiceResponseItem>
+    suspend fun getMyVoices(): List<VoiceResponseItem>
 }

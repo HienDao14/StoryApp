@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedButton
@@ -74,24 +75,24 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.height(28.dp))
 
-                SocialButton(
-                    text = stringResource(CoreR.string.continue_with_facebook),
-                    borderColor = FacebookBlue.copy(alpha = 0.5f),
-                    textColor = FacebookBlue,
-                    icon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_facebook),
-                            contentDescription = stringResource(CoreR.string.content_desc_facebook),
-                            tint = Color.Unspecified, // giữ màu gốc của icon
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(CircleShape)
-                        )
-                    },
-                    onClick = onFacebookClick
-                )
-
-                Spacer(Modifier.height(12.dp))
+//                SocialButton(
+//                    text = stringResource(CoreR.string.continue_with_facebook),
+//                    borderColor = FacebookBlue.copy(alpha = 0.5f),
+//                    textColor = FacebookBlue,
+//                    icon = {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.icon_facebook),
+//                            contentDescription = stringResource(CoreR.string.content_desc_facebook),
+//                            tint = Color.Unspecified, // giữ màu gốc của icon
+//                            modifier = Modifier
+//                                .size(24.dp)
+//                                .clip(CircleShape)
+//                        )
+//                    },
+//                    onClick = onFacebookClick
+//                )
+//
+//                Spacer(Modifier.height(12.dp))
 
                 SocialButton(
                     text = stringResource(CoreR.string.continue_with_google),
@@ -145,10 +146,11 @@ private fun SocialButton(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(64.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
             Box(
@@ -163,10 +165,9 @@ private fun SocialButton(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
-                    letterSpacing = 0.1.sp
+                    letterSpacing = 0.2.sp
                 ),
                 color = textColor,
-                modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Start
             )
         }

@@ -127,4 +127,5 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.timber)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.facebook.android.sdk)
 }

@@ -79,7 +79,7 @@ class ChaptersRepository @Inject constructor(
                     chapterBodyDao.insertReplace(
                         ChapterBodyEntity(
                             chapterId = it.id!!,
-                            body = it.content ?: ""
+                            body = it.content?.replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms") ?: ""
                         )
                     )
                 }
@@ -131,7 +131,7 @@ class ChaptersRepository @Inject constructor(
                     chapterBodyDao.insertReplace(
                         ChapterBodyEntity(
                             chapterId = it.id!!,
-                            body = it.content ?: ""
+                            body = it.content?.replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms") ?: ""
                         )
                     )
                 }
@@ -182,7 +182,7 @@ class ChaptersRepository @Inject constructor(
             chapterBodyDao.insertReplace(
                 ChapterBodyEntity(
                     chapterId = chapterResponse.id!!,
-                    body = chapterResponse.content ?: ""
+                    body = chapterResponse.content?.replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms") ?: ""
                 )
             )
         } catch (e : Exception){

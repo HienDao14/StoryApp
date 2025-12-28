@@ -62,6 +62,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun resetVoiceState() {
+        _voiceState.value = Response.None
+    }
+
     fun reload(){
         getAllBooks()
         getNewestBooks()

@@ -14,6 +14,7 @@ import javax.inject.Inject
 
 interface StoryRepository {
     suspend fun createStory(request: CreateStoryRequest): Flow<Response<String>>
+    suspend fun deleteStory(id: String): Flow<Response<Unit>>
 }
 
 class StoryRepositoryImpl @Inject constructor(
@@ -39,11 +40,27 @@ class StoryRepositoryImpl @Inject constructor(
                     chapterBodyDao.insertReplace(
                         ChapterBodyEntity(
                             chapterId = it.id!!,
-                            body = it.content ?: ""
+                            body = it.content?.replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms") ?: ""
                         )
                     )
                 }
                 emit(Response.Success(bookResponse.id.toString()))
+            } catch (e: Exception) {
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
+    override suspend fun deleteStory(id: String): Flow<Response<Unit>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                // Delete from local DB first to reflect changes immediately (Optimistic UI update or just local consistency)
+                libraryDao.remove(id) 
+                
+                // Call API
+                val response = storyApi.deleteStory(id)
+                emit(Response.Success(Unit))
             } catch (e: Exception) {
                 emit(Response.Error(e.message.toString(), e))
             }

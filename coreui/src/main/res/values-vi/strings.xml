@@ -27,10 +27,10 @@
     <string name="media_control_next">tiếp theo</string>
     <string name="chapter_x_over_n">Chương: %1$d/%2$d</string>
     <string name="progress_x_percentage">Tiến độ: %1$.0f%%</string>
-    <string name="translator">Người dịch</string>
-    <string name="voice_reader">Giọng đọc</string>
+    <string name="translator">Dịch truyện</string>
+    <string name="voice_reader">Nghe truyện</string>
     <string name="more">Thêm</string>
-    <string name="style">Kiểu</string>
+    <string name="style">Cài đặt</string>
     <string name="no_voices_saved">Chưa lưu giọng đọc nào</string>
     <string name="cancel">Hủy</string>
     <string name="save_voice">Lưu giọng đọc</string>
@@ -148,7 +148,7 @@
     <string name="sources_languages">Ngôn ngữ nguồn</string>
     <string name="epub_added_to_library">Đã thêm Epub vào thư viện</string>
     <string name="filter">Lọc</string>
-    <string name="read">Đọc</string>
+    <string name="read">Đã đọc</string>
     <string name="sort">Sắp xếp</string>
     <string name="options_panel">Bảng tùy chọn</string>
     <string name="search_with_filters">Tìm kiếm với bộ lọc</string>
@@ -261,4 +261,12 @@
     <string name="str_default">Mặc định</string>
     <string name="title_home">Trang chủ</string>
     <string name="recently_read">Đã đọc gần đây</string>
+    <string name="notification">Thông báo</string>
+    <string name="str_ok">OK</string>
+    <string name="continue_reading">Tiếp tục đọc</string>
+    <string name="continue_listening">Tiếp tục nghe</string>
+    <string name="logout_confirmation_title">Đăng xuất</string>
+    <string name="logout_confirmation_message">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="delete_story_title">Xóa truyện</string>
+    <string name="delete_story_confirmation">Bạn có chắc chắn muốn xóa truuyện này?</string>
 </resources>

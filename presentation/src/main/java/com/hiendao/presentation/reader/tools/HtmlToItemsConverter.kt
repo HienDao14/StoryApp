@@ -74,26 +74,28 @@ internal fun htmlToItemsConverter(
                         ))
                     }
                 } else if (tagName == "br") {
-                    sb.append("<br>")
-                } else if (tagName == "p" || tagName == "div" || tagName == "section" || tagName == "article") {
-                    // Block elements: flush before and after?
-                    // Flushing before ensures previous content is its own item.
-                    if (sb.isNotEmpty()) flushText()
+                    // BR is a natural breakpoint for TTS/Reader if deeper splitting is desired
+                    // But if we just append <br>, it stays in the text.
+                    // To split, we flush.
+                    // However, we might want to check if the previous content is substantial?
+                    // For now, simple split on BR.
+                    flushText() 
+                } else if (tagName == "p" || tagName == "div" || tagName == "section" || tagName == "article" || tagName == "blockquote") {
+                    // Block elements: traverse if they contain images OR explicit breaks
+                    val hasImages = !node.select("img").isEmpty()
+                    val hasBreaks = !node.select("br").isEmpty()
                     
-                    // Optimistic approach: if no images inside, append as is to preserve block styling?
-                    // But if we want to support splitting inside, we must traverse.
-                    // Also traversing allows "p" to be implicit separator.
-                    
-                    if (node.select("img").isEmpty()) {
-                        sb.append(node.outerHtml())
-                        // After a block, we often want a break or new item.
-                        flushText() 
-                    } else {
-                        // Contains images, must split
+                    if (hasImages || hasBreaks) {
+                        // Contains images or breaks, must split/recurse
                         for (child in node.childNodes()) {
                             traverse(child)
                         }
                         flushText()
+                    } else {
+                        // Safe to keep as block
+                         if (sb.isNotEmpty()) flushText()
+                        sb.append(node.outerHtml())
+                        flushText() 
                     }
                 } else {
                     // Inline or other elements
