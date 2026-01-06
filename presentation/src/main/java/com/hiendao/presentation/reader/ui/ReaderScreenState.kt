@@ -10,7 +10,8 @@ internal data class ReaderScreenState(
     val showReaderInfo: MutableState<Boolean>,
     val readerInfo: CurrentInfo,
     val settings: Settings,
-    val showInvalidChapterDialog: MutableState<Boolean>
+    val showInvalidChapterDialog: MutableState<Boolean>,
+    val showVoiceLoadingDialog: MutableState<Boolean>
 ) {
     data class CurrentInfo(
         val chapterTitle: State<String>,

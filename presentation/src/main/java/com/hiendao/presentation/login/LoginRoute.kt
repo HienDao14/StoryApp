@@ -55,7 +55,7 @@ fun LoginRoute(
         }
         is Response.None -> Unit
         is Response.Error -> {
-            showLoading = true
+            showLoading = false
             Toast.makeText(context, "Login failed: ${state.message}", Toast.LENGTH_LONG).show()
             // Handle error state if needed
         }

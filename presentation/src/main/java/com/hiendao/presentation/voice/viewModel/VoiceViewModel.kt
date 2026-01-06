@@ -157,6 +157,7 @@ internal class VoiceViewModel @Inject constructor(
                     textSize = appPreferences.READER_FONT_SIZE.state(viewModelScope),
                 )
             ),
+            showVoiceLoadingDialog = mutableStateOf(false),
             showInvalidChapterDialog = mutableStateOf(false)
         )
 

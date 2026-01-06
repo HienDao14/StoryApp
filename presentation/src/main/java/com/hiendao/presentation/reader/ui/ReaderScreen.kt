@@ -9,10 +9,13 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,7 +57,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.hiendao.coreui.R
+import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.coreui.theme.InternalTheme
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.coreui.theme.colorApp
@@ -80,8 +87,36 @@ internal fun ReaderScreen(
     onTextFontChanged: (String) -> Unit,
     onTextSizeChanged: (Float) -> Unit,
     onPressBack: () -> Unit,
+    selectModelVoice: (VoicePredefineState) -> Unit,
     readerContent: @Composable (paddingValues: PaddingValues) -> Unit
 ) {
+    if (state.showVoiceLoadingDialog.value) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "(đang thực hiện, vui lòng chờ...)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+        }
+    }
     // Capture back action when viewing info
     BackHandler(enabled = state.showReaderInfo.value) {
         state.showReaderInfo.value = false
@@ -177,7 +212,8 @@ internal fun ReaderScreen(
                         onThemeSelected = onThemeSelected,
                         onKeepScreenOn = onKeepScreenOn,
                         onFullScreen = onFullScreen,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        selectModelVoice = selectModelVoice
                     )
                     BottomAppBar(
                         modifier = Modifier
@@ -314,7 +350,8 @@ private fun ViewsPreview(
         setVoiceSpeed = {},
         setVoicePitch = {},
         setCustomSavedVoices = {},
-        customSavedVoices = rememberMutableStateOf(value = listOf())
+        customSavedVoices = rememberMutableStateOf(value = listOf()),
+        activeAiVoice = rememberMutableStateOf(null)
     )
 
     val style = ReaderScreenState.Settings.StyleSettingsData(
@@ -345,6 +382,7 @@ private fun ViewsPreview(
                         selectedSetting = remember { mutableStateOf(data.selectedSetting) },
                         fullScreen = remember { mutableStateOf(false) },
                     ),
+                    showVoiceLoadingDialog = remember { mutableStateOf(false) },
                     showInvalidChapterDialog = remember { mutableStateOf(false) }
                 ),
                 onTextSizeChanged = {},
@@ -355,7 +393,8 @@ private fun ViewsPreview(
                 onPressBack = {},
                 readerContent = {},
                 onKeepScreenOn = {},
-                onFullScreen = {}
+                onFullScreen = {},
+                selectModelVoice = {}
             )
         }
     }

@@ -272,6 +272,7 @@ class ReaderActivity : BaseActivity() {
                         viewModel.onCloseManually()
                         finish()
                     },
+                    selectModelVoice = viewModel::selectModelVoice,
                     readerContent = {
                         AndroidView(factory = { viewBind.root })
                     },

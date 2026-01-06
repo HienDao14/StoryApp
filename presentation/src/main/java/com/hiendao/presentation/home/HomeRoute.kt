@@ -483,7 +483,12 @@ fun HomeRoute(
                                 },
                                 onFavouriteClick = { book ->
                                     homeViewModel.toggleFavourite(book)
-                                }
+                                },
+                                onLoadMore = {
+                                    homeViewModel.getAllBooks(homeState.value.allBooksPage + 1)
+                                },
+                                isLoading = homeState.value.isLoading,
+                                isEndReached = homeState.value.isAllBooksEnd
                             )
                             Spacer(Modifier.height(8.dp))
                         }

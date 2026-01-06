@@ -46,6 +46,7 @@ internal data class TextToSpeechSettingData(
     val setVoiceId: (voiceId: String) -> Unit,
     val setVoiceSpeed: (Float) -> Unit,
     val setVoicePitch: (Float) -> Unit,
+    val activeAiVoice: MutableState<VoicePredefineState?>
 )
 
 internal data class TextSynthesis(
@@ -76,7 +77,7 @@ internal class ReaderTextToSpeech(
 ) {
     private val halfBuffer = 2
     private var updateJob: Job? = null
-    private val manager = TextToSpeechManager(
+    internal val manager = TextToSpeechManager(
         context = context,
         initialItemState = TextSynthesis(
             itemPos = ReaderItem.Title(
@@ -121,6 +122,7 @@ internal class ReaderTextToSpeech(
         scrollToActiveItem = ::scrollToActiveItem,
         setVoicePitch = ::setVoicePitch,
         setVoiceSpeed = ::setVoiceSpeed,
+        activeAiVoice = mutableStateOf(null)
     )
 
     val isActive = derivedStateOf { state.isThereActiveItem.value || state.isPlaying.value }

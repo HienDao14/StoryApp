@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.NavigateBefore
 import androidx.compose.material.icons.automirrored.rounded.NavigateNext
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.CenterFocusWeak
 import androidx.compose.material.icons.filled.RecordVoiceOver
@@ -101,7 +102,8 @@ import com.hiendao.presentation.reader.features.TextToSpeechSettingData
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun VoiceReaderSettingDialog(
-    state: TextToSpeechSettingData
+    state: TextToSpeechSettingData,
+    selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
     var openVoicesDialog by rememberSaveable { mutableStateOf(false) }
     val dropdownCustomSavedVoicesExpanded = rememberSaveable { mutableStateOf(false) }
@@ -202,7 +204,9 @@ internal fun VoiceReaderSettingDialog(
                                 state.setVoicePitch(it.pitch)
                                 state.setVoiceId(it.voiceId)
                             },
-                            setCustomSavedVoices = state.setCustomSavedVoices
+                            setCustomSavedVoices = state.setCustomSavedVoices,
+                            selectModelVoice = selectModelVoice,
+                            activeAiVoice = state.activeAiVoice.value
                         )
                         VoiceSelectorDialog(
                             availableVoices = state.availableVoices,
@@ -476,9 +480,14 @@ private fun DropdownCustomSavedVoices(
     currentVoicePitch: Float,
     onPredefinedSelected: (VoicePredefineState) -> Unit,
     setCustomSavedVoices: (List<VoicePredefineState>) -> Unit,
+    selectModelVoice: (VoicePredefineState) -> Unit = { },
+    activeAiVoice: VoicePredefineState? = null
 ) {
 
+
     var expandedAddNextEntry by rememberMutableStateOf(false)
+    val ttsVoiceList = list.filter { it.modelId == null || it.modelPath == null }
+    val modelVoiceList = list.filter { it.modelId != null && it.modelPath != null }
     DropdownMenu(
         expanded = expanded.value,
         onDismissRequest = { expanded.value = !expanded.value },
@@ -501,7 +510,7 @@ private fun DropdownCustomSavedVoices(
         if (list.isEmpty()) {
             Text(text = stringResource(R.string.no_voices_saved), Modifier.padding(16.dp))
         }
-        list.forEachIndexed { index, predefinedVoice ->
+        ttsVoiceList.forEachIndexed { index, predefinedVoice ->
             var deleteEntryExpand by rememberMutableStateOf(false)
             ListItem(
                 headlineContent = {
@@ -510,6 +519,59 @@ private fun DropdownCustomSavedVoices(
                 modifier = Modifier.combinedClickable(
                     enabled = true,
                     onClick = { onPredefinedSelected(predefinedVoice) },
+                    onLongClick = { deleteEntryExpand = true },
+                )
+            )
+            if (deleteEntryExpand) AlertDialog(
+                onDismissRequest = { deleteEntryExpand = false },
+                title = { Text(text = stringResource(R.string.delete_voice)) },
+                text = {
+                    Text(
+                        text = predefinedVoice.savedName,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    FilledTonalButton(onClick = {
+                        deleteEntryExpand = false
+                        setCustomSavedVoices(
+                            list.toMutableList().also { it.removeAt(index) }
+                        )
+                    }) {
+                        Text(text = stringResource(id = R.string.delete))
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { deleteEntryExpand = false }) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        }
+
+        modelVoiceList.forEachIndexed { index, predefinedVoice ->
+            var deleteEntryExpand by rememberMutableStateOf(false)
+            val isSelected = activeAiVoice?.voiceId == predefinedVoice.voiceId && activeAiVoice?.modelId == predefinedVoice.modelId
+            ListItem(
+                headlineContent = {
+                    Text(text = predefinedVoice.savedName)
+                },
+                trailingContent = {
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                modifier = Modifier.combinedClickable(
+                    enabled = true,
+                    onClick = {
+                        selectModelVoice.invoke(predefinedVoice)
+                    },
                     onLongClick = { deleteEntryExpand = true },
                 )
             )

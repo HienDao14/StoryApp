@@ -3,8 +3,10 @@ package com.hiendao.presentation.voice
 import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.data.remote.retrofit.voice.VoiceApi
+import com.hiendao.data.remote.retrofit.voice.model.GenerateVoiceBody
 import com.hiendao.data.remote.retrofit.voice.model.VoiceResponse
 import com.hiendao.data.remote.retrofit.voice.model.VoiceResponseItem
+import com.hiendao.data.remote.retrofit.voice.model.VoiceStoryResponse
 import com.hiendao.domain.utils.Response
 import javax.inject.Inject
 
@@ -27,6 +29,15 @@ class ReadingVoiceRepository @Inject constructor(
                 Response.Success(true)
             } else Response.None
         } catch (e : Exception){
+            Response.Error(e.message ?: "Unknown error", e)
+        }
+    }
+
+    suspend fun getVoiceStory(modelId: String, text: String): Response<VoiceStoryResponse> {
+        return try {
+            val response = voiceApi.getVoiceStory(GenerateVoiceBody(text, modelId))
+            Response.Success(response)
+        } catch (e: Exception) {
             Response.Error(e.message ?: "Unknown error", e)
         }
     }

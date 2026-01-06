@@ -193,7 +193,10 @@ fun BookGridFlow(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
     onPlayClick: (Book) -> Unit,
-    onFavouriteClick: (Book) -> Unit
+    onFavouriteClick: (Book) -> Unit,
+    onLoadMore: () -> Unit = {},
+    isLoading: Boolean = false,
+    isEndReached: Boolean = false
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -220,6 +223,10 @@ fun BookGridFlow(
                     onPlayClick = {onPlayClick(book)},
                     onItemClick = { onBookClick(book) }
                 )
+
+                if (index >= books.size - 1 && !isLoading && !isEndReached) {
+                    onLoadMore.invoke()
+                }
             }
         }
     }

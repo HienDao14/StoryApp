@@ -76,7 +76,7 @@ class HomeViewModel @Inject constructor(
 
     fun getAllBooks(page: Int = 0){
         viewModelScope.launch {
-            libraryBooksRepository.getAllBooks().collect { response ->
+            libraryBooksRepository.getAllBooks(page).collect { response ->
                 when(response){
                     is Response.Loading -> {
                         _homeState.update { it.copy(isLoading = true) }

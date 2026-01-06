@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.presentation.reader.ui.ReaderScreenState
 import com.hiendao.presentation.reader.ui.settingDialogs.MoreSettingDialog
@@ -27,6 +28,7 @@ internal fun ReaderScreenBottomBarDialogs(
     onKeepScreenOn: (Boolean) -> Unit,
     onFullScreen: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -39,7 +41,8 @@ internal fun ReaderScreenBottomBarDialogs(
                         state = settings.liveTranslation
                     )
                     ReaderScreenState.Settings.Type.TextToSpeech -> VoiceReaderSettingDialog(
-                        state = settings.textToSpeech
+                        state = settings.textToSpeech,
+                        selectModelVoice = selectModelVoice
                     )
                     ReaderScreenState.Settings.Type.Style -> {
                         StyleSettingDialog(

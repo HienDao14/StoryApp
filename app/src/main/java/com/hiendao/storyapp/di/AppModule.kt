@@ -89,6 +89,8 @@ object AppModule {
             .addInterceptor(myInterceptor)
             .followRedirects(true)
             .followSslRedirects(true)
+            .readTimeout(600000L, java.util.concurrent.TimeUnit.MILLISECONDS)
+            .connectTimeout(30000L, java.util.concurrent.TimeUnit.MILLISECONDS)
             .retryOnConnectionFailure(true)
             .build()
     }
