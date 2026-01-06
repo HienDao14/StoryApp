@@ -48,6 +48,22 @@ class AiVoicePlayer(private val context: Context) {
         }
     }
 
+    fun pause() {
+        if (mediaPlayer?.isPlaying == true) {
+            mediaPlayer?.pause()
+        }
+        _isPlaying.value = false
+    }
+
+    fun resume(): Boolean {
+        if (mediaPlayer != null && mediaPlayer?.isPlaying == false) {
+            mediaPlayer?.start()
+            _isPlaying.value = true
+            return true
+        }
+        return false
+    }
+
     fun stop() {
         if (mediaPlayer?.isPlaying == true) {
             mediaPlayer?.stop()

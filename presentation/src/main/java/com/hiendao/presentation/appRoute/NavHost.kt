@@ -345,7 +345,8 @@ fun AppNavHost(
                         viewModel.playChapterFromStart(chapterUrl)
                     },
                     onPlayClick = { viewModel.play() },
-                    onPauseClick = { viewModel.pause() }
+                    onPauseClick = { viewModel.pause() },
+                    onSelectModelVoice = viewModel::selectModelVoice
                 )
 //                com.hiendao.presentation.voice.screen.VoiceScreenPart2(
 //                    modifier = Modifier.fillMaxSize(),

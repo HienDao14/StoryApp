@@ -45,10 +45,10 @@ fun BookEntity.toDomain(): Book {
         completed = this.completed,
         createdAt = System.currentTimeMillis(),
         updatedAt = System.currentTimeMillis(),
-        isFavourite = isFavourite,
+        isFavourite = this.isFavourite,
         isDownloaded = this.inLibrary,       // inLibrary = đã tải về
         lastReadEpochTimeMilli = this.lastReadEpochTimeMilli,
-        inLibrary = inLibrary
+        inLibrary = this.inLibrary
     )
 }
 

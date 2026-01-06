@@ -7,6 +7,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -49,6 +50,13 @@ import com.hiendao.coreui.utils.isAtTop
 import com.hiendao.presentation.voice.section.VoiceReaderDropDown
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun VoiceRoute(
@@ -59,13 +67,42 @@ internal fun VoiceRoute(
     onChangeCover: () -> Unit,
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
-    onChapterSelected: (chapterUrl: String) -> Unit
+    onChapterSelected: (chapterUrl: String) -> Unit,
+    onSelectModelVoice: (com.hiendao.coreui.appPreferences.VoicePredefineState) -> Unit
 ) {
     var showDropDown by rememberSaveable { mutableStateOf(false) }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val lazyListState = rememberLazyListState()
     val textToSpeech = state.readerState?.settings?.textToSpeech
+
+    if (state.readerState?.showVoiceLoadingDialog?.value == true) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "(đang thực hiện, vui lòng chờ...)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -139,7 +176,8 @@ internal fun VoiceRoute(
                     onChapterSelected.invoke(chapterUrl)
                 },
                 onPlayClick = { onPlayClick.invoke() },
-                onPauseClick = { onPauseClick.invoke() }
+                onPauseClick = { onPauseClick.invoke() },
+                onSelectModelVoice = onSelectModelVoice
             )
         }
     )

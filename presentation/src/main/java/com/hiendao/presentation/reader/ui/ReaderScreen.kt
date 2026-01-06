@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.displayCutoutPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.MoreHoriz
@@ -73,7 +71,6 @@ import com.hiendao.presentation.reader.features.LiveTranslationSettingData
 import com.hiendao.presentation.reader.features.TextSynthesis
 import com.hiendao.presentation.reader.features.TextToSpeechSettingData
 import com.hiendao.presentation.reader.ui.ReaderScreenState.Settings.Type
-import my.noveldokusha.features.reader.ui.ReaderScreenBottomBarDialogs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

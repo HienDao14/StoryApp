@@ -137,7 +137,7 @@ class ChaptersRepository @Inject constructor(
                 }
 
                 val book = bookResponse.toDomain()
-                emit(Response.Success(book))
+                emit(Response.Success(finalEntity.toDomain()))
             } catch (e: Exception) {
                 emit(Response.Error(e.message.toString(), e))
             }

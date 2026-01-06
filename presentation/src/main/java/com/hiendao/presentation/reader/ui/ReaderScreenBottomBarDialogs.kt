@@ -1,4 +1,4 @@
-package my.noveldokusha.features.reader.ui
+package com.hiendao.presentation.reader.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.coreui.theme.Themes
-import com.hiendao.presentation.reader.ui.ReaderScreenState
 import com.hiendao.presentation.reader.ui.settingDialogs.MoreSettingDialog
 import com.hiendao.presentation.reader.ui.settingDialogs.StyleSettingDialog
 import com.hiendao.presentation.reader.ui.settingDialogs.TranslatorSettingDialog

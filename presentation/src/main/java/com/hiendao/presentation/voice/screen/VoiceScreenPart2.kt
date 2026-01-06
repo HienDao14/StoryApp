@@ -52,7 +52,8 @@ internal fun VoiceScreenPart2(
     onChangeVoice: (value: String) -> Unit = {},
     onChangeTimeStamp: (value: Long) -> Unit = {},
     onCoverLongClick: () -> Unit = {},
-    onChapterSelected: (chapterUrl: String) -> Unit = {}
+    onChapterSelected: (chapterUrl: String) -> Unit = {},
+    onSelectModelVoice: (com.hiendao.coreui.appPreferences.VoicePredefineState) -> Unit = {}
 ) {
     val book = state.book.value
     val coverImageModel = book.coverImageUrl?.let {
@@ -66,6 +67,7 @@ internal fun VoiceScreenPart2(
     val audioProgress = state.audioProgress.value
     val isPlaying = textToSpeech?.isPlaying?.value ?: false
     val activeVoice = textToSpeech?.activeVoice?.value
+    val activeAiVoice = textToSpeech?.activeAiVoice?.value
     val availableVoices = textToSpeech?.availableVoices ?: emptyList()
     val currentTextPlaying = state.currentTextPlaying?.value
     val chapters = state.chapters
@@ -323,18 +325,49 @@ internal fun VoiceScreenPart2(
             }
             
             if (showVoiceDialog) {
+                // Prepare unified list
+                val aiVoices = textToSpeech?.customSavedVoices?.value ?: emptyList()
+                val systemVoices = availableVoices ?: emptyList()
+                
+                // We use a simple wrapper to display both
+                data class VoiceOption(
+                    val id: String, 
+                    val name: String, 
+                    val isAi: Boolean,
+                    val originalAi: com.hiendao.coreui.appPreferences.VoicePredefineState? = null,
+                    val originalSystem: com.hiendao.domain.text_to_speech.VoiceData? = null
+                )
+                
+                val voiceOptions = derivedStateOf {
+                     val list = mutableListOf<VoiceOption>()
+                     list.addAll(aiVoices.map { VoiceOption(it.voiceId, "AI: ${it.savedName}", true, originalAi = it) })
+                     list.addAll(systemVoices.map { VoiceOption(it.id, "System: ${it.language}", false, originalSystem = it) })
+                     list
+                }
+
                 SearchableSelectionDialog(
                     title = "Select Voice",
-                    items = availableVoices.toList(),
-                    selectedItem = activeVoice,
-                    onItemSelected = { 
-                        textToSpeech?.setVoiceId?.invoke(it.id)
+                    items = voiceOptions.value,
+                    selectedItem = voiceOptions.value.find { 
+                        if (activeAiVoice != null) it.isAi && it.originalAi?.modelId == activeAiVoice.modelId
+                        else !it.isAi && it.id == activeVoice?.id 
+                    },
+                    onItemSelected = { option ->
+                        if (option.isAi) {
+                            option.originalAi?.let { onSelectModelVoice(it) }
+                        } else {
+                            option.originalSystem?.let { 
+                                textToSpeech?.setVoiceId?.invoke(it.id) 
+                            }
+                        }
                         showVoiceDialog = false
                     },
                     onDismissRequest = { showVoiceDialog = false },
-                    itemToString = { it.language },
-                    trailingIcon = {
-                        if (it.id == activeVoice?.id) Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
+                    itemToString = { it.name },
+                    trailingIcon = { option ->
+                         val isSelected = if (activeAiVoice != null) option.isAi && option.originalAi?.modelId == activeAiVoice.modelId
+                                          else !option.isAi && option.id == activeVoice?.id
+                        if (isSelected) Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
                     }
                 )
             }

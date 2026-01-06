@@ -39,6 +39,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.properties.Delegates
+import com.hiendao.presentation.reader.features.AiVoicePlayer
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import com.hiendao.coreui.appPreferences.VoicePredefineState
+import com.hiendao.domain.utils.Response
+import com.hiendao.presentation.reader.domain.ReaderItem
+import com.hiendao.presentation.reader.domain.indexOfReaderItem
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import com.hiendao.coreui.utils.StateExtra_Boolean
+import com.hiendao.coreui.utils.StateExtra_String
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.Context
+
 
 @HiltViewModel
 internal class VoiceViewModel @Inject constructor(
@@ -51,8 +66,11 @@ internal class VoiceViewModel @Inject constructor(
     private val chaptersRepository: ChaptersRepository,
     private val readerManager: ReaderManager,
     private val readerViewHandlersActions: ReaderViewHandlersActions,
-    private val libraryBooksRepository: LibraryBooksRepository
+    private val libraryBooksRepository: LibraryBooksRepository,
+    private val readingVoiceRepository: ReadingVoiceRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel(){
+
     private var _bookUrl = MutableStateFlow<String>("")
     val bookUrl = _bookUrl.asStateFlow()
 
@@ -127,11 +145,48 @@ internal class VoiceViewModel @Inject constructor(
 
     private val themeId = appPreferences.THEME_ID.state(viewModelScope)
 
+    private val aiVoicePlayer = AiVoicePlayer(context)
+    private val audioJobs = mutableMapOf<Int, Deferred<String?>>()
+    
+    // Wrap TTS state to intercept controls
+    private val wrappedTtsStateFlow = readerSession.map { session ->
+        val originalTtsState = session.readerTextToSpeech.state
+        originalTtsState.copy(
+            setPlaying = { isPlaying ->
+                if (originalTtsState.activeAiVoice.value != null) {
+                    if (isPlaying) resumeAiVoice() else pauseAiVoice()
+                } else {
+                    originalTtsState.setPlaying(isPlaying)
+                }
+            },
+            playNextItem = {
+                 if (originalTtsState.activeAiVoice.value != null) nextAiVoice() else originalTtsState.playNextItem()
+            },
+            playPreviousItem = {
+                 if (originalTtsState.activeAiVoice.value != null) previousAiVoice() else originalTtsState.playPreviousItem()
+            },
+            playNextChapter = {
+                 if (originalTtsState.activeAiVoice.value != null) nextChapterAiVoice() else originalTtsState.playNextChapter()
+            },
+            playPreviousChapter = {
+                 if (originalTtsState.activeAiVoice.value != null) previousChapterAiVoice() else originalTtsState.playPreviousChapter()
+            }
+        )
+    }
+
+    private val _showVoiceLoadingDialog = mutableStateOf(false)
+    private val _showInvalidChapterDialog = mutableStateOf(false)
+
     val readerState = combine(
         readerSession,
-        readingStats
-    ) { session, stats ->
-
+        readingStats,
+        wrappedTtsStateFlow
+    ) { session, stats, wrappedTtsState ->
+ 
+         // Sync player state
+         // Note: calling collect inside combine is bad practice as it suspends. 
+         // We should set up a separate collector in init.
+         
         ReaderScreenState(
             showReaderInfo = mutableStateOf(false),
             readerInfo = ReaderScreenState.CurrentInfo(
@@ -147,7 +202,7 @@ internal class VoiceViewModel @Inject constructor(
                 selectedSetting = mutableStateOf(ReaderScreenState.Settings.Type.None),
                 isTextSelectable = appPreferences.READER_SELECTABLE_TEXT.state(viewModelScope),
                 keepScreenOn = appPreferences.READER_KEEP_SCREEN_ON.state(viewModelScope),
-                textToSpeech = session.readerTextToSpeech.state,
+                textToSpeech = wrappedTtsState,
                 liveTranslation = session.readerLiveTranslation.state,
                 fullScreen = appPreferences.READER_FULL_SCREEN.state(viewModelScope),
                 style = ReaderScreenState.Settings.StyleSettingsData(
@@ -157,8 +212,8 @@ internal class VoiceViewModel @Inject constructor(
                     textSize = appPreferences.READER_FONT_SIZE.state(viewModelScope),
                 )
             ),
-            showVoiceLoadingDialog = mutableStateOf(false),
-            showInvalidChapterDialog = mutableStateOf(false)
+            showVoiceLoadingDialog = _showVoiceLoadingDialog,
+            showInvalidChapterDialog = _showInvalidChapterDialog
         )
 
     }.stateIn(
@@ -321,6 +376,15 @@ internal class VoiceViewModel @Inject constructor(
         readerViewHandlersActions.maintainLastVisiblePosition = { it() }
         readerViewHandlersActions.forceUpdateListViewState = { }
         readerViewHandlersActions.setInitialPosition = { }
+        
+        viewModelScope.launch {
+            aiVoicePlayer.isPlaying.collect { playing ->
+                val ttsState = readerState.value?.settings?.textToSpeech
+                if (ttsState != null && ttsState.activeAiVoice.value != null) {
+                    ttsState.isPlaying.value = playing
+                }
+            }
+        }
     }
 
     fun reload(){
@@ -361,5 +425,278 @@ internal class VoiceViewModel @Inject constructor(
 
     fun saveImageAsCover(uri: Uri) {
         appRepository.libraryBooks.saveImageAsCover(imageUri = uri, bookUrl = bookUrl.value)
+    }
+
+    // AI Voice Logic
+
+    fun selectModelVoice(voice: VoicePredefineState) {
+        val ttsState = readerState.value?.settings?.textToSpeech ?: return
+        ttsState.activeAiVoice.value = voice
+        viewModelScope.launch {
+             if (readerSession.value.readerTextToSpeech.isSpeaking.value) {
+                readerSession.value.readerTextToSpeech.stop()
+            }
+            playAiVoiceForCurrentItem()
+        }
+    }
+
+    private fun playAiVoiceForCurrentItem() {
+        viewModelScope.launch {
+            val ttsState = readerState.value?.settings?.textToSpeech ?: return@launch
+            val currentVoice = ttsState.activeAiVoice.value ?: return@launch
+            val currentItemState = ttsState.currentActiveItemState.value
+            
+            val chapterIndex = currentItemState.itemPos.chapterIndex
+            val chapterItemPosition = currentItemState.itemPos.chapterItemPosition
+
+            val itemIndex = indexOfReaderItem(
+                list = items,
+                chapterIndex = chapterIndex,
+                chapterItemPosition = chapterItemPosition
+            )
+            
+            if (itemIndex == -1) return@launch
+
+            playAiVoiceAtIndex(itemIndex, currentVoice.modelId ?: "")
+        }
+    }
+
+    private fun findNextValidItemIndex(startIndex: Int): Int {
+        var index = startIndex
+        while (index < items.size) {
+            val item = items.getOrNull(index)
+            if (item != null && getTextToSpeak(item).isNotEmpty()) {
+                return index
+            }
+            index++
+        }
+        return -1
+    }
+
+    private suspend fun fetchAudioUrl(index: Int, modelId: String): String? {
+        val item = items.getOrNull(index) ?: return null
+        val textToSpeak = getTextToSpeak(item)
+        
+        if (textToSpeak.isNotEmpty()) {
+            val response = readingVoiceRepository.getVoiceStory(modelId, textToSpeak)
+            if (response is Response.Success) {
+                val url = response.data.audio_path
+                return url.replace("http://localhost:9000", "https://ctd37qdd-9000.asse.devtunnels.ms").replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms")
+            }
+        }
+        return null
+    }
+
+    private fun playAiVoiceAtIndex(index: Int, modelId: String) {
+        viewModelScope.launch {
+            val validIndex = findNextValidItemIndex(index)
+            if (validIndex == -1) {
+                readerState.value?.showVoiceLoadingDialog?.value = false
+                return@launch
+            }
+
+            val item = items[validIndex]
+
+            // Update UI position
+            if (item is ReaderItem.Position) {
+                readerSession.value.readerTextToSpeech.manager.setCurrentSpeakState(
+                    com.hiendao.presentation.reader.features.TextSynthesis(
+                        itemPos = item,
+                        playState = com.hiendao.domain.text_to_speech.Utterance.PlayState.PLAYING
+                    )
+                )
+            }
+
+            readerState.value?.showVoiceLoadingDialog?.value = true
+            val urlDeferred = audioJobs.getOrPut(validIndex) {
+                 async { fetchAudioUrl(validIndex, modelId) }
+            }
+            
+            val url = urlDeferred.await()
+            readerState.value?.showVoiceLoadingDialog?.value = false
+            
+            audioJobs.remove(validIndex)
+
+            if (url != null) {
+                aiVoicePlayer.play(url, onCompletion = {
+                    playAiVoiceAtIndex(validIndex + 1, modelId)
+                })
+                prefetchAiVoice(validIndex + 1, modelId)
+            } else {
+                 playAiVoiceAtIndex(validIndex + 1, modelId)
+            }
+        }
+    }
+
+    private fun prefetchAiVoice(index: Int, modelId: String) {
+        viewModelScope.launch {
+             val validIndex = findNextValidItemIndex(index)
+             if (validIndex == -1) return@launch
+
+             if (audioJobs.containsKey(validIndex)) return@launch
+
+             val job = async { fetchAudioUrl(validIndex, modelId) }
+             audioJobs[validIndex] = job
+        }
+    }
+
+    private fun getTextToSpeak(item: ReaderItem): String {
+         val text = if (item is ReaderItem.Body && item.isHtml) {
+                androidx.core.text.HtmlCompat.fromHtml(
+                    item.textToDisplay,
+                    androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+                ).toString()
+            } else if (item is ReaderItem.Text) {
+                item.textToDisplay
+            } else {
+                ""
+            }
+         return if (text.any { it.isLetterOrDigit() }) text else ""
+    }
+
+    private fun pauseAiVoice() {
+        aiVoicePlayer.pause()
+        readerState.value?.settings?.textToSpeech?.isPlaying?.value = false
+    }
+
+    private fun resumeAiVoice() {
+        val resumed = aiVoicePlayer.resume()
+        if (resumed) {
+            readerState.value?.settings?.textToSpeech?.isPlaying?.value = true
+        } else {
+             playAiVoiceForCurrentItem()
+        }
+    }
+
+    private fun nextAiVoice() {
+        viewModelScope.launch {
+             val stateVal = readerState.value ?: return@launch
+             val ttsState = stateVal.settings.textToSpeech
+             val currentItemPos = ttsState.currentActiveItemState.value.itemPos
+             
+             val currentIndex = indexOfReaderItem(
+                list = items,
+                chapterIndex = currentItemPos.chapterIndex,
+                chapterItemPosition = currentItemPos.chapterItemPosition
+            )
+
+            if (currentIndex == -1) return@launch
+            
+            var nextIndex = currentIndex + 1
+            while (nextIndex < items.size) {
+                 val item = items[nextIndex]
+                 if (item is ReaderItem.Position && getTextToSpeak(item).isNotEmpty()) {
+                      aiVoicePlayer.stop()
+                      playAiVoiceAtIndex(nextIndex, ttsState.activeAiVoice.value?.modelId ?: "")
+                      return@launch
+                 }
+                 nextIndex++
+            }
+        }
+    }
+
+    private fun previousAiVoice() {
+        viewModelScope.launch {
+             val stateVal = readerState.value ?: return@launch
+             val ttsState = stateVal.settings.textToSpeech
+             val currentItemPos = ttsState.currentActiveItemState.value.itemPos
+             
+             val currentIndex = indexOfReaderItem(
+                list = items,
+                chapterIndex = currentItemPos.chapterIndex,
+                chapterItemPosition = currentItemPos.chapterItemPosition
+            )
+            
+            if (currentIndex <= 0) return@launch
+            
+             var prevIndex = currentIndex - 1
+            while (prevIndex >= 0) {
+                 val item = items[prevIndex]
+                 if (item is ReaderItem.Position && getTextToSpeak(item).isNotEmpty()) {
+                      aiVoicePlayer.stop()
+                      playAiVoiceAtIndex(prevIndex, ttsState.activeAiVoice.value?.modelId ?: "")
+                      return@launch
+                 }
+                 prevIndex--
+            }
+        }
+    }
+
+    private fun nextChapterAiVoice() {
+        viewModelScope.launch {
+            val stateVal = readerState.value ?: return@launch
+            val ttsState = stateVal.settings.textToSpeech
+            
+            val currentItemState = ttsState.currentActiveItemState.value
+            val nextChapterIndex = currentItemState.itemPos.chapterIndex + 1
+
+            aiVoicePlayer.stop()
+            ttsState.isPlaying.value = false
+
+            if (!chaptersLoader.isChapterIndexValid(nextChapterIndex)) {
+                return@launch
+            }
+
+            if (!chaptersLoader.isChapterIndexLoaded(nextChapterIndex)) {
+                ttsState.isLoadingChapter.value = true
+                chaptersLoader.tryLoadNext()
+                 // Wait for load - simpler loop since we are in VM
+                 var retry = 0
+                 while (!chaptersLoader.isChapterIndexLoaded(nextChapterIndex) && retry < 20) {
+                      kotlinx.coroutines.delay(100)
+                      retry++
+                 }
+                ttsState.isLoadingChapter.value = false
+            }
+
+            // Find start index of new chapter
+            val startIndex = indexOfReaderItem(items, nextChapterIndex, 0)
+            if (startIndex != -1) {
+                playAiVoiceAtIndex(startIndex, ttsState.activeAiVoice.value?.modelId ?: "")
+            }
+        }
+    }
+
+    private fun previousChapterAiVoice() {
+        viewModelScope.launch {
+            val stateVal = readerState.value ?: return@launch
+            val ttsState = stateVal.settings.textToSpeech
+            val currentItemState = ttsState.currentActiveItemState.value
+            val currentChapterIndex = currentItemState.itemPos.chapterIndex
+            
+            val targetChapterIndex = if (currentItemState.itemPos is ReaderItem.Title) {
+                currentChapterIndex - 1
+            } else {
+                currentChapterIndex
+            }
+
+            aiVoicePlayer.stop()
+            ttsState.isPlaying.value = false
+
+            if (!chaptersLoader.isChapterIndexValid(targetChapterIndex)) {
+                return@launch
+            }
+
+            if (!chaptersLoader.isChapterIndexLoaded(targetChapterIndex)) {
+                ttsState.isLoadingChapter.value = true
+                chaptersLoader.tryLoadPrevious()
+                var retry = 0
+                 while (!chaptersLoader.isChapterIndexLoaded(targetChapterIndex) && retry < 20) {
+                      kotlinx.coroutines.delay(100)
+                      retry++
+                 }
+                ttsState.isLoadingChapter.value = false
+            }
+
+            val startIndex = indexOfReaderItem(items, targetChapterIndex, 0)
+            if (startIndex != -1) {
+                playAiVoiceAtIndex(startIndex, ttsState.activeAiVoice.value?.modelId ?: "")
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        aiVoicePlayer.release()
     }
 }
