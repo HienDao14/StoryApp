@@ -53,6 +53,9 @@ class CreateVoiceViewModel @Inject constructor(
     }
 
     fun startRecording() {
+        if (_uiState.value.isPlaying) {
+            stopPlayback()
+        }
         if (_uiState.value.isRecording) return
         
         val fileName = "record_${System.currentTimeMillis()}.wav"
@@ -81,9 +84,27 @@ class CreateVoiceViewModel @Inject constructor(
 
     fun stopRecording() {
         try {
-            audioFile?.let { wavRecorder.stopRecording(it) }
+            audioFile?.let { 
+                wavRecorder.stopRecording(it)
+                
+                // Get duration immediately
+                val mp = MediaPlayer()
+                mp.setDataSource(it.absolutePath)
+                mp.prepare()
+                val duration = mp.duration
+                mp.release()
+
+                _uiState.update { state -> 
+                    state.copy(
+                        isRecording = false, 
+                        recordedFile = audioFile,
+                        playbackDuration = duration
+                    ) 
+                }
+            } ?: run {
+                 _uiState.update { it.copy(isRecording = false) }
+            }
             timerJob?.cancel()
-            _uiState.update { it.copy(isRecording = false, recordedFile = audioFile) }
         } catch (e: Exception) {
             _uiState.update { it.copy(errorMessage = "Stop recording failed: ${e.message}") }
         }

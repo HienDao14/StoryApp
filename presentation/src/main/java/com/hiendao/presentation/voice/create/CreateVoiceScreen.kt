@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.hiendao.coreui.components.MyOutlinedTextField
 import com.hiendao.coreui.R as CoreR
+import com.hiendao.presentation.voice.create.components.ActiveRecordingScreen
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,18 +130,25 @@ fun CreateVoiceScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            RecordingSection(
-                state = state,
-                onStartRecording = {
-                    if (hasPermission) {
-                        onStartRecording()
-                    } else {
-                        launcher.launch(Manifest.permission.RECORD_AUDIO)
-                    }
-                },
-                onStopRecording = onStopRecording,
-                onPlayRecording = onPlayRecording
-            )
+            if (state.isRecording) {
+                ActiveRecordingScreen(
+                    recordingDuration = state.recordingDuration,
+                    onStopRecording = onStopRecording
+                )
+            } else {
+                RecordingSection(
+                    state = state,
+                    onStartRecording = {
+                        if (hasPermission) {
+                            onStartRecording()
+                        } else {
+                            launcher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    },
+                    onStopRecording = onStopRecording,
+                    onPlayRecording = onPlayRecording
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -305,12 +313,18 @@ fun RecordingSection(
                     if (state.playbackDuration > 0) {
                         LinearProgressIndicator(
                             progress = { state.playbackPosition.toFloat() / state.playbackDuration.toFloat() },
-                            modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp)),
                         )
                     } else {
                          LinearProgressIndicator(
                             progress = { 0f },
-                            modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp)),
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))

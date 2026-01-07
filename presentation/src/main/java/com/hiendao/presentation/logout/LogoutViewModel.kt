@@ -11,7 +11,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LogoutViewModel @Inject constructor(
     private val loginRepository: LoginRepository,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val appDatabase: com.hiendao.data.local.database.AppDatabase
 ) : BaseViewModel() {
     fun logout() {
         viewModelScope.launch {
@@ -21,6 +22,11 @@ class LogoutViewModel @Inject constructor(
             appPreferences.ACCESS_TOKEN.value = ""
             appPreferences.REFRESH_TOKEN.value = ""
             appPreferences.USER_ID.value = ""
+            
+            // Clear local database
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                appDatabase.clearAllTables()
+            }
         }
     }
 }

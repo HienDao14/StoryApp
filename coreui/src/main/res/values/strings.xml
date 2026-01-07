@@ -265,4 +265,12 @@
     <string name="continue_listening">Continue listening</string>
     <string name="delete_story_title">Delete Story</string>
     <string name="delete_story_confirmation">Are you sure you want to delete this story?</string>
+    <string name="full_recording_script">
+        Xin chào. Đây là bản ghi âm giọng nói của tôi để huấn luyện mô hình AI. Tôi đang cố gắng nói chuyện một cách tự nhiên nhất có thể. Mục tiêu là để máy tính có thể học được cách tôi phát âm, cách tôi ngắt nghỉ và ngữ điệu đặc trưng của tôi.\nHôm nay là một ngày đẹp trời, và tôi cảm thấy rất hào hứng với dự án này. Hy vọng kết quả đầu ra sẽ thật sự ấn tượng và giống với giọng thật của tôi.\n\n
+        Ngày xửa ngày xưa, ở một ngôi làng nhỏ nằm ven chân núi, có một dòng suối trong vắt chảy qua quanh năm. Mỗi buổi sáng, sương mù thường bao phủ lấy những mái nhà tranh, tạo nên khung cảnh huyền ảo như trong tranh vẽ. Những đứa trẻ trong làng thường rủ nhau ra bờ suối chơi đùa, tiếng cười nói rộn ràng hòa lẫn với tiếng chim hót véo von trên cành. Cuộc sống ở đây tuy giản dị, mộc mạc nhưng lại tràn ngập tình yêu thương và sự bình yên đến lạ kỳ.\n\n
+        Bạn có tin được không? Thật là một bất ngờ lớn! Sao cậu lại làm như vậy? Có chắc là mọi chuyện sẽ ổn không đấy?\nÔi trời ơi! Cái này đẹp quá đi mất! Tôi chưa bao giờ thấy thứ gì lộng lẫy đến thế. Nhanh lên nào! Nếu không chúng ta sẽ muộn mất thôi! Haizz, thật là mệt mỏi quá đi, tôi chỉ muốn được nghỉ ngơi một chút. Cậu đang nghĩ gì thế? Kể cho tớ nghe xem nào?\n\n
+        Theo dự báo thời tiết mới nhất, khu vực Bắc Bộ sẽ đón một đợt không khí lạnh tăng cường vào đêm nay. Nhiệt độ thấp nhất có thể xuống dưới mười lăm độ C. Người dân cần chủ động giữ ấm cơ thể và bảo vệ sức khỏe, đặc biệt là người già và trẻ nhỏ.\nTrong khi đó, thị trường chứng khoán hôm nay ghi nhận sự tăng trưởng mạnh mẽ ở nhóm cổ phiếu công nghệ, hứa hẹn mang lại tín hiệu tích cực cho nền kinh tế trong quý tới.\n\n
+        Nghiêng nghiêng dòng nước lững lờ trôi. Trăm năm trong cõi người ta, chữ tài chữ mệnh khéo là ghét nhau.\nRắc rối rậm rạp ríu rít râm ran. Sương sa sắc sảo sấp sấp ngửa ngửa. Luộc hột vịt lộn, luộc lộn hột vịt lạc, ăn lộn hột vịt lạc, luộc lại hột vịt lộn. Hôm qua qua nói qua qua mà qua không qua, hôm nay qua không nói qua qua mà qua lại qua.\n\n
+        Cảm ơn vì đã lắng nghe. Bản ghi âm đến đây là kết thúc. Hy vọng lượng dữ liệu này đã đủ để hệ thống xử lý tốt. Tạm biệt và hẹn gặp lại.
+    </string>
 </resources>

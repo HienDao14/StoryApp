@@ -309,7 +309,10 @@ internal fun VoiceScreenPart2(
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(text = activeVoice?.language ?: "Voice", maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
+                    val displayVoice = remember(activeAiVoice, activeVoice) {
+                        activeAiVoice?.savedName ?: activeVoice?.language ?: "Voice"
+                    }
+                    Text(text = displayVoice, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
                 }
             }
             

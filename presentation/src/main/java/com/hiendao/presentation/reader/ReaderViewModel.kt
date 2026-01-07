@@ -177,12 +177,13 @@ internal class ReaderViewModel @Inject constructor(
     private val audioJobs = mutableMapOf<Int, Deferred<String?>>() // Map itemIndex -> Job returning audioUrl
 
     fun selectModelVoice(voice: VoicePredefineState) {
+        // Stop any previous playback immediately
+        aiVoicePlayer.stop()
+        audioJobs.clear() // Clear any pending fetch jobs
+        readerSession.readerTextToSpeech.stop()
+
         state.settings.textToSpeech.activeAiVoice.value = voice
         viewModelScope.launch {
-            // Stop local TTS if any
-             if (readerSession.readerTextToSpeech.isSpeaking.value) {
-                readerSession.readerTextToSpeech.stop()
-            }
             playAiVoiceForCurrentItem()
         }
     }

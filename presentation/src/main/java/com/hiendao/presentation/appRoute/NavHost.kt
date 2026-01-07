@@ -3,6 +3,7 @@ package com.hiendao.presentation.appRoute
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -44,6 +46,10 @@ import com.hiendao.presentation.story.create.CreateStoryRoute
 
 import com.hiendao.presentation.voice.create.CreateVoiceRoute
 import com.hiendao.presentation.splash.SplashRoute
+import com.hiendao.presentation.player.GlobalPlayerViewModel
+import com.hiendao.presentation.player.MiniPlayer
+import androidx.compose.ui.zIndex
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,13 +81,21 @@ fun AppNavHost(
     appPreferences: AppPreferences
 ) {
     val logoutViewModel: LogoutViewModel = hiltViewModel()
+    val globalPlayerViewModel: GlobalPlayerViewModel = hiltViewModel()
+    val playerState by globalPlayerViewModel.state.collectAsStateWithLifecycle()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     // val loggedIn = appPreferences.LOGGED_IN.value -> Checked in SplashViewModel
     var isLoggedIn by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    NavHost(
-        navController = navController,
-        startDestination = Routes.SPLASH
-    ) {
+    
+    Box(modifier = modifier.fillMaxSize()) {
+        NavHost(
+            navController = navController,
+            startDestination = Routes.SPLASH,
+            modifier = Modifier.fillMaxSize().padding(bottom = if (playerState.isVisible && currentRoute?.startsWith(Routes.BOOK_VOICE) != true) 64.dp else 0.dp)
+        ) {
         composable(Routes.SPLASH) {
             SplashRoute(
                 modifier = modifier,
@@ -331,12 +345,12 @@ fun AppNavHost(
                 LaunchedEffect(key1 = true) {
                     viewModel.updateState(bookId, bookTitle)
                     delay(500)
-                    viewModel.autoPlay()
+                    // viewModel.autoPlay() // Removed per requirement
                 }
                 VoiceRoute(
                     modifier = Modifier.fillMaxSize(),
                     state = viewModel.state.collectAsStateWithLifecycle().value,
-                    onFavouriteToggle = { viewModel::toggleBookmark },
+                    onFavouriteToggle = { viewModel.toggleBookmark() },
                     onPressBack = {
                         navController.navigateUp()
                     },
@@ -417,6 +431,25 @@ fun AppNavHost(
                     onBackClick = { navController.navigateUp() }
                 )
             }
+        }
+        }
+        
+        if (playerState.isVisible && currentRoute?.startsWith(Routes.BOOK_VOICE) != true) {
+            MiniPlayer(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = if (currentRoute == Routes.HOME || currentRoute == Routes.LIBRARY || currentRoute == Routes.SETTINGS) 80.dp else 16.dp),
+                state = playerState,
+                onPlayPause = { if (playerState.isPlaying) globalPlayerViewModel.pause() else globalPlayerViewModel.play() },
+                onNext = globalPlayerViewModel::next,
+                onPrev = globalPlayerViewModel::prev,
+                onClose = globalPlayerViewModel::close,
+                onClick = {
+                    if (playerState.bookUrl.isNotEmpty() && playerState.chapterUrl.isNotEmpty()) {
+                        navController.navigate("${Routes.BOOK_VOICE}?bookId=${playerState.bookUrl}?bookTitle=${playerState.bookTitle}")
+                    }
+                }
+            )
         }
     }
 }
