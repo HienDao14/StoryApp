@@ -41,7 +41,7 @@ internal fun LibraryPageBody(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
-        contentPadding = PaddingValues(top = 4.dp, bottom = 400.dp, start = 4.dp, end = 4.dp)
+        contentPadding = PaddingValues(top = 4.dp, bottom = 10.dp, start = 4.dp, end = 4.dp)
     ) {
         items(
             items = list,

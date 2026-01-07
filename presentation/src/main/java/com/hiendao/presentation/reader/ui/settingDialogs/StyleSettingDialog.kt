@@ -57,6 +57,9 @@ internal fun StyleSettingDialog(
     onTextFontChange: (String) -> Unit,
     onFollowSystemChange: (Boolean) -> Unit,
     onThemeChange: (Themes) -> Unit,
+    onLineHeightChange: (Float) -> Unit,
+    onTextAlignChange: (Int) -> Unit,
+    onScreenMarginChange: (Int) -> Unit,
 ) {
     ElevatedCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 12.dp),
@@ -75,6 +78,38 @@ internal fun StyleSettingDialog(
             },
             text = stringResource(R.string.text_size) + ": %.2f".format(currentTextSize),
             modifier = Modifier.padding(16.dp)
+        )
+        // Line Height
+        var currentLineHeight by remember { mutableFloatStateOf(state.lineHeight.value) }
+        MySlider(
+            value = currentLineHeight,
+            valueRange = 1.0f..3.0f,
+            onValueChange = {
+                currentLineHeight = it
+                onLineHeightChange(currentLineHeight)
+            },
+            text = "Line Height: %.1f".format(currentLineHeight),
+            modifier = Modifier.padding(16.dp)
+        )
+        // Screen Margin
+        var currentMargin by remember { mutableFloatStateOf(state.screenMargin.value.toFloat()) }
+        MySlider(
+            value = currentMargin,
+            valueRange = 0f..64f,
+            onValueChange = {
+                currentMargin = it
+                onScreenMarginChange(currentMargin.toInt())
+            },
+            text = "Margin: ${currentMargin.toInt()} dp",
+            modifier = Modifier.padding(16.dp)
+        )
+        // Alignment
+        ListItem(
+            modifier = Modifier.clickable { onTextAlignChange(if (state.textAlign.value == 0) 1 else 0) },
+            headlineContent = { Text("Text Alignment") },
+            trailingContent = {
+                 Text(if (state.textAlign.value == 0) "Left" else "Justify")
+            }
         )
         // Text font
         Box {

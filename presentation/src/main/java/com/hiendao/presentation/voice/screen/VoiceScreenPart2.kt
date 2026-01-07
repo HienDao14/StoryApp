@@ -72,6 +72,14 @@ internal fun VoiceScreenPart2(
     val currentTextPlaying = state.currentTextPlaying?.value
     val chapters = state.chapters
     
+    // Style Settings
+    val style = state.readerState?.settings?.style
+    val textSize = style?.textSize?.value ?: 20f
+    val textFont = style?.textFont?.value ?: "Arial"
+    val lineHeight = style?.lineHeight?.value ?: 1.5f
+    val textAlign = style?.textAlign?.value ?: 0 // 0: Left, 1: Justify
+    val screenMargin = style?.screenMargin?.value ?: 16
+    
     // Dialog states
     var showChapterDialog by rememberSaveable { mutableStateOf(false) }
     var showVoiceDialog by rememberSaveable { mutableStateOf(false) }
@@ -405,11 +413,17 @@ internal fun VoiceScreenPart2(
 
                 Text(
                     text = textToDisplay.parseHtml(),
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium),
-                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        fontSize = androidx.compose.ui.unit.TextUnit(textSize, androidx.compose.ui.unit.TextUnitType.Sp),
+                        lineHeight = androidx.compose.ui.unit.TextUnit(textSize * lineHeight, androidx.compose.ui.unit.TextUnitType.Sp),
+                        textAlign = if (textAlign == 0) TextAlign.Start else TextAlign.Justify
+                    ),
+                    textAlign = if (textAlign == 0) TextAlign.Start else TextAlign.Justify,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(horizontal = screenMargin.dp)
                         .verticalScroll(scrollState)
                 )
             }

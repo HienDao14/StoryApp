@@ -50,6 +50,7 @@ internal class ReaderViewModel @Inject constructor(
     private val readingVoiceRepository: ReadingVoiceRepository,
     readerViewHandlersActions: ReaderViewHandlersActions,
     @ApplicationContext private val context: Context,
+    private val aiVoicePlayer: AiVoicePlayer
 ) : BaseViewModel(), ReaderStateBundle {
 
     override var bookUrl by StateExtra_String(stateHandler)
@@ -107,11 +108,18 @@ internal class ReaderViewModel @Inject constructor(
             textToSpeech = wrappedTtsState,
             liveTranslation = readerSession.readerLiveTranslation.state,
             fullScreen = appPreferences.READER_FULL_SCREEN.state(viewModelScope),
+            brightness = appPreferences.READER_BRIGHTNESS.state(viewModelScope),
+            nightMode = appPreferences.READER_NIGHT_MODE.state(viewModelScope),
+            autoScrollSpeed = appPreferences.READER_AUTO_SCROLL_SPEED.state(viewModelScope),
+            volumeKeyNavigation = appPreferences.READER_VOLUME_KEY_NAVIGATION.state(viewModelScope),
             style = ReaderScreenState.Settings.StyleSettingsData(
                 followSystem = appPreferences.THEME_FOLLOW_SYSTEM.state(viewModelScope),
                 currentTheme = derivedStateOf { themeId.value.toTheme },
                 textFont = appPreferences.READER_FONT_FAMILY.state(viewModelScope),
                 textSize = appPreferences.READER_FONT_SIZE.state(viewModelScope),
+                lineHeight = appPreferences.READER_LINE_HEIGHT.state(viewModelScope),
+                textAlign = appPreferences.READER_TEXT_ALIGN.state(viewModelScope),
+                screenMargin = appPreferences.READER_SCREEN_MARGIN.state(viewModelScope),
             )
         ),
         showInvalidChapterDialog = mutableStateOf(false),
@@ -166,7 +174,6 @@ internal class ReaderViewModel @Inject constructor(
     fun markChapterEndAsSeen(chapterUrl: String) =
         readerSession.markChapterEndAsSeen(chapterUrl = chapterUrl)
 
-    private val aiVoicePlayer = AiVoicePlayer(context)
     private val audioJobs = mutableMapOf<Int, Deferred<String?>>() // Map itemIndex -> Job returning audioUrl
 
     fun selectModelVoice(voice: VoicePredefineState) {

@@ -28,6 +28,10 @@ internal data class ReaderScreenState(
         val textToSpeech: TextToSpeechSettingData,
         val liveTranslation: LiveTranslationSettingData,
         val style: StyleSettingsData,
+        val brightness: State<Float>,
+        val nightMode: State<Boolean>,
+        val autoScrollSpeed: State<Int>,
+        val volumeKeyNavigation: State<Boolean>,
         val selectedSetting: MutableState<Type>,
     ) {
         data class StyleSettingsData(
@@ -35,6 +39,9 @@ internal data class ReaderScreenState(
             val currentTheme: State<Themes>,
             val textFont: State<String>,
             val textSize: State<Float>,
+            val lineHeight: State<Float>,
+            val textAlign: State<Int>,
+            val screenMargin: State<Int>,
         )
 
         enum class Type {

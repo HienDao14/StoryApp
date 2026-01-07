@@ -56,6 +56,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +77,46 @@ internal fun VoiceRoute(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val lazyListState = rememberLazyListState()
     val textToSpeech = state.readerState?.settings?.textToSpeech
+
+    val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
+
+    // System Settings Interactions
+    val brightness = state.readerState?.settings?.brightness?.value
+    val keepScreenOn = state.readerState?.settings?.keepScreenOn?.value ?: false
+    val nightMode = state.readerState?.settings?.nightMode?.value ?: false
+
+    // Apply brightness and keep screen on
+    DisposableEffect(brightness, keepScreenOn) {
+        if (window != null) {
+            val layoutParams = window.attributes
+            val originalBrightness = layoutParams.screenBrightness
+            
+            if (brightness != null) {
+                layoutParams.screenBrightness = brightness
+            }
+            window.attributes = layoutParams
+            
+            if (keepScreenOn) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+
+            onDispose {
+                // Revert brightness to preferred/system (or separate handling) if needed, 
+                // but actually ReaderActivity doesn't revert strictly. 
+                // However, for a Route in a shared Activity, we usually want to revert or let the next screen decide.
+                // For now, we follow ReaderActivity's pattern but inside a Composable life-cycle.
+                // Restoring original brightness is safer.
+                layoutParams.screenBrightness = originalBrightness // This might be -1.0f (default)
+                window.attributes = layoutParams
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        } else {
+            onDispose { }
+        }
+    }
 
     if (state.readerState?.showVoiceLoadingDialog?.value == true) {
         Dialog(
@@ -181,4 +223,12 @@ internal fun VoiceRoute(
             )
         }
     )
+
+    if (nightMode) {
+        Box(
+             modifier = Modifier
+                 .fillMaxSize()
+                 .background(Color(0x33FF9800)) // Amber overlay
+        )
+    }
 }

@@ -55,6 +55,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
 
 
+import com.hiendao.presentation.reader.domain.ChapterState
+
+
 @HiltViewModel
 internal class VoiceViewModel @Inject constructor(
     private val appRepository: AppRepository,
@@ -68,6 +71,7 @@ internal class VoiceViewModel @Inject constructor(
     private val readerViewHandlersActions: ReaderViewHandlersActions,
     private val libraryBooksRepository: LibraryBooksRepository,
     private val readingVoiceRepository: ReadingVoiceRepository,
+    private val aiVoicePlayer: AiVoicePlayer,
     @ApplicationContext private val context: Context,
 ) : ViewModel(){
 
@@ -145,7 +149,6 @@ internal class VoiceViewModel @Inject constructor(
 
     private val themeId = appPreferences.THEME_ID.state(viewModelScope)
 
-    private val aiVoicePlayer = AiVoicePlayer(context)
     private val audioJobs = mutableMapOf<Int, Deferred<String?>>()
     
     // Wrap TTS state to intercept controls
@@ -205,12 +208,20 @@ internal class VoiceViewModel @Inject constructor(
                 textToSpeech = wrappedTtsState,
                 liveTranslation = session.readerLiveTranslation.state,
                 fullScreen = appPreferences.READER_FULL_SCREEN.state(viewModelScope),
+                brightness = appPreferences.READER_BRIGHTNESS.state(viewModelScope),
+                nightMode = appPreferences.READER_NIGHT_MODE.state(viewModelScope),
+                autoScrollSpeed = appPreferences.READER_AUTO_SCROLL_SPEED.state(viewModelScope),
+                volumeKeyNavigation = appPreferences.READER_VOLUME_KEY_NAVIGATION.state(viewModelScope),
                 style = ReaderScreenState.Settings.StyleSettingsData(
                     followSystem = appPreferences.THEME_FOLLOW_SYSTEM.state(viewModelScope),
                     currentTheme = derivedStateOf { themeId.value.toTheme },
                     textFont = appPreferences.READER_FONT_FAMILY.state(viewModelScope),
                     textSize = appPreferences.READER_FONT_SIZE.state(viewModelScope),
-                )
+                    lineHeight = appPreferences.READER_LINE_HEIGHT.state(viewModelScope),
+                    textAlign = appPreferences.READER_TEXT_ALIGN.state(viewModelScope),
+                    screenMargin = appPreferences.READER_SCREEN_MARGIN.state(viewModelScope),
+                ),
+                
             ),
             showVoiceLoadingDialog = _showVoiceLoadingDialog,
             showInvalidChapterDialog = _showInvalidChapterDialog
@@ -347,14 +358,24 @@ internal class VoiceViewModel @Inject constructor(
         readerSession.value.reloadReader()
         chaptersLoader.tryLoadRestartedInitial(currentChapter)
     }
-    val items = readerSession.value.items
-    val chaptersLoader = readerSession.value.readerChaptersLoader
-    val readerSpeaker = readerSession.value.readerTextToSpeech
-    var readingCurrentChapter by Delegates.observable(readerSession.value.currentChapter) { _, _, new ->
-        readerSession.value.currentChapter = new
-    }
-    val ttsScrolledToTheTop = readerSession.value.readerTextToSpeech.scrolledToTheTop
-    val ttsScrolledToTheBottom = readerSession.value.readerTextToSpeech.scrolledToTheBottom
+    val items: List<ReaderItem>
+        get() = readerSession.value.items
+
+    val chaptersLoader
+        get() = readerSession.value.readerChaptersLoader
+
+    val readerSpeaker
+        get() = readerSession.value.readerTextToSpeech
+
+    var readingCurrentChapter: ChapterState
+        get() = readerSession.value.currentChapter
+        set(value) {
+            readerSession.value.currentChapter = value
+        }
+    val ttsScrolledToTheTop
+        get() = readerSession.value.readerTextToSpeech.scrolledToTheTop
+    val ttsScrolledToTheBottom
+        get() = readerSession.value.readerTextToSpeech.scrolledToTheBottom
     fun updateInfoViewTo(itemIndex: Int) =
         readerSession.value.updateInfoViewTo(itemIndex = itemIndex)
 
@@ -450,7 +471,7 @@ internal class VoiceViewModel @Inject constructor(
             val chapterItemPosition = currentItemState.itemPos.chapterItemPosition
 
             val itemIndex = indexOfReaderItem(
-                list = items,
+                list = readerSession.value.items,
                 chapterIndex = chapterIndex,
                 chapterItemPosition = chapterItemPosition
             )

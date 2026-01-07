@@ -26,6 +26,13 @@ internal fun ReaderScreenBottomBarDialogs(
     onThemeSelected: (Themes) -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
     onFullScreen: (Boolean) -> Unit,
+    onLineHeightChanged: (Float) -> Unit,
+    onTextAlignChanged: (Int) -> Unit,
+    onScreenMarginChanged: (Int) -> Unit,
+    onBrightnessChanged: (Float) -> Unit,
+    onNightModeChanged: (Boolean) -> Unit,
+    onAutoScrollSpeedChanged: (Int) -> Unit,
+    onVolumeKeyNavigationChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
@@ -50,6 +57,9 @@ internal fun ReaderScreenBottomBarDialogs(
                             onThemeChange = onThemeSelected,
                             onTextFontChange = onTextFontChanged,
                             onTextSizeChange = onTextSizeChanged,
+                            onLineHeightChange = onLineHeightChanged,
+                            onTextAlignChange = onTextAlignChanged,
+                            onScreenMarginChange = onScreenMarginChanged,
                         )
                     }
                     ReaderScreenState.Settings.Type.More -> MoreSettingDialog(
@@ -59,6 +69,14 @@ internal fun ReaderScreenBottomBarDialogs(
                         onKeepScreenOn = onKeepScreenOn,
                         fullScreen = settings.fullScreen.value,
                         onFullScreen = onFullScreen,
+                        brightness = settings.brightness.value,
+                        onBrightnessChanged = onBrightnessChanged,
+                        nightMode = settings.nightMode.value,
+                        onNightModeChanged = onNightModeChanged,
+                        autoScrollSpeed = settings.autoScrollSpeed.value,
+                        onAutoScrollSpeedChanged = onAutoScrollSpeedChanged,
+                        volumeKeyNavigation = settings.volumeKeyNavigation.value,
+                        onVolumeKeyNavigationChanged = onVolumeKeyNavigationChanged,
                     )
                     ReaderScreenState.Settings.Type.None -> Unit
                 }

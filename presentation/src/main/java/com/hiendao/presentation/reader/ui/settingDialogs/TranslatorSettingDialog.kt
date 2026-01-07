@@ -125,7 +125,8 @@ internal fun TranslatorSettingDialog(
                 offset = DpOffset(0.dp, 10.dp),
                 modifier = Modifier
                     .heightIn(max = 300.dp)
-                    .width(with(LocalDensity.current) { rowSize.width.toDp() })
+                    .width(with(LocalDensity.current) { rowSize.width.toDp() }),
+                containerColor = MaterialTheme.colorScheme.background
             ) {
 
                 DropdownMenuItem(

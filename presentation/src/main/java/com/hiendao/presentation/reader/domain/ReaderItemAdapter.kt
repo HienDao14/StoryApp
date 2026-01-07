@@ -40,6 +40,9 @@ internal class ReaderItemAdapter(
     private val currentFontSize: () -> Float,
     private val currentTypeface: () -> Typeface,
     private val currentTypefaceBold: () -> Typeface,
+    private val currentLineHeight: () -> Float,
+    private val currentTextAlign: () -> Int,
+    private val currentScreenMargin: () -> Int,
     private val onChapterStartVisible: (chapterUrl: String) -> Unit,
     private val onChapterEndVisible: (chapterUrl: String) -> Unit,
     private val onReloadReader: () -> Unit,
@@ -115,6 +118,19 @@ internal class ReaderItemAdapter(
 
         bind.body.updateTextSelectability()
         bind.root.background = getItemReadingStateBackground(item)
+        val margin = currentScreenMargin()
+        if (margin > 0) {
+             val px = (margin * ctx.resources.displayMetrics.density).toInt()
+             bind.root.setPadding(px, 0, px, 0)
+        } else {
+             bind.root.setPadding(0, 0, 0, 0)
+        }
+        
+        bind.body.setLineSpacing(0f, currentLineHeight())
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            bind.body.justificationMode = if (currentTextAlign() == 1) android.graphics.text.LineBreaker.JUSTIFICATION_MODE_INTER_WORD else android.graphics.text.LineBreaker.JUSTIFICATION_MODE_NONE
+        }
+
         if (item.isHtml) {
             bind.body.text = androidx.core.text.HtmlCompat.fromHtml(
                 item.textToDisplay,

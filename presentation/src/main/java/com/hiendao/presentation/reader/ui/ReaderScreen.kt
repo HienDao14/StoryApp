@@ -83,6 +83,13 @@ internal fun ReaderScreen(
     onThemeSelected: (Themes) -> Unit,
     onTextFontChanged: (String) -> Unit,
     onTextSizeChanged: (Float) -> Unit,
+    onLineHeightChanged: (Float) -> Unit,
+    onTextAlignChanged: (Int) -> Unit,
+    onScreenMarginChanged: (Int) -> Unit,
+    onBrightnessChanged: (Float) -> Unit,
+    onNightModeChanged: (Boolean) -> Unit,
+    onAutoScrollSpeedChanged: (Int) -> Unit,
+    onVolumeKeyNavigationChanged: (Boolean) -> Unit,
     onPressBack: () -> Unit,
     selectModelVoice: (VoicePredefineState) -> Unit,
     readerContent: @Composable (paddingValues: PaddingValues) -> Unit
@@ -119,6 +126,7 @@ internal fun ReaderScreen(
         state.showReaderInfo.value = false
     }
 
+    Box {
     Scaffold(
         topBar = {
             val fullScreen by rememberUpdatedState(state.showReaderInfo.value)
@@ -204,11 +212,18 @@ internal fun ReaderScreen(
                         settings = state.settings,
                         onTextFontChanged = onTextFontChanged,
                         onTextSizeChanged = onTextSizeChanged,
+                        onLineHeightChanged = onLineHeightChanged,
+                        onTextAlignChanged = onTextAlignChanged,
+                        onScreenMarginChanged = onScreenMarginChanged,
                         onSelectableTextChange = onSelectableTextChange,
                         onFollowSystem = onFollowSystem,
                         onThemeSelected = onThemeSelected,
                         onKeepScreenOn = onKeepScreenOn,
                         onFullScreen = onFullScreen,
+                        onBrightnessChanged = onBrightnessChanged,
+                        onNightModeChanged = onNightModeChanged,
+                        onAutoScrollSpeedChanged = onAutoScrollSpeedChanged,
+                        onVolumeKeyNavigationChanged = onVolumeKeyNavigationChanged,
                         modifier = Modifier.padding(bottom = 8.dp),
                         selectModelVoice = selectModelVoice
                     )
@@ -251,6 +266,14 @@ internal fun ReaderScreen(
             }
         }
     )
+        if (state.settings.nightMode.value) {
+             Box(
+                 modifier = Modifier
+                     .matchParentSize()
+                     .background(Color(0x33FF9800)) // Amber overlay
+             )
+        }
+    }
 }
 
 @Composable
@@ -356,6 +379,9 @@ private fun ViewsPreview(
         currentTheme = remember { mutableStateOf(Themes.DARK) },
         textFont = remember { mutableStateOf("Arial") },
         textSize = remember { mutableFloatStateOf(20f) },
+        lineHeight = remember { mutableFloatStateOf(1.5f) },
+        textAlign = remember { mutableIntStateOf(0) },
+        screenMargin = remember { mutableIntStateOf(16) }
     )
 
     InternalTheme {
@@ -378,6 +404,10 @@ private fun ViewsPreview(
                         style = style,
                         selectedSetting = remember { mutableStateOf(data.selectedSetting) },
                         fullScreen = remember { mutableStateOf(false) },
+                        brightness = remember { mutableFloatStateOf(0.5f) },
+                        nightMode = remember { mutableStateOf(false) },
+                        autoScrollSpeed = remember { mutableIntStateOf(0) },
+                        volumeKeyNavigation = remember { mutableStateOf(false) }
                     ),
                     showVoiceLoadingDialog = remember { mutableStateOf(false) },
                     showInvalidChapterDialog = remember { mutableStateOf(false) }
@@ -391,7 +421,14 @@ private fun ViewsPreview(
                 readerContent = {},
                 onKeepScreenOn = {},
                 onFullScreen = {},
-                selectModelVoice = {}
+                selectModelVoice = {},
+                onLineHeightChanged = {},
+                onTextAlignChanged = {},
+                onScreenMarginChanged = {},
+                onBrightnessChanged = {},
+                onNightModeChanged = {},
+                onAutoScrollSpeedChanged = {},
+                onVolumeKeyNavigationChanged = {}
             )
         }
     }

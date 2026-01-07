@@ -3,10 +3,16 @@ package com.hiendao.presentation.reader.features
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AiVoicePlayer(private val context: Context) {
+@Singleton
+class AiVoicePlayer @Inject constructor(
+    @ApplicationContext val context: Context,
+) {
     private var mediaPlayer: MediaPlayer? = null
     
     private val _isPlaying = MutableStateFlow(false)
@@ -14,7 +20,7 @@ class AiVoicePlayer(private val context: Context) {
 
     fun play(url: String, onCompletion: () -> Unit = {}, onError: (String) -> Unit = {}) {
         android.util.Log.d("AiVoicePlayer", "Attempting to play URL: $url")
-        release()
+//        release()
         mediaPlayer = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()

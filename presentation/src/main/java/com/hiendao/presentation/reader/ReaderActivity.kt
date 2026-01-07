@@ -96,6 +96,9 @@ class ReaderActivity : BaseActivity() {
                 currentFontSize = { appPreferences.READER_FONT_SIZE.value },
                 currentTypeface = { fontsLoader.getTypeFaceNORMAL(appPreferences.READER_FONT_FAMILY.value) },
                 currentTypefaceBold = { fontsLoader.getTypeFaceBOLD(appPreferences.READER_FONT_FAMILY.value) },
+                currentLineHeight = { appPreferences.READER_LINE_HEIGHT.value },
+                currentTextAlign = { appPreferences.READER_TEXT_ALIGN.value },
+                currentScreenMargin = { appPreferences.READER_SCREEN_MARGIN.value },
                 currentSpeakerActiveItem = { viewModel.readerSpeaker.currentTextPlaying.value },
                 onChapterStartVisible = viewModel::markChapterStartAsSeen,
                 onChapterEndVisible = viewModel::markChapterEndAsSeen,
@@ -241,17 +244,44 @@ class ReaderActivity : BaseActivity() {
             .asLiveData()
             .observe(this) { viewAdapter.listView.notifyDataSetChanged() }
 
-        // Notify manually selectable text changed for list view
-        snapshotFlow { viewModel.state.settings.isTextSelectable.value }.drop(1)
-            .asLiveData()
-            .observe(this) { viewAdapter.listView.notifyDataSetChanged() }
-
         // Set current screen to be kept bright always or not
         snapshotFlow { viewModel.state.settings.keepScreenOn.value }
             .asLiveData()
             .observe(this) { keepScreenOn ->
                 val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 if (keepScreenOn) window.addFlags(flag) else window.clearFlags(flag)
+            }
+
+        // Notify manually settings changed for list view
+        snapshotFlow { viewModel.state.settings.style.lineHeight.value }.drop(1).asLiveData().observe(this) { viewAdapter.listView.notifyDataSetChanged() }
+        snapshotFlow { viewModel.state.settings.style.textAlign.value }.drop(1).asLiveData().observe(this) { viewAdapter.listView.notifyDataSetChanged() }
+        snapshotFlow { viewModel.state.settings.style.screenMargin.value }.drop(1).asLiveData().observe(this) { viewAdapter.listView.notifyDataSetChanged() }
+
+
+        
+        // Brightness
+        snapshotFlow { viewModel.state.settings.brightness.value }
+            .asLiveData()
+            .observe(this) { brightness ->
+                val layoutParams = window.attributes
+                layoutParams.screenBrightness = brightness
+                window.attributes = layoutParams
+            }
+        
+        // Auto Scroll
+        var autoScrollJob: kotlinx.coroutines.Job? = null
+        snapshotFlow { viewModel.state.settings.autoScrollSpeed.value }
+            .asLiveData()
+            .observe(this) { speed ->
+                autoScrollJob?.cancel()
+                if (speed > 0) {
+                     autoScrollJob = lifecycleScope.launch {
+                         while(true) {
+                             delay((50 - speed) * 5L) // Simple formula: faster speed -> lower delay
+                             viewBind.listView.smoothScrollBy(2, 0)
+                         }
+                     }
+                }
             }
 
         setContent {
@@ -268,6 +298,13 @@ class ReaderActivity : BaseActivity() {
                     onFollowSystem = { appPreferences.THEME_FOLLOW_SYSTEM.value = it },
                     onThemeSelected = { appPreferences.THEME_ID.value = it.toPreferenceTheme },
                     onFullScreen = { appPreferences.READER_FULL_SCREEN.value = it },
+                    onLineHeightChanged = { appPreferences.READER_LINE_HEIGHT.value = it },
+                    onTextAlignChanged = { appPreferences.READER_TEXT_ALIGN.value = it },
+                    onScreenMarginChanged = { appPreferences.READER_SCREEN_MARGIN.value = it },
+                    onBrightnessChanged = { appPreferences.READER_BRIGHTNESS.value = it },
+                    onNightModeChanged = { appPreferences.READER_NIGHT_MODE.value = it },
+                    onAutoScrollSpeedChanged = { appPreferences.READER_AUTO_SCROLL_SPEED.value = it },
+                    onVolumeKeyNavigationChanged = { appPreferences.READER_VOLUME_KEY_NAVIGATION.value = it },
                     onPressBack = {
                         viewModel.onCloseManually()
                         finish()
@@ -275,7 +312,7 @@ class ReaderActivity : BaseActivity() {
                     selectModelVoice = viewModel::selectModelVoice,
                     readerContent = {
                         AndroidView(factory = { viewBind.root })
-                    },
+                    }
                 )
 
                 if (viewModel.state.showInvalidChapterDialog.value) {
@@ -531,5 +568,21 @@ class ReaderActivity : BaseActivity() {
             chapterItemPosition = item.chapterItemPosition,
             offset = offset
         )
+    }
+
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (viewModel.state.settings.volumeKeyNavigation.value) {
+            when (keyCode) {
+                android.view.KeyEvent.KEYCODE_VOLUME_UP -> {
+                    viewBind.listView.smoothScrollBy(-300.dpToPx(this), 500)
+                    return true
+                }
+                android.view.KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                    viewBind.listView.smoothScrollBy(300.dpToPx(this), 500)
+                    return true
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }

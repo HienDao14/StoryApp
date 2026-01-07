@@ -101,6 +101,27 @@ class AppPreferences @Inject constructor(
     val READER_FULL_SCREEN = object : Preference<Boolean>("READER_FULL_SCREEN") {
         override var value by SharedPreference_Boolean(name, preferences, true)
     }
+    val READER_LINE_HEIGHT = object : Preference<Float>("READER_LINE_HEIGHT") {
+        override var value by SharedPreference_Float(name, preferences, 1.4f)
+    }
+    val READER_TEXT_ALIGN = object : Preference<Int>("READER_TEXT_ALIGN") {
+        override var value by SharedPreference_Int(name, preferences, 0) // 0: Left, 1: Justify
+    }
+    val READER_SCREEN_MARGIN = object : Preference<Int>("READER_SCREEN_MARGIN") {
+        override var value by SharedPreference_Int(name, preferences, 16)
+    }
+    val READER_BRIGHTNESS = object : Preference<Float>("READER_BRIGHTNESS") {
+        override var value by SharedPreference_Float(name, preferences, -1f) // -1: System, 0..1: Manual
+    }
+    val READER_NIGHT_MODE = object : Preference<Boolean>("READER_NIGHT_MODE") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
+    }
+    val READER_AUTO_SCROLL_SPEED = object : Preference<Int>("READER_AUTO_SCROLL_SPEED") {
+        override var value by SharedPreference_Int(name, preferences, 0) // 0: Off
+    }
+    val READER_VOLUME_KEY_NAVIGATION = object : Preference<Boolean>("READER_VOLUME_KEY_NAVIGATION") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
+    }
 
     val CHAPTERS_SORT_ASCENDING = object : Preference<TernaryState>("CHAPTERS_SORT_ASCENDING") {
         override var value by SharedPreference_Enum(
