@@ -94,351 +94,357 @@ fun AppNavHost(
         NavHost(
             navController = navController,
             startDestination = Routes.SPLASH,
-            modifier = Modifier.fillMaxSize().padding(bottom = if (playerState.isVisible && currentRoute?.startsWith(Routes.BOOK_VOICE) != true) 64.dp else 0.dp)
+            modifier = Modifier.fillMaxSize().padding(bottom = if (
+                playerState.isVisible && 
+                currentRoute?.startsWith(Routes.BOOK_VOICE) != true &&
+                currentRoute != Routes.HOME &&
+                currentRoute != Routes.LIBRARY &&
+                currentRoute != Routes.SETTINGS
+            ) 80.dp else 0.dp)
         ) {
-        composable(Routes.SPLASH) {
-            SplashRoute(
-                modifier = modifier,
-                onNavigateToMain = {
-                    navController.navigate(Routes.MAIN) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToLogin = {
-                    navController.navigate(Routes.AUTH) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            )
-        }
-        navigation(startDestination = Routes.LOGIN, route = Routes.AUTH) {
-            composable(Routes.LOGIN) {
-                LoginRoute(
+            composable(Routes.SPLASH) {
+                SplashRoute(
                     modifier = modifier,
-                    onLoginSuccess = { accessToken, refreshToken ->
-                        appPreferences.LOGGED_IN.value = true
-                        appPreferences.ACCESS_TOKEN.value = accessToken
-                        appPreferences.REFRESH_TOKEN.value = refreshToken
-                        // Vào main và clear toàn bộ auth khỏi back stack
+                    onNavigateToMain = {
                         navController.navigate(Routes.MAIN) {
-                            popUpTo(Routes.AUTH) { inclusive = true }
+                            popUpTo(Routes.SPLASH) { inclusive = true }
                             launchSingleTop = true
                         }
                     },
-                    onLoginWithoutToken = {
-                        appPreferences.LOGGED_IN.value = true
-                        navController.navigate(Routes.MAIN) {
-                            popUpTo(Routes.AUTH) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            }
-        }
-        navigation(startDestination = Routes.HOME, route = Routes.MAIN) {
-            composable(Routes.HOME) {
-                MainScaffold(
-                    currentRoute = Routes.HOME,
-                    onNavigate = { route -> bottomNavigate(navController, route) },
-                    content = {
-                        HomeRoute(
-                            modifier = Modifier.fillMaxWidth(),
-                            onBookClick = { book ->
-                                navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
-                            },
-                            onSearchClick = {
-                                navController.navigate(Routes.SEARCH)
-                            },
-                            onVoiceClick = { book ->
-                                navController.navigate("${Routes.BOOK_VOICE}?bookId=${book.id}?bookTitle=${book.title}")
-                            },
-                            onFavouriteClick = {
-
-                            },
-                            onCategoryClick = { id, name ->
-                                navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
-                            },
-                            onCreateStoryClick = {
-                                navController.navigate(Routes.CREATE_STORY)
-                            },
-                            onCreateVoiceClick = {
-                                navController.navigate(Routes.CREATE_VOICE)
-                            },
-                            onNavigate = { route -> bottomNavigate(navController, route) },
-                            onLogout = {
-                                logoutViewModel.logout()
-                                isLoggedIn = false
-                                navController.navigate(Routes.AUTH) {
-                                    popUpTo(Routes.MAIN) { inclusive = true }
-                                    launchSingleTop = true
-                                }
-                            }
-                        )
-                    },
-                    onLogout = {
-                        logoutViewModel.logout()
-                        isLoggedIn = false
+                    onNavigateToLogin = {
                         navController.navigate(Routes.AUTH) {
-                            popUpTo(Routes.MAIN) { inclusive = true }
+                            popUpTo(Routes.SPLASH) { inclusive = true }
                             launchSingleTop = true
                         }
                     }
                 )
             }
-            composable(Routes.LIBRARY) {
-                MainScaffold(
-                    currentRoute = Routes.LIBRARY,
-                    onNavigate = { route -> bottomNavigate(navController, route) },
-                    content = {
-                        LibraryRoute(
-                            modifier = Modifier.fillMaxSize(),
-                            onBookClick = { book ->
-                                navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
-                            },
-                            onCreateStory = {
-                                navController.navigate(Routes.CREATE_STORY)
+            navigation(startDestination = Routes.LOGIN, route = Routes.AUTH) {
+                composable(Routes.LOGIN) {
+                    LoginRoute(
+                        modifier = modifier,
+                        onLoginSuccess = { accessToken, refreshToken ->
+                            appPreferences.LOGGED_IN.value = true
+                            appPreferences.ACCESS_TOKEN.value = accessToken
+                            appPreferences.REFRESH_TOKEN.value = refreshToken
+                            // Vào main và clear toàn bộ auth khỏi back stack
+                            navController.navigate(Routes.MAIN) {
+                                popUpTo(Routes.AUTH) { inclusive = true }
+                                launchSingleTop = true
                             }
-                        )
-                    },
-                    onLogout = {
-                        logoutViewModel.logout()
-                        isLoggedIn = false
-                        navController.navigate(Routes.AUTH) {
-                            popUpTo(Routes.MAIN) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            }
-            composable(Routes.SETTINGS) {
-                MainScaffold(
-                    currentRoute = Routes.SETTINGS,
-                    onNavigate = { route -> bottomNavigate(navController, route) },
-                    content = {
-                        SettingRoute(
-                            modifier = Modifier.fillMaxSize(),
-                            onLogout = {
-                                logoutViewModel.logout()
-                                navController.navigate(Routes.AUTH) {
-                                    popUpTo(Routes.MAIN) { inclusive = true }
-                                    launchSingleTop = true
-                                }
+                        },
+                        onLoginWithoutToken = {
+                            appPreferences.LOGGED_IN.value = true
+                            navController.navigate(Routes.MAIN) {
+                                popUpTo(Routes.AUTH) { inclusive = true }
+                                launchSingleTop = true
                             }
-                        )
-                    },
-                    onLogout = {
-                        logoutViewModel.logout()
-                        isLoggedIn = false
-                        navController.navigate(Routes.AUTH) {
-                            popUpTo(Routes.MAIN) { inclusive = true }
-                            launchSingleTop = true
                         }
-                    }
-                )
-            }
-            composable(
-                route = "${Routes.BOOK_DETAIL}?bookId={bookId}?bookTitle={bookTitle}",
-                arguments = listOf(
-                    navArgument(name = "bookId") {
-                        type = NavType.StringType
-                        defaultValue = ""
-                    },
-                    navArgument(name = "bookTitle") {
-                        type = NavType.StringType
-                        defaultValue = ""
-                    }
-            )) { entry ->
-                val chaptersViewModel = hiltViewModel<ChaptersViewModel>()
-
-                val bookId = entry.arguments?.getString("bookId")
-                val bookTitle = entry.arguments?.getString("bookTitle")
-                requireNotNull(bookId)
-                requireNotNull(bookTitle)
-
-                LaunchedEffect(key1 = true) {
-                    chaptersViewModel.updateState(bookId, bookTitle)
-                    delay(500)
+                    )
                 }
+            }
+            navigation(startDestination = Routes.HOME, route = Routes.MAIN) {
+                composable(Routes.HOME) {
+                    MainScaffold(
+                        currentRoute = Routes.HOME,
+                        onNavigate = { route -> bottomNavigate(navController, route) },
+                        content = {
+                            HomeRoute(
+                                modifier = Modifier.fillMaxWidth(),
+                                onBookClick = { book ->
+                                    navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
+                                },
+                                onSearchClick = {
+                                    navController.navigate(Routes.SEARCH)
+                                },
+                                onVoiceClick = { book ->
+                                    navController.navigate("${Routes.BOOK_VOICE}?bookId=${book.id}?bookTitle=${book.title}")
+                                },
+                                onFavouriteClick = {
 
-                Box {
-                    if (chaptersViewModel.state.isLoading.value) {
-                        // Show loading indicator or placeholder if needed
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    } else {
-                        ChaptersScreen(
-                            bookId = bookId,
-                            state = chaptersViewModel.state,
-                            onFavouriteToggle = chaptersViewModel::toggleBookmark,
-                            onResumeReading = {
-                                scope.launch {
-                                    val lastReadChapter = chaptersViewModel.getLastReadChapter()
-                                        ?: chaptersViewModel.state.chapters.minByOrNull { it.chapter.position }?.chapter?.id
-                                        ?: return@launch
-                                    launch {
-                                        chaptersViewModel.getChapterDetail(bookId, lastReadChapter)
+                                },
+                                onCategoryClick = { id, name ->
+                                    navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
+                                },
+                                onCreateStoryClick = {
+                                    navController.navigate(Routes.CREATE_STORY)
+                                },
+                                onCreateVoiceClick = {
+                                    navController.navigate(Routes.CREATE_VOICE)
+                                },
+                                onNavigate = { route -> bottomNavigate(navController, route) },
+                                onLogout = {
+                                    logoutViewModel.logout()
+                                    isLoggedIn = false
+                                    navController.navigate(Routes.AUTH) {
+                                        popUpTo(Routes.MAIN) { inclusive = true }
+                                        launchSingleTop = true
                                     }
-                                    onBookOpen?.invoke(chaptersViewModel.bookUrl.value, lastReadChapter)
                                 }
-                            },
-                            onListenToBook = {
-                                navController.navigate("${Routes.BOOK_VOICE}?bookId=${bookId}?bookTitle=${bookTitle}")
-                            },
-                            onPressBack = {
-                                navController.navigateUp()
-                            },
-                            onSelectedDeleteDownloads = chaptersViewModel::deleteDownloadsSelected,
-                            onSelectedDownload = {},
-                            onSelectedSetRead = chaptersViewModel::setAsReadSelected,
-                            onSelectedSetReadUpToChapterRead = chaptersViewModel::setAsReadUpToSelected,
-                            onSelectedSetReadUpToChapterUnread = chaptersViewModel::setAsReadUpToUnSelected,
-                            onSelectedSetUnread = chaptersViewModel::setAsUnreadSelected,
-                            onSelectedInvertSelection = chaptersViewModel::invertSelection,
-                            onSelectAllChapters = chaptersViewModel::selectAll,
-                            onCloseSelectionBar = chaptersViewModel::unselectAll,
-                            onChapterClick = { chapter ->
-                               scope.launch {
-                                   launch {
-                                       chaptersViewModel.getChapterDetail(chaptersViewModel.bookUrl.value, chapter.chapter.id)
-                                   }
-                                   onBookOpen?.invoke(chaptersViewModel.bookUrl.value, chapter.chapter.id)
-                               }
-                            },
-                            onChapterLongClick = chaptersViewModel::onChapterLongClick,
-                            onSelectionModeChapterClick = chaptersViewModel::onSelectionModeChapterClick,
-                            onSelectionModeChapterLongClick = chaptersViewModel::onSelectionModeChapterLongClick,
-                            onChapterDownload = {},
-                            onPullRefresh = chaptersViewModel::onPullRefresh,
-                            onCoverLongClick = {},
-                            onChangeCover = onDoAskForImage { chaptersViewModel.saveImageAsCover(it) },
-                            onGlobalSearchClick = {},
-                            onCategoryClick = { id, name ->
-                                navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
+                            )
+                        },
+                        onLogout = {
+                            logoutViewModel.logout()
+                            isLoggedIn = false
+                            navController.navigate(Routes.AUTH) {
+                                popUpTo(Routes.MAIN) { inclusive = true }
+                                launchSingleTop = true
                             }
-                        )
+                        }
+                    )
+                }
+                composable(Routes.LIBRARY) {
+                    MainScaffold(
+                        currentRoute = Routes.LIBRARY,
+                        onNavigate = { route -> bottomNavigate(navController, route) },
+                        content = {
+                            LibraryRoute(
+                                modifier = Modifier.fillMaxSize(),
+                                onBookClick = { book ->
+                                    navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
+                                },
+                                onCreateStory = {
+                                    navController.navigate(Routes.CREATE_STORY)
+                                }
+                            )
+                        },
+                        onLogout = {
+                            logoutViewModel.logout()
+                            isLoggedIn = false
+                            navController.navigate(Routes.AUTH) {
+                                popUpTo(Routes.MAIN) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(Routes.SETTINGS) {
+                    MainScaffold(
+                        currentRoute = Routes.SETTINGS,
+                        onNavigate = { route -> bottomNavigate(navController, route) },
+                        content = {
+                            SettingRoute(
+                                modifier = Modifier.fillMaxSize(),
+                                onLogout = {
+                                    logoutViewModel.logout()
+                                    navController.navigate(Routes.AUTH) {
+                                        popUpTo(Routes.MAIN) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                }
+                            )
+                        },
+                        onLogout = {
+                            logoutViewModel.logout()
+                            isLoggedIn = false
+                            navController.navigate(Routes.AUTH) {
+                                popUpTo(Routes.MAIN) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(
+                    route = "${Routes.BOOK_DETAIL}?bookId={bookId}?bookTitle={bookTitle}",
+                    arguments = listOf(
+                        navArgument(name = "bookId") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                        },
+                        navArgument(name = "bookTitle") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                        }
+                )) { entry ->
+                    val chaptersViewModel = hiltViewModel<ChaptersViewModel>()
+
+                    val bookId = entry.arguments?.getString("bookId")
+                    val bookTitle = entry.arguments?.getString("bookTitle")
+                    requireNotNull(bookId)
+                    requireNotNull(bookTitle)
+
+                    LaunchedEffect(key1 = true) {
+                        chaptersViewModel.updateState(bookId, bookTitle)
+                        delay(500)
                     }
+
+                    Box {
+                        if (chaptersViewModel.state.isLoading.value) {
+                            // Show loading indicator or placeholder if needed
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            ChaptersScreen(
+                                bookId = bookId,
+                                state = chaptersViewModel.state,
+                                onFavouriteToggle = chaptersViewModel::toggleBookmark,
+                                onResumeReading = {
+                                    scope.launch {
+                                        val lastReadChapter = chaptersViewModel.getLastReadChapter()
+                                            ?: chaptersViewModel.state.chapters.minByOrNull { it.chapter.position }?.chapter?.id
+                                            ?: return@launch
+                                        launch {
+                                            chaptersViewModel.getChapterDetail(bookId, lastReadChapter)
+                                        }
+                                        onBookOpen?.invoke(chaptersViewModel.bookUrl.value, lastReadChapter)
+                                    }
+                                },
+                                onListenToBook = {
+                                    navController.navigate("${Routes.BOOK_VOICE}?bookId=${bookId}?bookTitle=${bookTitle}")
+                                },
+                                onPressBack = {
+                                    navController.navigateUp()
+                                },
+                                onSelectedDeleteDownloads = chaptersViewModel::deleteDownloadsSelected,
+                                onSelectedDownload = {},
+                                onSelectedSetRead = chaptersViewModel::setAsReadSelected,
+                                onSelectedSetReadUpToChapterRead = chaptersViewModel::setAsReadUpToSelected,
+                                onSelectedSetReadUpToChapterUnread = chaptersViewModel::setAsReadUpToUnSelected,
+                                onSelectedSetUnread = chaptersViewModel::setAsUnreadSelected,
+                                onSelectedInvertSelection = chaptersViewModel::invertSelection,
+                                onSelectAllChapters = chaptersViewModel::selectAll,
+                                onCloseSelectionBar = chaptersViewModel::unselectAll,
+                                onChapterClick = { chapter ->
+                                   scope.launch {
+                                       launch {
+                                           chaptersViewModel.getChapterDetail(chaptersViewModel.bookUrl.value, chapter.chapter.id)
+                                       }
+                                       onBookOpen?.invoke(chaptersViewModel.bookUrl.value, chapter.chapter.id)
+                                   }
+                                },
+                                onChapterLongClick = chaptersViewModel::onChapterLongClick,
+                                onSelectionModeChapterClick = chaptersViewModel::onSelectionModeChapterClick,
+                                onSelectionModeChapterLongClick = chaptersViewModel::onSelectionModeChapterLongClick,
+                                onChapterDownload = {},
+                                onPullRefresh = chaptersViewModel::onPullRefresh,
+                                onCoverLongClick = {},
+                                onChangeCover = onDoAskForImage { chaptersViewModel.saveImageAsCover(it) },
+                                onGlobalSearchClick = {},
+                                onCategoryClick = { id, name ->
+                                    navController.navigate("${Routes.CATEGORY_DETAIL}?categoryId=$id&categoryName=$name")
+                                }
+                            )
+                        }
+                    }
+
                 }
 
-            }
+                composable(
+                    route = "${Routes.BOOK_VOICE}?bookId={bookId}?bookTitle={bookTitle}",
+                    arguments = listOf(
+                        navArgument(name = "bookId") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                        },
+                        navArgument(name = "bookTitle") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                        })
+                ) { entry ->
+                    val bookId = entry.arguments?.getString("bookId")
+                    val bookTitle = entry.arguments?.getString("bookTitle")
+                    requireNotNull(bookId)
+                    requireNotNull(bookTitle)
 
-            composable(
-                route = "${Routes.BOOK_VOICE}?bookId={bookId}?bookTitle={bookTitle}",
-                arguments = listOf(
-                    navArgument(name = "bookId") {
-                        type = NavType.StringType
-                        defaultValue = ""
-                    },
-                    navArgument(name = "bookTitle") {
-                        type = NavType.StringType
-                        defaultValue = ""
-                    })
-            ) { entry ->
-                val bookId = entry.arguments?.getString("bookId")
-                val bookTitle = entry.arguments?.getString("bookTitle")
-                requireNotNull(bookId)
-                requireNotNull(bookTitle)
-
-                val viewModel: VoiceViewModel = hiltViewModel()
-                LaunchedEffect(key1 = true) {
-                    viewModel.updateState(bookId, bookTitle)
-                    delay(500)
-                    // viewModel.autoPlay() // Removed per requirement
-                }
-                VoiceRoute(
-                    modifier = Modifier.fillMaxSize(),
-                    state = viewModel.state.collectAsStateWithLifecycle().value,
-                    onFavouriteToggle = { viewModel.toggleBookmark() },
-                    onPressBack = {
-                        navController.navigateUp()
-                    },
-                    onChangeCover = onDoAskForImage { viewModel.saveImageAsCover(it) },
-                    onChapterSelected = { chapterUrl ->
-                        viewModel.playChapterFromStart(chapterUrl)
-                    },
-                    onPlayClick = { viewModel.play() },
-                    onPauseClick = { viewModel.pause() },
-                    onSelectModelVoice = viewModel::selectModelVoice
-                )
-//                com.hiendao.presentation.voice.screen.VoiceScreenPart2(
-//                    modifier = Modifier.fillMaxSize(),
-//                    paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),
-//                    state = viewModel.state.collectAsStateWithLifecycle().value,
-//                    onChapterSelected = { chapterUrl ->
-//                        viewModel.playChapterFromStart(chapterUrl)
-//                    },
-//                    onPlayClick = { viewModel.play() },
-//                    onPauseClick = { viewModel.pause() }
-//                )
-            }
-
-            composable(Routes.SEARCH) {
-                SearchRoute(
-                    modifier = Modifier.fillMaxSize(),
-                   onBookClick = { book ->
-                       navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
-                   },
-                    onBackClick = {
-                          navController.navigateUp()
+                    val viewModel: VoiceViewModel = hiltViewModel()
+                    LaunchedEffect(key1 = true) {
+                        viewModel.updateState(bookId, bookTitle)
+                        delay(500)
+                        // viewModel.autoPlay() // Removed per requirement
                     }
-                )
-            }
-
-            composable(
-                 route = "${Routes.CATEGORY_DETAIL}?categoryId={categoryId}&categoryName={categoryName}",
-                 arguments = listOf(
-                     navArgument(name = "categoryId") {
-                         type = NavType.StringType
-                         defaultValue = ""
-                     },
-                     navArgument(name = "categoryName") {
-                         type = NavType.StringType
-                         defaultValue = ""
-                     }
-                 )
-            ) { entry ->
-                val categoryId = entry.arguments?.getString("categoryId")
-                val categoryName = entry.arguments?.getString("categoryName")
-                requireNotNull(categoryId)
-                requireNotNull(categoryName)
-
-                val viewModel: CategoryDetailViewModel = hiltViewModel()
-                LaunchedEffect(key1 = true) {
-                    viewModel.updateState(categoryId, categoryName)
+                    VoiceRoute(
+                        modifier = Modifier.fillMaxSize(),
+                        state = viewModel.state.collectAsStateWithLifecycle().value,
+                        onFavouriteToggle = { viewModel.toggleBookmark() },
+                        onPressBack = {
+                            navController.navigateUp()
+                        },
+                        onChangeCover = onDoAskForImage { viewModel.saveImageAsCover(it) },
+                        onChapterSelected = { chapterUrl ->
+                            viewModel.playChapterFromStart(chapterUrl)
+                        },
+                        onPlayClick = { viewModel.play() },
+                        onPauseClick = { viewModel.pause() },
+                        onSelectModelVoice = viewModel::selectModelVoice
+                    )
+    //                com.hiendao.presentation.voice.screen.VoiceScreenPart2(
+    //                    modifier = Modifier.fillMaxSize(),
+    //                    paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),
+    //                    state = viewModel.state.collectAsStateWithLifecycle().value,
+    //                    onChapterSelected = { chapterUrl ->
+    //                        viewModel.playChapterFromStart(chapterUrl)
+    //                    },
+    //                    onPlayClick = { viewModel.play() },
+    //                    onPauseClick = { viewModel.pause() }
+    //                )
                 }
 
-                CategoryDetailRoute(
-                    viewModel = viewModel,
-                    onBackClick = {
-                        navController.navigateUp()
-                    },
-                    onBookClick = { book ->
-                        navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
+                composable(Routes.SEARCH) {
+                    SearchRoute(
+                        modifier = Modifier.fillMaxSize(),
+                       onBookClick = { book ->
+                           navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
+                       },
+                        onBackClick = {
+                              navController.navigateUp()
+                        }
+                    )
+                }
+
+                composable(
+                     route = "${Routes.CATEGORY_DETAIL}?categoryId={categoryId}&categoryName={categoryName}",
+                     arguments = listOf(
+                         navArgument(name = "categoryId") {
+                             type = NavType.StringType
+                             defaultValue = ""
+                         },
+                         navArgument(name = "categoryName") {
+                             type = NavType.StringType
+                             defaultValue = ""
+                         }
+                     )
+                ) { entry ->
+                    val categoryId = entry.arguments?.getString("categoryId")
+                    val categoryName = entry.arguments?.getString("categoryName")
+                    requireNotNull(categoryId)
+                    requireNotNull(categoryName)
+
+                    val viewModel: CategoryDetailViewModel = hiltViewModel()
+                    LaunchedEffect(key1 = true) {
+                        viewModel.updateState(categoryId, categoryName)
                     }
-                )
-            }
 
-            composable(Routes.CREATE_STORY) {
-                CreateStoryRoute(
-                    onBackClick = { navController.navigateUp() }
-                )
-            }
+                    CategoryDetailRoute(
+                        viewModel = viewModel,
+                        onBackClick = {
+                            navController.navigateUp()
+                        },
+                        onBookClick = { book ->
+                            navController.navigate("${Routes.BOOK_DETAIL}?bookId=${book.id}?bookTitle=${book.title}")
+                        }
+                    )
+                }
 
-            composable(Routes.CREATE_VOICE) {
-                CreateVoiceRoute(
-                    onBackClick = { navController.navigateUp() }
-                )
+                composable(Routes.CREATE_STORY) {
+                    CreateStoryRoute(
+                        onBackClick = { navController.navigateUp() }
+                    )
+                }
+
+                composable(Routes.CREATE_VOICE) {
+                    CreateVoiceRoute(
+                        onBackClick = { navController.navigateUp() }
+                    )
+                }
             }
-        }
         }
         
         if (playerState.isVisible && currentRoute?.startsWith(Routes.BOOK_VOICE) != true) {
             MiniPlayer(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = if (currentRoute == Routes.HOME || currentRoute == Routes.LIBRARY || currentRoute == Routes.SETTINGS) 80.dp else 16.dp),
+                    .padding(bottom = if (currentRoute == Routes.HOME || currentRoute == Routes.LIBRARY || currentRoute == Routes.SETTINGS) 100.dp else 16.dp),
                 state = playerState,
                 onPlayPause = { if (playerState.isPlaying) globalPlayerViewModel.pause() else globalPlayerViewModel.play() },
                 onNext = globalPlayerViewModel::next,

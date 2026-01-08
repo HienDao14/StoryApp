@@ -24,7 +24,8 @@ internal class AiNarratorManager @Inject constructor(
     private val readerManager: ReaderManager,
     private val readingVoiceRepository: ReadingVoiceRepository,
     private val aiVoicePlayer: AiVoicePlayer,
-    private val appScope: AppCoroutineScope
+    private val appScope: AppCoroutineScope,
+    private val appPreferences: com.hiendao.coreui.appPreferences.AppPreferences
 ) {
 
     private val _activeVoice = MutableStateFlow<VoicePredefineState?>(null)
@@ -34,6 +35,7 @@ internal class AiNarratorManager @Inject constructor(
     val isLoading = _isLoading.asStateFlow()
 
     private val audioJobs = mutableMapOf<Int, Deferred<String?>>()
+    private val urlCache = mutableMapOf<String, String>()
 
     // Observe AI player state to update session state if needed
     init {
@@ -51,6 +53,11 @@ internal class AiNarratorManager @Inject constructor(
         _activeVoice.value = voice
         // Update session's active AI voice for UI binding
         readerManager.session?.readerTextToSpeech?.state?.activeAiVoice?.value = voice
+        
+        // Save to preferences
+        if (voice != null) {
+            appPreferences.LAST_SELECTED_VOICE.value = voice
+        }
     }
 
     fun stop() {
@@ -66,7 +73,15 @@ internal class AiNarratorManager @Inject constructor(
     }
 
     fun resume() {
-        if (_activeVoice.value == null) return
+        if (_activeVoice.value == null) {
+            // Restore if needed for resume? Potentially.
+            val lastVoice = appPreferences.LAST_SELECTED_VOICE.value
+            if (lastVoice != null) {
+                setActiveVoice(lastVoice)
+            } else {
+                 return
+            }
+        }
         val resumed = aiVoicePlayer.resume()
         if (resumed) {
             readerManager.session?.readerTextToSpeech?.state?.isPlaying?.value = true
@@ -78,7 +93,20 @@ internal class AiNarratorManager @Inject constructor(
 
     fun playForCurrent() {
         val session = readerManager.session ?: return
-        val currentVoice = _activeVoice.value ?: return
+        
+        // Restore last voice if null
+        if (_activeVoice.value == null) {
+             val lastVoice = appPreferences.LAST_SELECTED_VOICE.value
+             if (lastVoice != null) {
+                 setActiveVoice(lastVoice)
+             } else {
+                 // Fallback or just return? If no voice selected ever, user needs to select one.
+                 // Ideally UI should prompt or default, but for now we return.
+                 return
+             }
+        }
+
+        val currentVoice = _activeVoice.value!!
 
         appScope.launch {
             val currentItemPos = session.readerTextToSpeech.state.currentActiveItemState.value.itemPos
@@ -102,8 +130,19 @@ internal class AiNarratorManager @Inject constructor(
 
             val validIndex = findNextValidItemIndex(items, index)
             if (validIndex == -1) {
-                // Notify loading finished if it was showing?
                 _isLoading.value = false
+                
+                // Check if End of Story
+                val stats = session.readingStats.value
+                val currentChapterIndex = session.readerTextToSpeech.state.currentActiveItemState.value.itemPos.chapterIndex
+                
+                if (stats != null && currentChapterIndex >= stats.chapterCount - 1) {
+                    stop()
+                    // Detach session to hide MiniPlayer from global view, 
+                    // but ReaderViewModel still holds the session if active.
+                    readerManager.detachSession()
+                }
+                
                 return@launch
             }
 
@@ -126,16 +165,26 @@ internal class AiNarratorManager @Inject constructor(
             }
             
             val url = urlDeferred.await()
-            _isLoading.value = false
-            
+            // _isLoading.value = false // Removed: Wait for player prepare
+
             audioJobs.remove(validIndex)
 
             if (url != null) {
-                aiVoicePlayer.play(url, onCompletion = {
-                    playAtIndex(validIndex + 1, modelId)
-                })
+                aiVoicePlayer.play(
+                    url = url, 
+                    onCompletion = {
+                        playAtIndex(validIndex + 1, modelId)
+                    },
+                    onPrepared = {
+                         _isLoading.value = false
+                    },
+                    onError = {
+                        _isLoading.value = false
+                    }
+                )
                 prefetch(items, validIndex + 1, modelId)
             } else {
+                 _isLoading.value = false // If no URL found (error case), stop loading
                 playAtIndex(validIndex + 1, modelId)
             }
         }
@@ -158,10 +207,18 @@ internal class AiNarratorManager @Inject constructor(
         val textToSpeak = getTextToSpeak(item)
         
         if (textToSpeak.isNotEmpty()) {
-            val response = readingVoiceRepository.getVoiceStory(modelId, textToSpeak)
+            val cacheKey = "$modelId-$textToSpeak"
+            if (urlCache.containsKey(cacheKey)) {
+                return urlCache[cacheKey]
+            }
+
+            val response = readingVoiceRepository.getVoiceStory(modelId, textToSpeak, "vi")
             if (response is Response.Success) {
                 val url = response.data.audio_path
-                return url.replace("http://localhost:9000", "https://ctd37qdd-9000.asse.devtunnels.ms").replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms")
+                val finalUrl = url.replace("http://localhost:9000", "https://ctd37qdd-9000.asse.devtunnels.ms").replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms")
+                
+                urlCache[cacheKey] = finalUrl
+                return finalUrl
             }
         }
         return null

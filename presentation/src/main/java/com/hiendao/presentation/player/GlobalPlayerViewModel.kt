@@ -21,7 +21,8 @@ data class GlobalPlayerState(
     val coverUrl: String? = null,
     val bookUrl: String = "",
     val chapterUrl: String = "",
-    val progress: Float = 0f
+    val progress: Float = 0f,
+    val isLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -44,8 +45,9 @@ internal class GlobalPlayerViewModel @Inject constructor(
                      combine(
                          snapshotFlow { session.readerTextToSpeech.state.isPlaying.value },
                          snapshotFlow { session.readerTextToSpeech.currentTextPlaying.value },
-                         snapshotFlow { session.readingStats.value }
-                     ) { isPlaying, currentText, stats ->
+                         snapshotFlow { session.readingStats.value },
+                         aiNarratorManager.isLoading
+                     ) { isPlaying, currentText, stats, isLoading ->
                          GlobalPlayerState(
                              isVisible = true,
                              isPlaying = isPlaying, // Is true whenever TTS or AI is playing if hooked up correctly
@@ -54,7 +56,8 @@ internal class GlobalPlayerViewModel @Inject constructor(
                              coverUrl = null, 
                              bookUrl = session.bookUrl,
                              chapterUrl = session.currentChapter.chapterUrl,
-                             progress = stats?.chapterReadPercentage() ?: 0f
+                             progress = stats?.chapterReadPercentage() ?: 0f,
+                             isLoading = isLoading
                          )
                      }.collect { newState ->
                          _state.value = newState
@@ -69,7 +72,7 @@ internal class GlobalPlayerViewModel @Inject constructor(
             aiNarratorManager.resume()
              com.hiendao.presentation.reader.services.NarratorMediaControlsService.start(context)
         } else {
-            readerManager.session?.readerTextToSpeech?.start()
+            readerManager.session?.readerTextToSpeech?.state?.setPlaying?.invoke(true)
         }
     }
 
@@ -77,7 +80,7 @@ internal class GlobalPlayerViewModel @Inject constructor(
         if (aiNarratorManager.activeVoice.value != null) {
             aiNarratorManager.pause()
         } else {
-            readerManager.session?.readerTextToSpeech?.stop()
+            readerManager.session?.readerTextToSpeech?.state?.setPlaying?.invoke(false)
         }
     }
 

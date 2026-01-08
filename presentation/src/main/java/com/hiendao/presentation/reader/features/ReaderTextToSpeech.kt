@@ -51,10 +51,12 @@ internal data class TextToSpeechSettingData(
 
 internal data class TextSynthesis(
     val itemPos: ReaderItem.Position,
-    override val playState: Utterance.PlayState
+    override val playState: Utterance.PlayState,
+    override val sentenceIndex: Int = 0
 ) : Utterance<TextSynthesis> {
     override val utteranceId = "${itemPos.chapterItemPosition}-${itemPos.chapterIndex}"
     override fun copyWithState(playState: Utterance.PlayState) = copy(playState = playState)
+    override fun updateProgress(index: Int) = copy(sentenceIndex = index)
 }
 
 internal class ReaderTextToSpeech(
@@ -513,17 +515,21 @@ internal class ReaderTextToSpeech(
                     item.textToDisplay
                 }
 
+                // Check if we are resuming the same item
+                val current = state.currentActiveItemState.value
+                val isResuming = current.itemPos == item && current.playState != Utterance.PlayState.FINISHED
+                val startIndex = if (isResuming) current.sentenceIndex else 0
+
                 manager.speak(
                     text = textToSpeak,
                     textSynthesis = TextSynthesis(
                         itemPos = item,
                         playState = Utterance.PlayState.PLAYING
-                    )
+                    ),
+                    startFromIndex = startIndex
                 )
             }
             else -> Unit
         }
     }
 }
-
-

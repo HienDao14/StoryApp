@@ -90,6 +90,26 @@ class AppPreferences @Inject constructor(
             )
         }
 
+    val LAST_SELECTED_VOICE = object : Preference<VoicePredefineState?>(
+        "LAST_SELECTED_VOICE"
+    ) {
+        override var value by SharedPreference_Serializable<VoicePredefineState?>(
+            name = name,
+            sharedPreferences = preferences,
+            defaultValue = null,
+            encode = { if(it != null) Json.encodeToString(it) else "" },
+            decode = {
+                if (it.isNotEmpty()) {
+                    try {
+                        Json.decodeFromString<VoicePredefineState>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else null
+            }
+        )
+    }
+
     val READER_SELECTABLE_TEXT = object : Preference<Boolean>("READER_SELECTABLE_TEXT") {
         override var value by SharedPreference_Boolean(name, preferences, false)
     }

@@ -65,23 +65,25 @@ internal fun SettingsTheme(
                 )
             }
         )
-        // Themes
-        ListItem(
-            headlineContent = {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Themes.entries.forEach {
-                        FilterChip(
-                            selected = it == currentTheme,
-                            onClick = { onCurrentThemeChange(it) },
-                            label = { Text(text = stringResource(id = it.nameId)) }
-                        )
+        if(!currentFollowSystem){
+            // Themes
+            ListItem(
+                headlineContent = {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Themes.entries.forEach {
+                            FilterChip(
+                                selected = it == currentTheme,
+                                onClick = { onCurrentThemeChange(it) },
+                                label = { Text(text = stringResource(id = it.nameId)) }
+                            )
+                        }
                     }
-                }
 
-            },
-            leadingContent = {
-                Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.primary)
-            }
-        )
+                },
+                leadingContent = {
+                    Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.primary)
+                }
+            )
+        }
     }
 }

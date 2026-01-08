@@ -36,6 +36,7 @@ import com.hiendao.presentation.voice.screen.components.progressBorder
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 
 import com.hiendao.presentation.utils.parseHtml
+import com.hiendao.presentation.utils.parseHtmlTrimmed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +44,7 @@ internal fun VoiceScreenPart2(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
     state: VoiceReaderScreenState,
+    isLoading: Boolean = false,
     onNextClick: () -> Unit = {},
     onPreviousClick: () -> Unit = {},
     onPlayClick: () -> Unit = {},
@@ -161,10 +163,10 @@ internal fun VoiceScreenPart2(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }) {
+                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }, enabled = !isLoading) {
                             Icon(Icons.Filled.SkipPrevious, "Prev Chapter", modifier = Modifier.size(28.dp))
                          }
-                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }) {
+                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }, enabled = !isLoading) {
                             Icon(Icons.Filled.FastRewind, "Rewind", modifier = Modifier.size(24.dp))
                         }
                         
@@ -173,7 +175,7 @@ internal fun VoiceScreenPart2(
                                 .size(56.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary)
-                                .clickable { if (isPlaying) onPauseClick() else onPlayClick() },
+                                .clickable(enabled = !isLoading) { if (isPlaying) onPauseClick() else onPlayClick() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -184,10 +186,10 @@ internal fun VoiceScreenPart2(
                             )
                         }
 
-                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }) {
+                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }, enabled = !isLoading) {
                             Icon(Icons.Filled.FastForward, "Forward", modifier = Modifier.size(24.dp))
                         }
-                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }) {
+                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }, enabled = !isLoading) {
                             Icon(Icons.Filled.SkipNext, "Next Chapter", modifier = Modifier.size(28.dp))
                          }
                     }
@@ -238,6 +240,7 @@ internal fun VoiceScreenPart2(
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .padding(top = paddingValues.calculateTopPadding())
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -415,7 +418,7 @@ internal fun VoiceScreenPart2(
                 }
 
                 Text(
-                    text = textToDisplay.parseHtml(),
+                    text = textToDisplay.parseHtmlTrimmed(),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Medium,
                         fontSize = androidx.compose.ui.unit.TextUnit(textSize, androidx.compose.ui.unit.TextUnitType.Sp),

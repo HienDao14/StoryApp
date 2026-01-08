@@ -31,7 +31,9 @@ interface Utterance<T : Utterance<T>> {
 
     val utteranceId: String
     val playState: PlayState
+    val sentenceIndex: Int get() = 0 // Default for backward compatibility if needed, though interface usually implies impl.
     fun copyWithState(playState: PlayState): T
+    fun updateProgress(index: Int): T
 }
 
 data class VoiceData(
@@ -84,7 +86,7 @@ class TextToSpeechManager<T : Utterance<T>>(
         _queueListItemSize.clear()
     }
 
-    fun speak(text: String, textSynthesis: T) {
+    fun speak(text: String, textSynthesis: T, startFromIndex: Int = 0) {
         val subItems = delimiterAwareTextSplitter(
             fullText = text,
             maxSliceLength = maxStringLengthPerTextUnit(),
@@ -92,8 +94,15 @@ class TextToSpeechManager<T : Utterance<T>>(
         )
         _queueList[textSynthesis.utteranceId] = textSynthesis
         _queueListItemSize[textSynthesis.utteranceId] = subItems.size
+        
+        // Skip already spoken items if resuming
+        val itemsToSpeak = if (startFromIndex > 0 && startFromIndex < subItems.size) {
+            subItems.withIndex().drop(startFromIndex)
+        } else {
+            subItems.withIndex().toList()
+        }
 
-        subItems.forEachIndexed { index, textSlice ->
+        itemsToSpeak.forEach { (index, textSlice) ->
             val uniqueID = "$index|${textSynthesis.utteranceId}"
             val bundle = Bundle().apply {
                 putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, uniqueID)
@@ -157,18 +166,18 @@ class TextToSpeechManager<T : Utterance<T>>(
         service.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) {
                 if (utteranceId == null) return
-
+ 
                 val itemUtteranceIndex = utteranceId
                     .substringBefore('|', "")
                     .toIntOrNull() ?: return
-                val isFirstSubItem = itemUtteranceIndex == 0
-                if (!isFirstSubItem) {
-                    return
-                }
-
+                // Valid for any index now, not just 0
+                
                 val itemUtteranceId = utteranceId.substringAfter('|')
+                
+                // Get base state from queue, update play state AND progress
                 val res: T = _queueList[itemUtteranceId]
                     ?.copyWithState(playState = Utterance.PlayState.PLAYING)
+                    ?.updateProgress(itemUtteranceIndex)
                     ?: return
 
                 currentActiveItemState.value = res

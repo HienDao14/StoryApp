@@ -184,34 +184,36 @@ internal fun StyleSettingDialog(
                 leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
         )
-        // Themes
-        ListItem(
-            headlineContent = {
-                FlowRow(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Themes.entries.forEach {
-                        FilterChip(
-                            selected = it == state.currentTheme.value,
-                            onClick = { onThemeChange(it) },
-                            label = { Text(text = stringResource(id = it.nameId)) }
-                        )
+        if(!state.followSystem.value){
+            // Themes
+            ListItem(
+                headlineContent = {
+                    FlowRow(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Themes.entries.forEach {
+                            FilterChip(
+                                selected = it == state.currentTheme.value,
+                                onClick = { onThemeChange(it) },
+                                label = { Text(text = stringResource(id = it.nameId)) }
+                            )
+                        }
                     }
-                }
-            },
-            leadingContent = {
-                Icon(
-                    Icons.Outlined.ColorLens,
-                    null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            colors = ListItemDefaults.colors(
-                leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-        )
+                },
+                leadingContent = {
+                    Icon(
+                        Icons.Outlined.ColorLens,
+                        null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+            )
+        }
     }
 }

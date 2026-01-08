@@ -77,18 +77,18 @@ fun MiniPlayer(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onPrev) {
+                IconButton(onClick = onPrev, enabled = !state.isLoading) {
                     Icon(Icons.Default.SkipPrevious, "Previous")
                 }
                 
-                IconButton(onClick = onPlayPause) {
+                IconButton(onClick = onPlayPause, enabled = !state.isLoading) {
                     Icon(
                         if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         "Play/Pause"
                     )
                 }
 
-                 IconButton(onClick = onNext) {
+                 IconButton(onClick = onNext, enabled = !state.isLoading) {
                     Icon(Icons.Default.SkipNext, "Next")
                 }
                 
@@ -100,7 +100,13 @@ fun MiniPlayer(
         
         // Progress Indicator at bottom?
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-            if (state.progress > 0) {
+            if (state.isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().height(2.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = Color.Transparent,
+                )
+            } else if (state.progress > 0) {
                 LinearProgressIndicator(
                     progress = { state.progress / 100f },
                     modifier = Modifier.fillMaxWidth().height(2.dp),

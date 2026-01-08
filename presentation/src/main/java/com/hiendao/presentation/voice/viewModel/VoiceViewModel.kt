@@ -75,13 +75,20 @@ internal class VoiceViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
 ) : ViewModel(){
 
-    private var _bookUrl = MutableStateFlow<String>("")
+    private val initialBookUrl = stateHandle.get<String>("bookId") ?: ""
+    private val initialBookTitle = stateHandle.get<String>("bookTitle") ?: ""
+    
+    private val initialChapterUrl : String = readerManager.session?.let { session ->
+        if (session.bookUrl == initialBookUrl) session.currentChapter.chapterUrl else ""
+    } ?: ""
+
+    private var _bookUrl = MutableStateFlow<String>(initialBookUrl)
     val bookUrl = _bookUrl.asStateFlow()
 
-    private var _chapterUrl = MutableStateFlow<String>("")
+    private var _chapterUrl = MutableStateFlow<String>(initialChapterUrl)
     val chapterUrl = _chapterUrl.asStateFlow()
 
-    private var _bookTitle = MutableStateFlow<String>("")
+    private var _bookTitle = MutableStateFlow<String>(initialBookTitle)
     val bookTitle = _bookTitle.asStateFlow()
 
 
@@ -106,8 +113,7 @@ internal class VoiceViewModel @Inject constructor(
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
-        // giá trị initial nếu cần
-        readerManager.initiateOrGetSession("", "")
+        readerManager.initiateOrGetSession(initialBookUrl, initialChapterUrl)
     )
 
     val readerSession = _readerSession
@@ -181,6 +187,11 @@ internal class VoiceViewModel @Inject constructor(
                  if (aiNarratorManager.activeVoice.value != null) {
                     originalTtsState.playPreviousChapter()
                  } else originalTtsState.playPreviousChapter()
+            },
+            setVoiceId = { voiceId ->
+                aiNarratorManager.stop()
+                aiNarratorManager.setActiveVoice(null)
+                originalTtsState.setVoiceId(voiceId)
             }
         )
     }
@@ -288,7 +299,7 @@ internal class VoiceViewModel @Inject constructor(
              // Ensure service is started
              com.hiendao.presentation.reader.services.NarratorMediaControlsService.start(context)
         } else {
-            readerSession.value.readerTextToSpeech.start()
+            readerSession.value.readerTextToSpeech.state.setPlaying(true)
         }
     }
     
@@ -296,7 +307,7 @@ internal class VoiceViewModel @Inject constructor(
         if (aiNarratorManager.activeVoice.value != null) {
             aiNarratorManager.pause()
         } else {
-            readerSession.value.readerTextToSpeech.stop()
+            readerSession.value.readerTextToSpeech.state.setPlaying(false)
         }
     }
 
@@ -420,6 +431,13 @@ internal class VoiceViewModel @Inject constructor(
     fun updateState(bookUrl: String, bookTitle: String){
         _bookUrl.value = bookUrl
         _bookTitle.value = bookTitle
+        
+        // If there is an active session for this book, use its chapter to init properly
+        val activeSession = readerManager.session
+        if (activeSession != null && activeSession.bookUrl == bookUrl) {
+            _chapterUrl.value = activeSession.currentChapter.chapterUrl
+        }
+        
         reload()
     }
 

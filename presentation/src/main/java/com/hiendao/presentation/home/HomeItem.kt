@@ -238,7 +238,7 @@ fun HomeItem(
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = stringResource(CoreR.string.read),
+                    text = stringResource(CoreR.string.str_read),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     modifier = Modifier

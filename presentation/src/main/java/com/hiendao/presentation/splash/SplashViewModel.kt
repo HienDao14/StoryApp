@@ -54,6 +54,7 @@ class SplashViewModel @Inject constructor(
                             }
                             appPreferences.ACCESS_TOKEN.value = newTokens.accessToken!!
                             appPreferences.REFRESH_TOKEN.value = newTokens.refreshToken!!
+                            println("token: ${newTokens.accessToken!!}")
                             newTokens.userId?.let {
                                 appPreferences.USER_ID.value = it
                             }

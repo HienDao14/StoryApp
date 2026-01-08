@@ -55,6 +55,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
@@ -118,111 +122,111 @@ internal fun VoiceRoute(
         }
     }
 
-    if (state.readerState?.showVoiceLoadingDialog?.value == true) {
-        Dialog(
-            onDismissRequest = { },
-            properties = DialogProperties(
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
-            )
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "(đang thực hiện, vui lòng chờ...)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 8.dp),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+    // Non-blocking Loading Overlay
+    val isLoading = state.readerState?.showVoiceLoadingDialog?.value == true
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            containerColor = MaterialTheme.colorScheme.primary,
+            topBar = {
+                val isAtTop by lazyListState.isAtTop(threshold = 40.dp)
+                val alpha by animateFloatAsState(targetValue = if (isAtTop) 0f else 1f, label = "")
+                val backgroundColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.background.copy(alpha = alpha),
+                    label = ""
+                )
+                val titleColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.onPrimary.copy(alpha = alpha),
+                    label = ""
+                )
+                Surface(color = backgroundColor) {
+                    Column {
+                        TopAppBar(
+                            scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent,
+                            ),
+                            title = {
+                                Text(
+                                    text = state.book.value.title,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(
+                                    onClick = onPressBack
+                                ) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                                }
+                            },
+                            actions = {
+                                IconButton(
+                                    onClick = onFavouriteToggle
+                                ) {
+                                    Icon(
+                                        if (state.book.value.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                                        stringResource(R.string.open_the_web_view),
+                                        tint = ColorLike
+                                    )
+                                }
+                            }
+                        )
+                        HorizontalDivider(Modifier.alpha(alpha))
+                    }
                 }
+                AnimatedVisibility(
+                    visible = state.isInSelectionMode.value,
+                    enter = expandVertically(initialHeight = { it / 2 }, expandFrom = Alignment.Top)
+                            + fadeIn(),
+                    exit = shrinkVertically(targetHeight = { it / 2 }, shrinkTowards = Alignment.Top)
+                            + fadeOut(),
+                ) {
+    
+                }
+            },
+            content = { innerPadding ->
+                VoiceScreenPart2(
+                    modifier = Modifier.fillMaxSize(),
+                    paddingValues = innerPadding,
+                    state = state,
+                    isLoading = isLoading,
+                    onChapterSelected = { chapterUrl ->
+                        onChapterSelected.invoke(chapterUrl)
+                    },
+                    onPlayClick = { onPlayClick.invoke() },
+                    onPauseClick = { onPauseClick.invoke() },
+                    onSelectModelVoice = onSelectModelVoice
+                )
+            }
+        )
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp) // Lift above bottom sheet/player if any usually.
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Loading audio...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                 }
             }
         }
     }
-
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.primary,
-        topBar = {
-            val isAtTop by lazyListState.isAtTop(threshold = 40.dp)
-            val alpha by animateFloatAsState(targetValue = if (isAtTop) 0f else 1f, label = "")
-            val backgroundColor by animateColorAsState(
-                targetValue = MaterialTheme.colorScheme.background.copy(alpha = alpha),
-                label = ""
-            )
-            val titleColor by animateColorAsState(
-                targetValue = MaterialTheme.colorScheme.onPrimary.copy(alpha = alpha),
-                label = ""
-            )
-            Surface(color = backgroundColor) {
-                Column {
-                    TopAppBar(
-                        scrollBehavior = scrollBehavior,
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent,
-                        ),
-                        title = {
-                            Text(
-                                text = state.book.value.title,
-                                style = MaterialTheme.typography.headlineSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(
-                                onClick = onPressBack
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                onClick = onFavouriteToggle
-                            ) {
-                                Icon(
-                                    if (state.book.value.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                                    stringResource(R.string.open_the_web_view),
-                                    tint = ColorLike
-                                )
-                            }
-                        }
-                    )
-                    HorizontalDivider(Modifier.alpha(alpha))
-                }
-            }
-            AnimatedVisibility(
-                visible = state.isInSelectionMode.value,
-                enter = expandVertically(initialHeight = { it / 2 }, expandFrom = Alignment.Top)
-                        + fadeIn(),
-                exit = shrinkVertically(targetHeight = { it / 2 }, shrinkTowards = Alignment.Top)
-                        + fadeOut(),
-            ) {
-
-            }
-        },
-        content = { innerPadding ->
-            VoiceScreenPart2(
-                modifier = Modifier.fillMaxSize(),
-                paddingValues = innerPadding,
-                state = state,
-                onChapterSelected = { chapterUrl ->
-                    onChapterSelected.invoke(chapterUrl)
-                },
-                onPlayClick = { onPlayClick.invoke() },
-                onPauseClick = { onPauseClick.invoke() },
-                onSelectModelVoice = onSelectModelVoice
-            )
-        }
-    )
 
     if (nightMode) {
         Box(

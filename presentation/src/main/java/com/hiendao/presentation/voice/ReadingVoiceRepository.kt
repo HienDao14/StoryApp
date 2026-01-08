@@ -33,9 +33,9 @@ class ReadingVoiceRepository @Inject constructor(
         }
     }
 
-    suspend fun getVoiceStory(modelId: String, text: String): Response<VoiceStoryResponse> {
+    suspend fun getVoiceStory(modelId: String, text: String, language: String): Response<VoiceStoryResponse> {
         return try {
-            val response = voiceApi.getVoiceStory(GenerateVoiceBody(text, modelId))
+            val response = voiceApi.getVoiceStory(GenerateVoiceBody(text, modelId, language))
             Response.Success(response)
         } catch (e: Exception) {
             Response.Error(e.message ?: "Unknown error", e)

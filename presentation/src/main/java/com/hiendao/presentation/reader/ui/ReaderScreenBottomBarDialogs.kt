@@ -34,6 +34,7 @@ internal fun ReaderScreenBottomBarDialogs(
     onAutoScrollSpeedChanged: (Int) -> Unit,
     onVolumeKeyNavigationChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
     selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
     Column(
@@ -48,7 +49,8 @@ internal fun ReaderScreenBottomBarDialogs(
                     )
                     ReaderScreenState.Settings.Type.TextToSpeech -> VoiceReaderSettingDialog(
                         state = settings.textToSpeech,
-                        selectModelVoice = selectModelVoice
+                        selectModelVoice = selectModelVoice,
+                        isLoading = isLoading
                     )
                     ReaderScreenState.Settings.Type.Style -> {
                         StyleSettingDialog(

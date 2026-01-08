@@ -8,7 +8,7 @@ import com.hiendao.data.local.dao.ChapterBodyDao
 import com.hiendao.data.local.dao.ChapterDao
 import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
-import com.hiendao.data.remote.interceptor.MyInterceptor
+import com.hiendao.storyapp.di.MyInterceptor
 import com.hiendao.data.remote.retrofit.book.BookApi
 import com.hiendao.data.remote.retrofit.chapter.ChapterApi
 import com.hiendao.data.remote.retrofit.login.LoginAPI
@@ -79,8 +79,7 @@ object AppModule {
 
     @Provides
     fun provideMyInterceptor(appPreferences: AppPreferences): MyInterceptor{
-        val accessToken = appPreferences.ACCESS_TOKEN
-        return MyInterceptor(accessToken.value)
+        return MyInterceptor(appPreferences)
     }
 
     @Provides

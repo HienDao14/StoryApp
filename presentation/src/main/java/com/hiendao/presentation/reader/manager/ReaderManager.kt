@@ -22,9 +22,11 @@ internal class ReaderManager @Inject constructor(
         chapterUrl: String,
     ): ReaderSession {
         val currentSession = session
-        if (currentSession != null && bookUrl == currentSession.bookUrl && chapterUrl == currentSession.currentChapter.chapterUrl) {
-            readerViewHandlersActions.introScrollToCurrentChapter = true
-            return currentSession
+        if (currentSession != null && bookUrl == currentSession.bookUrl) {
+            if (chapterUrl.isEmpty() || chapterUrl == currentSession.currentChapter.chapterUrl) {
+                readerViewHandlersActions.introScrollToCurrentChapter = true
+                return currentSession
+            }
         }
 
         currentSession?.close()
@@ -45,5 +47,21 @@ internal class ReaderManager @Inject constructor(
         session?.close()
         session = null
         _sessionFlow.value = null
+    }
+
+    fun detachSession() {
+        // Just clear the reference to hide MiniPlayer, but don't close the session object
+        session = null
+        _sessionFlow.value = null
+    }
+
+    fun attachSession(newSession: ReaderSession) {
+        // If there's an existing mismatched session, close it? 
+        // Or assume we are overriding. Safe to close existing if different.
+        if (session != null && session != newSession) {
+            session?.close()
+        }
+        session = newSession
+        _sessionFlow.value = newSession
     }
 }

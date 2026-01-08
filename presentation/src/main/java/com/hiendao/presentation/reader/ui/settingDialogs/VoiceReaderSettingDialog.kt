@@ -103,6 +103,7 @@ import com.hiendao.presentation.reader.features.TextToSpeechSettingData
 @Composable
 internal fun VoiceReaderSettingDialog(
     state: TextToSpeechSettingData,
+    isLoading: Boolean = false,
     selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
     var openVoicesDialog by rememberSaveable { mutableStateOf(false) }
@@ -231,7 +232,7 @@ internal fun VoiceReaderSettingDialog(
                     )
                     IconButton(
                         onClick = debouncedAction(waitMillis = 1000) { state.playPreviousChapter() },
-                        enabled = state.isThereActiveItem.value,
+                        enabled = state.isThereActiveItem.value && !isLoading,
                         modifier = Modifier.alpha(alpha),
                     ) {
                         Icon(
@@ -245,7 +246,7 @@ internal fun VoiceReaderSettingDialog(
                     }
                     IconButton(
                         onClick = debouncedAction(waitMillis = 100) { state.playPreviousItem() },
-                        enabled = state.isThereActiveItem.value,
+                        enabled = state.isThereActiveItem.value && !isLoading,
                         modifier = Modifier.alpha(alpha),
                     ) {
                         Icon(
@@ -257,7 +258,10 @@ internal fun VoiceReaderSettingDialog(
                                 .background(ColorAccent, CircleShape),
                         )
                     }
-                    IconButton(onClick = { state.setPlaying(!state.isPlaying.value) }) {
+                    IconButton(
+                        onClick = { state.setPlaying(!state.isPlaying.value) },
+                        enabled = !isLoading
+                    ) {
                         AnimatedContent(
                             targetState = state.isPlaying.value,
                             modifier = Modifier
@@ -280,7 +284,7 @@ internal fun VoiceReaderSettingDialog(
                     }
                     IconButton(
                         onClick = debouncedAction(waitMillis = 100) { state.playNextItem() },
-                        enabled = state.isThereActiveItem.value,
+                        enabled = state.isThereActiveItem.value && !isLoading,
                         modifier = Modifier.alpha(alpha),
                     ) {
                         Icon(
@@ -294,7 +298,7 @@ internal fun VoiceReaderSettingDialog(
                     }
                     IconButton(
                         onClick = debouncedAction(waitMillis = 1000) { state.playNextChapter() },
-                        enabled = state.isThereActiveItem.value,
+                        enabled = state.isThereActiveItem.value && !isLoading,
                         modifier = Modifier.alpha(alpha),
                     ) {
                         Icon(

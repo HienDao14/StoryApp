@@ -225,7 +225,8 @@ internal fun ReaderScreen(
                         onAutoScrollSpeedChanged = onAutoScrollSpeedChanged,
                         onVolumeKeyNavigationChanged = onVolumeKeyNavigationChanged,
                         modifier = Modifier.padding(bottom = 8.dp),
-                        selectModelVoice = selectModelVoice
+                        selectModelVoice = selectModelVoice,
+                        isLoading = state.showVoiceLoadingDialog.value
                     )
                     BottomAppBar(
                         modifier = Modifier

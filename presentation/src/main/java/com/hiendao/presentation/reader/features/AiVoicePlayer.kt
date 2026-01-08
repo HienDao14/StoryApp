@@ -18,7 +18,7 @@ class AiVoicePlayer @Inject constructor(
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying = _isPlaying.asStateFlow()
 
-    fun play(url: String, onCompletion: () -> Unit = {}, onError: (String) -> Unit = {}) {
+    fun play(url: String, onCompletion: () -> Unit = {}, onError: (String) -> Unit = {}, onPrepared: () -> Unit = {}) {
         android.util.Log.d("AiVoicePlayer", "Attempting to play URL: $url")
 //        release()
         mediaPlayer = MediaPlayer().apply {
@@ -33,6 +33,7 @@ class AiVoicePlayer @Inject constructor(
                 prepareAsync()
                 setOnPreparedListener { 
                     android.util.Log.d("AiVoicePlayer", "MediaPlayer prepared successfully")
+                    onPrepared()
                     start() 
                     _isPlaying.value = true
                 }
