@@ -22,6 +22,9 @@ import java.io.File
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import com.hiendao.coreui.R as CoreR
+
+private const val MAX_RECORDING_DURATION = 300 // 5 minutes
 
 @HiltViewModel
 class CreateVoiceViewModel @Inject constructor(
@@ -77,6 +80,13 @@ class CreateVoiceViewModel @Inject constructor(
             while (true) {
                 val elapsed = (System.currentTimeMillis() - startTime) / 1000
                 _uiState.update { it.copy(recordingDuration = elapsed.toInt()) }
+                
+                if (elapsed >= MAX_RECORDING_DURATION) {
+                    stopRecording()
+                    _uiState.update { it.copy(errorMessage = "Recording limit reached (5 mins)") }
+                    break
+                }
+                
                 delay(1000)
             }
         }

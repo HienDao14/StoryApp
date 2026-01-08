@@ -405,7 +405,7 @@ private fun VoiceSelectorDialog(
 
             items(voicesFiltered.size) { index ->
                 val it = voicesFiltered[index]
-                val selected by remember { derivedStateOf { it.id == currentVoice?.id } }
+                val selected = it.id == currentVoice?.id
                 Row(
                     modifier = Modifier
                         .heightIn(min = 54.dp)

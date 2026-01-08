@@ -114,12 +114,25 @@ fun CreateVoiceScreen(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-        ) {
+        if (state.isFeatureDisabled && state.recordedFile == null) {
+            AlertDialog(
+                onDismissRequest = onBackClick,
+                title = { Text(stringResource(CoreR.string.notification)) },
+                text = { Text("Đang trong quá trình huấn luyện, vui lòng quay lại sau") },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = onBackClick) {
+                        Text("Đóng")
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
             Text(stringResource(CoreR.string.voice_name_label), style = MaterialTheme.typography.labelMedium)
             Spacer(modifier = Modifier.height(8.dp))
             MyOutlinedTextField(
@@ -184,6 +197,7 @@ fun CreateVoiceScreen(
                     }
                 }
             }
+        }
         }
 
         if (state.showSuccessDialog) {
