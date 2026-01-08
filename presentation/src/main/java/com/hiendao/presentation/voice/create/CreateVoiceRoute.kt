@@ -19,6 +19,9 @@ fun CreateVoiceRoute(
         onStopRecording = viewModel::stopRecording,
         onPlayRecording = viewModel::playRecording,
         onCreateVoice = viewModel::createVoice,
-        onDismissSuccessDialog = viewModel::dismissSuccessDialog
+        onDismissSuccessDialog = {
+            viewModel::dismissSuccessDialog
+            onBackClick.invoke()
+        }
     )
 }

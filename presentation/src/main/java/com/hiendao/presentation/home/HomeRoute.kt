@@ -556,7 +556,9 @@ fun ExpandableFab(
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 // Generate Story Button
@@ -564,7 +566,6 @@ fun ExpandableFab(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.background).padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.generate_story),
@@ -587,7 +588,6 @@ fun ExpandableFab(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.background).padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.create_new_voice_title),

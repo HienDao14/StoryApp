@@ -54,7 +54,8 @@ import com.hiendao.coreui.utils.StateExtra_String
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
 
-
+import kotlinx.coroutines.flow.flatMapLatest
+import androidx.compose.runtime.snapshotFlow
 import com.hiendao.presentation.reader.domain.ChapterState
 
 
@@ -118,8 +119,8 @@ internal class VoiceViewModel @Inject constructor(
 
     val readerSession = _readerSession
 
-    val readingStats = readerSession.map { session ->
-        session.readingStats
+    val readingStats = readerSession.flatMapLatest { session ->
+        snapshotFlow { session.readingStats.value }
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
@@ -127,8 +128,8 @@ internal class VoiceViewModel @Inject constructor(
     )
 
     // Speaker stats for tracking audio playback progress
-    val speakerStats = readerSession.map { session ->
-        session.speakerStats
+    val speakerStats = readerSession.flatMapLatest { session ->
+        snapshotFlow { session.speakerStats.value }
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
@@ -136,8 +137,8 @@ internal class VoiceViewModel @Inject constructor(
     )
 
     // Current text being played
-    val currentTextPlaying = readerSession.map { session ->
-        session.readerTextToSpeech.currentTextPlaying
+    val currentTextPlaying = readerSession.flatMapLatest { session ->
+        snapshotFlow { session.readerTextToSpeech.currentTextPlaying.value }
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
@@ -145,8 +146,8 @@ internal class VoiceViewModel @Inject constructor(
     )
 
     // Is currently speaking
-    val isSpeaking = readerSession.map { session ->
-        session.readerTextToSpeech.isSpeaking
+    val isSpeaking = readerSession.flatMapLatest { session ->
+        snapshotFlow { session.readerTextToSpeech.isSpeaking.value }
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
@@ -212,13 +213,13 @@ internal class VoiceViewModel @Inject constructor(
         ReaderScreenState(
             showReaderInfo = mutableStateOf(false),
             readerInfo = ReaderScreenState.CurrentInfo(
-                chapterTitle = derivedStateOf { stats?.value?.chapterTitle ?: "" },
+                chapterTitle = derivedStateOf { stats?.chapterTitle ?: "" },
                 chapterCurrentNumber = derivedStateOf {
-                    stats?.value?.run { chapterIndex + 1 } ?: 0
+                    stats?.run { chapterIndex + 1 } ?: 0
                 },
                 chapterPercentageProgress = session.readingChapterProgressPercentage,
-                chaptersCount = derivedStateOf { stats?.value?.chapterCount ?: 0 },
-                chapterUrl = derivedStateOf { stats?.value?.chapterUrl ?: "" }
+                chaptersCount = derivedStateOf { stats?.chapterCount ?: 0 },
+                chapterUrl = mutableStateOf(stats?.chapterUrl ?: "")
             ),
             settings = ReaderScreenState.Settings(
                 selectedSetting = mutableStateOf(ReaderScreenState.Settings.Type.None),
@@ -315,6 +316,7 @@ internal class VoiceViewModel @Inject constructor(
         viewModelScope.launch {
             // Update the requested chapter URL to trigger session reload
             _chapterUrl.value = chapterUrl
+            readerState?.value?.readerInfo?.chapterUrl?.value = chapterUrl
             
             // Wait for the session to update and items to be loaded for the new chapter
             var retry = 0
@@ -429,6 +431,7 @@ internal class VoiceViewModel @Inject constructor(
         readerSession.value.markChapterEndAsSeen(chapterUrl = chapterUrl)
 
     fun updateState(bookUrl: String, bookTitle: String){
+        state.value.isInitializing.value = true
         _bookUrl.value = bookUrl
         _bookTitle.value = bookTitle
         
@@ -439,6 +442,48 @@ internal class VoiceViewModel @Inject constructor(
         }
         
         reload()
+        
+        viewModelScope.launch {
+            // Wait for items to be loaded
+            var retry = 0
+            while (readerSession.value.items.isEmpty() && retry < 20) {
+                kotlinx.coroutines.delay(200)
+                retry++
+            }
+            if (readerSession.value.items.isNotEmpty()) {
+                restoreLastReadPosition()
+            }
+            state.value.isInitializing.value = false
+        }
+    }
+    
+    private fun restoreLastReadPosition() {
+        val session = readerSession.value
+        val items = session.items
+        if (items.isEmpty()) return
+
+        val currentChapterUrl = session.currentChapter.chapterUrl
+        readerState?.value?.readerInfo?.chapterUrl?.value = currentChapterUrl
+
+        // Find the chapter object to get lastReadPosition
+        // We use the repository/state chapters to get the latest DB value
+        val chapter = state.value.chapters.find { it.chapter.id == currentChapterUrl }?.chapter ?: return
+        val lastReadPos = chapter.lastReadPosition
+        
+        // Find internal chapter index using Title item
+        val titleItem = items.find { it is ReaderItem.Title && it.chapterUrl == currentChapterUrl }
+        val chapterIndex = (titleItem as? ReaderItem.Title)?.chapterIndex ?: return
+        
+        val itemIndex = com.hiendao.presentation.reader.domain.indexOfReaderItem(
+            list = items,
+            chapterIndex = chapterIndex,
+            chapterItemPosition = lastReadPos
+        )
+        
+        if (itemIndex != -1) {
+            session.prepareSpeaker(itemIndex)
+            updateInfoViewTo(itemIndex)
+        }
     }
 
     init {

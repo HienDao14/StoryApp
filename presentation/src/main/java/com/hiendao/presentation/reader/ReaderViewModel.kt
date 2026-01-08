@@ -151,7 +151,7 @@ internal class ReaderViewModel @Inject constructor(
             },
             chapterPercentageProgress = readerSession.readingChapterProgressPercentage,
             chaptersCount = derivedStateOf { readingPosStats.value?.chapterCount ?: 0 },
-            chapterUrl = derivedStateOf { readingPosStats.value?.chapterUrl ?: "" }
+            chapterUrl = mutableStateOf(readingPosStats.value?.chapterUrl ?: "" )
         ),
         settings = ReaderScreenState.Settings(
             selectedSetting = mutableStateOf(ReaderScreenState.Settings.Type.None),

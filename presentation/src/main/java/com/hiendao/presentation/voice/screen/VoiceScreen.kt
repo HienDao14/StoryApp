@@ -59,11 +59,11 @@ internal fun VoiceScreen(
     }
 
     val textToSpeech = state.readerState?.settings?.textToSpeech
-    val audioProgress = state.audioProgress.value
+    val audioProgress = state.audioProgress
     val isPlaying = textToSpeech?.isPlaying?.value ?: false
     val activeVoice = textToSpeech?.activeVoice?.value
     val availableVoices = textToSpeech?.availableVoices ?: emptyList()
-    val currentTextPlaying = state.currentTextPlaying?.value
+    val currentTextPlaying = state.currentTextPlaying
     val chapters = state.chapters
 
     // Dropdown states

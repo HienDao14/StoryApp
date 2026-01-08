@@ -243,6 +243,16 @@ internal class ReaderTextToSpeech(
         nextItems.forEach(::speakItem)
     }
 
+    fun setReadingPosition(itemIndex: Int) {
+        val item = items.getOrNull(itemIndex) as? ReaderItem.Position ?: return
+        manager.setCurrentSpeakState(
+            TextSynthesis(
+                itemPos = item,
+                playState = Utterance.PlayState.FINISHED
+            )
+        )
+    }
+
     @Synchronized
     private fun scrollToActiveItem() {
         coroutineScope.launch {

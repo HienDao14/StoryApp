@@ -34,7 +34,7 @@ fun BookEntity.toDomain(): Book {
     return Book(
         id = this.id,                       // Domain dùng id, entity dùng url
         title = this.title,
-        author = "",                         // Entity không có
+        author = author,                         // Entity không có
         url = this.id,
         coverImageUrl = this.coverImageUrl,
         description = this.description,
@@ -109,6 +109,7 @@ fun BookResponseDTO.toEntity(inLibrary: Boolean = false): BookEntity {
         description = this.description ?: "",
         completed = this.status == Constants.BookStatus.COMPLETED,
         isFavourite = this.isFavorite ?: false,
-        inLibrary = inLibrary
+        inLibrary = inLibrary,
+        author = author ?: ""
     )
 }

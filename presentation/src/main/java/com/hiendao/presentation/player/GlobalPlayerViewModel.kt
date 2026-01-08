@@ -48,23 +48,29 @@ internal class GlobalPlayerViewModel @Inject constructor(
                          snapshotFlow { session.readingStats.value },
                          aiNarratorManager.isLoading
                      ) { isPlaying, currentText, stats, isLoading ->
-                         GlobalPlayerState(
-                             isVisible = true,
-                             isPlaying = isPlaying, // Is true whenever TTS or AI is playing if hooked up correctly
-                             bookTitle = session.bookTitle ?: "",
-                             chapterTitle = stats?.chapterTitle ?: "",
-                             coverUrl = null, 
-                             bookUrl = session.bookUrl,
-                             chapterUrl = session.currentChapter.chapterUrl,
-                             progress = stats?.chapterReadPercentage() ?: 0f,
-                             isLoading = isLoading
-                         )
-                     }.collect { newState ->
-                         _state.value = newState
+                         Triple(isPlaying, stats, isLoading)
+                     }.collect { (isPlaying, stats, isLoading) ->
+                         _state.update { current ->
+                             current.copy(
+                                 isVisible = if (isPlaying || isLoading) true else current.isVisible,
+                                 isPlaying = isPlaying, // Is true whenever TTS or AI is playing if hooked up correctly
+                                 bookTitle = session.bookTitle ?: "",
+                                 chapterTitle = stats?.chapterTitle ?: "",
+                                 coverUrl = session.bookCoverUrl ?: "",
+                                 bookUrl = session.bookUrl,
+                                 chapterUrl = session.currentChapter.chapterUrl,
+                                 progress = stats?.chapterReadPercentage() ?: 0f,
+                                 isLoading = isLoading
+                             )
+                         }
                      }
                 }
             }
         }
+    }
+
+    fun hidePlayer() {
+        _state.update { it.copy(isVisible = false) }
     }
 
     fun play() {

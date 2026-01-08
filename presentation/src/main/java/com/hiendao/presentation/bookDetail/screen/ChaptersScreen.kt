@@ -349,7 +349,7 @@ fun ExpandableFab(
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     val rotation by animateFloatAsState(
-        targetValue = if (isExpanded) 45f else 0f,
+        targetValue = if (isExpanded) 90f else 0f,
         label = "fab_rotation"
     )
 

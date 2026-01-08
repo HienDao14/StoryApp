@@ -66,12 +66,12 @@ internal fun VoiceScreenPart2(
     }
 
     val textToSpeech = state.readerState?.settings?.textToSpeech
-    val audioProgress = state.audioProgress.value
+    val audioProgress = state.audioProgress
     val isPlaying = textToSpeech?.isPlaying?.value ?: false
     val activeVoice = textToSpeech?.activeVoice?.value
     val activeAiVoice = textToSpeech?.activeAiVoice?.value
     val availableVoices = textToSpeech?.availableVoices ?: emptyList()
-    val currentTextPlaying = state.currentTextPlaying?.value
+    val currentTextPlaying = state.currentTextPlaying
     val chapters = state.chapters
     
     // Style Settings
@@ -159,14 +159,16 @@ internal fun VoiceScreenPart2(
                     }
 
                     // Playback Controls
+                    val isChapterSelected = !state.readerState?.readerInfo?.chapterUrl?.value.isNullOrEmpty()
+                    
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }, enabled = !isLoading) {
+                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }, enabled = !isLoading && isChapterSelected) {
                             Icon(Icons.Filled.SkipPrevious, "Prev Chapter", modifier = Modifier.size(28.dp))
                          }
-                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }, enabled = !isLoading) {
+                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }, enabled = !isLoading && isChapterSelected) {
                             Icon(Icons.Filled.FastRewind, "Rewind", modifier = Modifier.size(24.dp))
                         }
                         
@@ -174,22 +176,22 @@ internal fun VoiceScreenPart2(
                             modifier = Modifier
                                 .size(56.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
-                                .clickable(enabled = !isLoading) { if (isPlaying) onPauseClick() else onPlayClick() },
+                                .background(if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+                                .clickable(enabled = !isLoading && isChapterSelected) { if (isPlaying) onPauseClick() else onPlayClick() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                                 contentDescription = "Play/Pause",
-                                tint = MaterialTheme.colorScheme.onPrimary,
+                                tint = if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                                 modifier = Modifier.size(32.dp)
                             )
                         }
 
-                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }, enabled = !isLoading) {
+                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }, enabled = !isLoading && isChapterSelected) {
                             Icon(Icons.Filled.FastForward, "Forward", modifier = Modifier.size(24.dp))
                         }
-                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }, enabled = !isLoading) {
+                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }, enabled = !isLoading && isChapterSelected) {
                             Icon(Icons.Filled.SkipNext, "Next Chapter", modifier = Modifier.size(28.dp))
                          }
                     }

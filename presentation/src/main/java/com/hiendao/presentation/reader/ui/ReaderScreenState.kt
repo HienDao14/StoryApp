@@ -18,7 +18,7 @@ internal data class ReaderScreenState(
         val chapterCurrentNumber: State<Int>,
         val chapterPercentageProgress: State<Float>,
         val chaptersCount: State<Int>,
-        val chapterUrl: State<String>
+        var chapterUrl: MutableState<String>
     )
 
     data class Settings(

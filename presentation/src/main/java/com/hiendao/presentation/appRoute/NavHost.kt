@@ -353,21 +353,33 @@ fun AppNavHost(
                         delay(500)
                         // viewModel.autoPlay() // Removed per requirement
                     }
-                    VoiceRoute(
-                        modifier = Modifier.fillMaxSize(),
-                        state = viewModel.state.collectAsStateWithLifecycle().value,
-                        onFavouriteToggle = { viewModel.toggleBookmark() },
-                        onPressBack = {
-                            navController.navigateUp()
-                        },
-                        onChangeCover = onDoAskForImage { viewModel.saveImageAsCover(it) },
-                        onChapterSelected = { chapterUrl ->
-                            viewModel.playChapterFromStart(chapterUrl)
-                        },
-                        onPlayClick = { viewModel.play() },
-                        onPauseClick = { viewModel.pause() },
-                        onSelectModelVoice = viewModel::selectModelVoice
-                    )
+                    val state = viewModel.state.collectAsStateWithLifecycle().value
+                    
+                    if (state.isInitializing.value) {
+                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                             CircularProgressIndicator()
+                         }
+                    } else {
+                        VoiceRoute(
+                            modifier = Modifier.fillMaxSize(),
+                            state = state,
+                            onFavouriteToggle = { viewModel.toggleBookmark() },
+                            
+                            onPressBack = {
+                                if (state.isSpeaking == false) {
+                                    globalPlayerViewModel.hidePlayer()
+                                }
+                                navController.navigateUp()
+                            },
+                            onChangeCover = onDoAskForImage { viewModel.saveImageAsCover(it) },
+                            onChapterSelected = { chapterUrl ->
+                                viewModel.playChapterFromStart(chapterUrl)
+                            },
+                            onPlayClick = { viewModel.play() },
+                            onPauseClick = { viewModel.pause() },
+                            onSelectModelVoice = viewModel::selectModelVoice
+                        )
+                    }
     //                com.hiendao.presentation.voice.screen.VoiceScreenPart2(
     //                    modifier = Modifier.fillMaxSize(),
     //                    paddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp),

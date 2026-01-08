@@ -100,7 +100,7 @@ internal class ChaptersViewModel @Inject constructor(
     fun updateState(bookUrl: String, bookTitle: String){
         _bookUrl.value = bookUrl
         _bookTitle.value = bookTitle
-        reload()
+        reload(showLoading = true)
     }
 
     fun reloadChapters(){
@@ -134,21 +134,22 @@ internal class ChaptersViewModel @Inject constructor(
         }
     }
 
-    fun reload(){
+    fun reload(showLoading: Boolean = false){
         viewModelScope.launch {
             launch {
                 chaptersRepository.getBookDetail(bookId = bookUrl.value).collect { response ->
                     when(response){
                         is Response.Loading -> {
-
+                            if (showLoading) state.isLoading.value = true
                         }
                         is Response.Success -> {
+                            state.isLoading.value = false
                             val book = response.data
                             _bookState.emit(ChaptersScreenState.BookState(book))
                             reloadChapters()
                         }
                         is Response.Error -> {
-
+                             state.isLoading.value = false
                         }
                         is Response.None -> Unit
                     }

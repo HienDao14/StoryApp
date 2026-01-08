@@ -235,7 +235,7 @@ fun HomeItem(
                     painter = painterResource(R.drawable.ic_read_book),
                     contentDescription = stringResource(CoreR.string.read),
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 Text(
                     text = stringResource(CoreR.string.str_read),

@@ -137,7 +137,8 @@ fun CreateStoryScreen(
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    containerColor = MaterialTheme.colorScheme.background
                 ) {
                     languages.forEach { (display, value) ->
                         androidx.compose.material3.DropdownMenuItem(
