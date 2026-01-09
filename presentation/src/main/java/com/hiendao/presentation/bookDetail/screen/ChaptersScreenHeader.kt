@@ -180,26 +180,28 @@ internal fun ChaptersScreenHeader(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
-                        FlowRow(
+                    if(listCategories.isNotEmpty()){
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 150.dp)
-                                .verticalScroll(rememberScrollState())
+                                .fillMaxHeight()
                         ) {
-                            listCategories.forEach { category ->
-                                AssistChip(
-                                    onClick = { /* Xử lý sự kiện click */
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 150.dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                listCategories.forEach { category ->
+                                    AssistChip(
+                                        onClick = { /* Xử lý sự kiện click */
 
-                                    },
-                                    label = { Text(category) },
-                                    modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
-                                )
+                                        },
+                                        label = { Text(category) },
+                                        modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }

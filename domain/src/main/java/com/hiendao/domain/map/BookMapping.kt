@@ -50,7 +50,7 @@ fun BookEntity.toDomain(): Book {
         lastReadEpochTimeMilli = this.lastReadEpochTimeMilli,
         inLibrary = this.inLibrary,
         ageRating = ageRating?.toIntOrNull(),
-        categories = categories?.split(",")
+        categories = categories?.split(",")?.filter { it.isNotEmpty() }
     )
 }
 
@@ -104,7 +104,7 @@ fun BookResponseDTO.toDomain(): Book {
         isFavourite = this.isFavorite ?: false,
         inLibrary = false,
         ageRating = ageRating?.toIntOrNull(),
-        categories = categoryNames
+        categories = categoryNames.orEmpty().filter { it.isNotEmpty() }
     )
 }
 

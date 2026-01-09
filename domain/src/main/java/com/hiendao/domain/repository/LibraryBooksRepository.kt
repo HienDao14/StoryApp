@@ -289,7 +289,7 @@ class LibraryBooksRepository @Inject constructor(
                 val content = result.content
                 val books = content.toDomainListFromContentLibrary()
                 val booksEntity = books.map { it.toEntity() }
-                libraryDao.insert(booksEntity)
+                libraryDao.insertReplace(booksEntity)
                 val booksWithContext = libraryDao.getBooksInLibraryWithContext()
                 emit(Response.Success(booksWithContext))
             } catch (e : Exception){

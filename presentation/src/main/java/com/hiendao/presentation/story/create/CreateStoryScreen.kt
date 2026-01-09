@@ -97,7 +97,7 @@ fun CreateStoryScreen(
             MyOutlinedTextField(
                 value = state.title,
                 onValueChange = onTitleChange,
-                placeHolderText = "Title"
+                placeHolderText = stringResource(R.string.story_title)
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -105,7 +105,7 @@ fun CreateStoryScreen(
             MyOutlinedTextField(
                 value = state.freeText,
                 onValueChange = onFreeTextChange,
-                placeHolderText = "Main Context (Free Text)"
+                placeHolderText = stringResource(R.string.main_context)
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -119,7 +119,7 @@ fun CreateStoryScreen(
 
             // Language
             var expanded by remember { mutableStateOf(false) }
-            val languages = listOf("Vietnam" to "vi", "English" to "en", "Chinese" to "zh") // Display to Value
+            val languages = listOf(stringResource(R.string.lang_vi) to "vi", stringResource(R.string.lang_en) to "en", stringResource(R.string.lang_zh) to "zh") // Display to Value
             val selectedLanguageDisplay = languages.find { it.second == state.language }?.first ?: "Vietnam"
 
             androidx.compose.material3.ExposedDropdownMenuBox(
@@ -164,7 +164,7 @@ fun CreateStoryScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
                 MyButton(
-                    text = "Generate Story",
+                    text = stringResource(R.string.generate_story),
                     modifier = Modifier.align(Alignment.CenterHorizontally), 
                     onClick = onGenerate,
                     backgroundColor = MaterialTheme.colorScheme.primary

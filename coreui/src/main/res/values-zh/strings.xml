@@ -4,7 +4,7 @@
     <string name="choose_language">选择语言</string>
     <string name="lang_vi">Tiếng Việt</string>
     <string name="lang_en">English</string>
-    <string name="lang_zh">Tiếng Trung</string>
+    <string name="lang_zh">中文</string>
 
     <string name="app_name">Story App</string>
     <string name="completed">已完成</string>
@@ -261,4 +261,29 @@
     <string name="str_default">默认</string>
     <string name="title_home">首页</string>
     <string name="recently_read">最近阅读</string>
+    <string name="str_read">阅读</string>
+    <string name="notification">通知</string>
+    <string name="str_ok">确认</string>
+    <string name="continue_reading">继续阅读</string>
+    <string name="continue_listening">继续收听</string>
+    <string name="delete_story_title">删除故事</string>
+    <string name="delete_story_confirmation">您确定要删除这个故事吗？</string>
+    <string name="search">搜索</string>
+    <string name="import_story">导入故事</string>
+    <string name="night_mode_blue_light_filter">夜间模式（蓝光过滤）</string>
+    <string name="volume_key_navigation">音量键翻页</string>
+    <string name="text_alignment">文本对齐</string>
+    <string name="create_story_form_ai">AI 生成故事</string>
+    <string name="in_training_section">正在训练中，请稍后再试</string>
+    <string name="volume">音量</string>
+    <string name="select_voice">选择语音</string>
+    <string name="select_chapter">选择章节</string>
+    <string name="loading_audio">正在加载音频...</string>
+    <string name="ageRating">分级</string>
+    <string name="navigation">导航</string>
+    <string name="logout_confirmation_title">退出登录</string>
+    <string name="logout_confirmation_message">您确定要退出登录吗？</string>
+    <string name="main_context">主内容（自由文本）</string>
+    <string name="story_title">故事标题</string>
+    <string name="create_story">生成故事</string>
 </resources>

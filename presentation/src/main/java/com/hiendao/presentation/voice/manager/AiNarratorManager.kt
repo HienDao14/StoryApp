@@ -209,12 +209,17 @@ internal class AiNarratorManager @Inject constructor(
         val textToSpeak = getTextToSpeak(item)
         
         if (textToSpeak.isNotEmpty()) {
-            val cacheKey = "$modelId-$textToSpeak"
+            // Determine language
+            val session = readerManager.session
+            val translatorState = session?.readerLiveTranslation?.translatorState
+            val targetLang = translatorState?.target ?: "vi"
+
+            val cacheKey = "$modelId-$targetLang-$textToSpeak"
             if (urlCache.containsKey(cacheKey)) {
                 return urlCache[cacheKey]
             }
 
-            val response = readingVoiceRepository.getVoiceStory(modelId, textToSpeak, "vi")
+            val response = readingVoiceRepository.getVoiceStory(modelId, textToSpeak, targetLang)
             if (response is Response.Success) {
                 val url = response.data.audio_path
                 val finalUrl = url.replace("http://localhost:9000", "https://ctd37qdd-9000.asse.devtunnels.ms").replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms")

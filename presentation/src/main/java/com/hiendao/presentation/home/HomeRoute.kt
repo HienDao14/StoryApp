@@ -204,7 +204,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Create Story") },
+                    label = { Text(stringResource(R.string.create_story)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -238,13 +238,13 @@ fun HomeRoute(
 
                 // --- Navigation Group ---
                 Text(
-                    text = "Navigation",
+                    text = stringResource(R.string.navigation),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
                     color = MaterialTheme.colorScheme.primary
                 )
                 NavigationDrawerItem(
-                    label = { Text("Home") },
+                    label = { Text(stringResource(R.string.title_home)) },
                     selected = true, // Currently on Home
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -556,7 +556,8 @@ fun ExpandableFab(
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 horizontalAlignment = Alignment.End
             ) {
@@ -568,8 +569,10 @@ fun ExpandableFab(
                 ) {
                     Text(
                         text = stringResource(R.string.generate_story),
-                        modifier = Modifier.padding(end = 8.dp)
-                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(4.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f))
+                            .padding(4.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
                     SmallFloatingActionButton(
@@ -591,8 +594,10 @@ fun ExpandableFab(
                 ) {
                     Text(
                         text = stringResource(R.string.create_new_voice_title),
-                        modifier = Modifier.padding(end = 8.dp)
-                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(4.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f))
+                            .padding(4.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
                     SmallFloatingActionButton(

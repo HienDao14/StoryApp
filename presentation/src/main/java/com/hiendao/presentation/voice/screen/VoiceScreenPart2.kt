@@ -335,7 +335,7 @@ internal fun VoiceScreenPart2(
                     modifier = Modifier.weight(1f),
                      contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(text = "Chapters", maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
+                    Text(text = stringResource(R.string.chapters), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
                 }
                 
                 // Voice Selector

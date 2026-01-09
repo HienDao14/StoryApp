@@ -4,7 +4,7 @@
     <string name="choose_language">Chọn ngôn ngữ</string>
     <string name="lang_vi">Tiếng Việt</string>
     <string name="lang_en">English</string>
-    <string name="lang_zh">Tiếng Trung</string>
+    <string name="lang_zh">中文</string>
 
     <string name="app_name">Story App</string>
     <string name="completed">Đã hoàn thành</string>
@@ -261,14 +261,8 @@
     <string name="str_default">Mặc định</string>
     <string name="title_home">Trang chủ</string>
     <string name="recently_read">Đã đọc gần đây</string>
-    <string name="notification">Thông báo</string>
-    <string name="str_ok">OK</string>
-    <string name="continue_reading">Tiếp tục đọc</string>
-    <string name="continue_listening">Tiếp tục nghe</string>
     <string name="logout_confirmation_title">Đăng xuất</string>
     <string name="logout_confirmation_message">Bạn có chắc chắn muốn đăng xuất?</string>
-    <string name="delete_story_title">Xóa truyện</string>
-    <string name="delete_story_confirmation">Bạn có chắc chắn muốn xóa truuyện này?</string>
     <string name="full_recording_script">
         Xin chào. Đây là bản ghi âm giọng nói của tôi để huấn luyện mô hình AI. Tôi đang cố gắng nói chuyện một cách tự nhiên nhất có thể. Mục tiêu là để máy tính có thể học được cách tôi phát âm, cách tôi ngắt nghỉ và ngữ điệu đặc trưng của tôi.\nHôm nay là một ngày đẹp trời, và tôi cảm thấy rất hào hứng với dự án này. Hy vọng kết quả đầu ra sẽ thật sự ấn tượng và giống với giọng thật của tôi.\n\n
         Ngày xửa ngày xưa, ở một ngôi làng nhỏ nằm ven chân núi, có một dòng suối trong vắt chảy qua quanh năm. Mỗi buổi sáng, sương mù thường bao phủ lấy những mái nhà tranh, tạo nên khung cảnh huyền ảo như trong tranh vẽ. Những đứa trẻ trong làng thường rủ nhau ra bờ suối chơi đùa, tiếng cười nói rộn ràng hòa lẫn với tiếng chim hót véo von trên cành. Cuộc sống ở đây tuy giản dị, mộc mạc nhưng lại tràn ngập tình yêu thương và sự bình yên đến lạ kỳ.\n\n
@@ -278,4 +272,26 @@
         Cảm ơn vì đã lắng nghe. Bản ghi âm đến đây là kết thúc. Hy vọng lượng dữ liệu này đã đủ để hệ thống xử lý tốt. Tạm biệt và hẹn gặp lại.
     </string>
     <string name="str_read">Đọc</string>
+    <string name="notification">Thông báo</string>
+    <string name="str_ok">OK</string>
+    <string name="continue_reading">Tiếp tục đọc</string>
+    <string name="continue_listening">Tiếp tục nghe</string>
+    <string name="delete_story_title">Xóa truyện</string>
+    <string name="delete_story_confirmation">Bạn có chắc chắn muốn xóa truyện này không?</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="import_story">Nhập truyện</string>
+    <string name="night_mode_blue_light_filter">Chế độ đêm (Bộ lọc ánh sáng xanh)</string>
+    <string name="volume_key_navigation">Điều hướng bằng phím âm lượng</string>
+    <string name="text_alignment">Căn lề văn bản</string>
+    <string name="create_story_form_ai">Tạo truyện từ AI</string>
+    <string name="in_training_section">Đang trong quá trình huấn luyện, vui lòng quay lại sau</string>
+    <string name="volume">Âm lượng</string>
+    <string name="select_voice">Chọn giọng đọc</string>
+    <string name="select_chapter">Chọn chương</string>
+    <string name="loading_audio">Đang tải âm thanh...</string>
+    <string name="ageRating">Xếp hạng độ tuổi</string>
+    <string name="navigation">Điều hướng</string>
+    <string name="main_context">Ngữ cảnh chính (Văn bản tự do)</string>
+    <string name="story_title">Tiêu đề truyện</string>
+    <string name="create_story">Tạo truyện</string>
 </resources>

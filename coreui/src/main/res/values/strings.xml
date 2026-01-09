@@ -6,7 +6,7 @@
     <string name="choose_language">Choose language</string>
     <string name="lang_vi">Tiếng Việt</string>
     <string name="lang_en">English</string>
-    <string name="lang_zh">Tiếng Trung</string>
+    <string name="lang_zh">中文</string>
     <string name="app_name">Story App</string>
     <string name="completed">Completed</string>
     <string name="reload">Reload</string>
@@ -213,9 +213,6 @@
     <string name="newest">Newest</string>
     <string name="favourite">Favourite</string>
     <string name="generate_story">Generate Story</string>
-    <string name="logout_confirmation_title">Logout</string>
-    <string name="logout_confirmation_message">Are you sure you want to log out?</string>
-
     <!-- Login -->
     <string name="login_title_text">Story Speaker</string>
     <string name="login_subtitle">Sign in to continue</string>
@@ -277,6 +274,8 @@
     <string name="select_voice">Select Voice</string>
     <string name="select_chapter">Select Chapter</string>
     <string name="loading_audio">Loading audio...</string>
+    <string name="ageRating">Age rating</string>
+    <string name="navigation">Navigation</string>
     <string name="full_recording_script">
         Xin chào. Đây là bản ghi âm giọng nói của tôi để huấn luyện mô hình AI. Tôi đang cố gắng nói chuyện một cách tự nhiên nhất có thể. Mục tiêu là để máy tính có thể học được cách tôi phát âm, cách tôi ngắt nghỉ và ngữ điệu đặc trưng của tôi.\nHôm nay là một ngày đẹp trời, và tôi cảm thấy rất hào hứng với dự án này. Hy vọng kết quả đầu ra sẽ thật sự ấn tượng và giống với giọng thật của tôi.\n\n
         Ngày xửa ngày xưa, ở một ngôi làng nhỏ nằm ven chân núi, có một dòng suối trong vắt chảy qua quanh năm. Mỗi buổi sáng, sương mù thường bao phủ lấy những mái nhà tranh, tạo nên khung cảnh huyền ảo như trong tranh vẽ. Những đứa trẻ trong làng thường rủ nhau ra bờ suối chơi đùa, tiếng cười nói rộn ràng hòa lẫn với tiếng chim hót véo von trên cành. Cuộc sống ở đây tuy giản dị, mộc mạc nhưng lại tràn ngập tình yêu thương và sự bình yên đến lạ kỳ.\n\n
@@ -285,5 +284,10 @@
         Nghiêng nghiêng dòng nước lững lờ trôi. Trăm năm trong cõi người ta, chữ tài chữ mệnh khéo là ghét nhau.\nRắc rối rậm rạp ríu rít râm ran. Sương sa sắc sảo sấp sấp ngửa ngửa. Luộc hột vịt lộn, luộc lộn hột vịt lạc, ăn lộn hột vịt lạc, luộc lại hột vịt lộn. Hôm qua qua nói qua qua mà qua không qua, hôm nay qua không nói qua qua mà qua lại qua.\n\n
         Cảm ơn vì đã lắng nghe. Bản ghi âm đến đây là kết thúc. Hy vọng lượng dữ liệu này đã đủ để hệ thống xử lý tốt. Tạm biệt và hẹn gặp lại.
     </string>
-    <string name="ageRating">Age rating</string>
+    <string name="logout_confirmation_title">Logout</string>
+    <string name="logout_confirmation_message">Are you sure you want to log out?</string>
+    <string name="main_context">Main Context (Free Text)</string>
+    <string name="story_title">Story Title</string>
+    <string name="create_story">Create Story</string>
+
 </resources>
