@@ -21,5 +21,7 @@ data class Book(
     var isFavourite: Boolean = false,
     var isDownloaded: Boolean = false,
     val lastReadEpochTimeMilli: Long = 0,
-    var inLibrary: Boolean = false
+    var inLibrary: Boolean = false,
+    val ageRating: Int?=null,
+    val categories: List<String>?=null
 ) : Parcelable

@@ -34,12 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hiendao.coreui.components.MyButton
 import com.hiendao.coreui.components.MyOutlinedTextField
+import com.hiendao.coreui.R
 
 @Composable
 fun CreateStoryRoute(
@@ -72,7 +74,7 @@ fun CreateStoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create Story form AI") },
+                title = { Text(stringResource(R.string.create_story_form_ai)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -133,7 +135,9 @@ fun CreateStoryScreen(
                     trailingIcon = {
                         androidx.compose.material3.ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,

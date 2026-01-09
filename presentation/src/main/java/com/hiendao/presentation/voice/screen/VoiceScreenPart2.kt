@@ -24,12 +24,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hiendao.coreui.components.ImageView
 import com.hiendao.domain.utils.rememberResolvedBookImagePath
+import com.hiendao.coreui.R
 import com.hiendao.presentation.reader.domain.ReaderItem
 import com.hiendao.presentation.voice.screen.components.SearchableSelectionDialog
 import com.hiendao.presentation.voice.screen.components.progressBorder
@@ -37,6 +39,8 @@ import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 
 import com.hiendao.presentation.utils.parseHtml
 import com.hiendao.presentation.utils.parseHtmlTrimmed
+import com.hiendao.presentation.reader.ui.settingDialogs.TranslatorSettingDialog
+import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +89,7 @@ internal fun VoiceScreenPart2(
     // Dialog states
     var showChapterDialog by rememberSaveable { mutableStateOf(false) }
     var showVoiceDialog by rememberSaveable { mutableStateOf(false) }
+    var showTranslationPopup by remember { mutableStateOf(false) }
 
     // System Volume
     val context = LocalContext.current
@@ -136,17 +141,14 @@ internal fun VoiceScreenPart2(
                                     shape = RoundedCornerShape(12.dp),
                                     color = MaterialTheme.colorScheme.surfaceContainer,
                                     tonalElevation = 8.dp,
-                                    modifier = Modifier.padding(bottom = 48.dp).width(200.dp) // Offset above the button
+                                    modifier = Modifier
+                                        .padding(bottom = 48.dp)
+                                        .width(200.dp) // Offset above the button
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Text("Volume", style = MaterialTheme.typography.labelMedium)
-                                        Slider(
-                                            value = currentVolume,
-                                            onValueChange = { setVolume(it) }
-                                        )
                                         DataControlSlider(
                                             icon = Icons.AutoMirrored.Filled.VolumeUp,
-                                            label = "Volume",
+                                            label = stringResource(R.string.volume),
                                             value = currentVolume,
                                             onValueChange = { setVolume(it) },
                                             valueRange = 0f..10f,
@@ -159,77 +161,105 @@ internal fun VoiceScreenPart2(
                     }
 
                     // Playback Controls
-                    val isChapterSelected = !state.readerState?.readerInfo?.chapterUrl?.value.isNullOrEmpty()
-                    
+                    val isChapterSelected =
+                        !state.readerState?.readerInfo?.chapterUrl?.value.isNullOrEmpty()
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                         IconButton(onClick = { textToSpeech?.playPreviousChapter?.invoke() }, enabled = !isLoading && isChapterSelected) {
-                            Icon(Icons.Filled.SkipPrevious, "Prev Chapter", modifier = Modifier.size(28.dp))
-                         }
-                        IconButton(onClick = { textToSpeech?.playPreviousItem?.invoke() }, enabled = !isLoading && isChapterSelected) {
+                        IconButton(
+                            onClick = { textToSpeech?.playPreviousChapter?.invoke() },
+                            enabled = !isLoading && isChapterSelected
+                        ) {
+                            Icon(
+                                Icons.Filled.SkipPrevious,
+                                "Prev Chapter",
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { textToSpeech?.playPreviousItem?.invoke() },
+                            enabled = !isLoading && isChapterSelected
+                        ) {
                             Icon(Icons.Filled.FastRewind, "Rewind", modifier = Modifier.size(24.dp))
                         }
-                        
+
                         Box(
                             modifier = Modifier
                                 .size(56.dp)
                                 .clip(CircleShape)
-                                .background(if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+                                .background(
+                                    if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.12f
+                                    )
+                                )
                                 .clickable(enabled = !isLoading && isChapterSelected) { if (isPlaying) onPauseClick() else onPlayClick() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                                 contentDescription = "Play/Pause",
-                                tint = if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                tint = if (!isLoading && isChapterSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(
+                                    alpha = 0.38f
+                                ),
                                 modifier = Modifier.size(32.dp)
                             )
                         }
 
-                        IconButton(onClick = { textToSpeech?.playNextItem?.invoke() }, enabled = !isLoading && isChapterSelected) {
-                            Icon(Icons.Filled.FastForward, "Forward", modifier = Modifier.size(24.dp))
+                        IconButton(
+                            onClick = { textToSpeech?.playNextItem?.invoke() },
+                            enabled = !isLoading && isChapterSelected
+                        ) {
+                            Icon(
+                                Icons.Filled.FastForward,
+                                "Forward",
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
-                         IconButton(onClick = { textToSpeech?.playNextChapter?.invoke() }, enabled = !isLoading && isChapterSelected) {
-                            Icon(Icons.Filled.SkipNext, "Next Chapter", modifier = Modifier.size(28.dp))
-                         }
+                        IconButton(
+                            onClick = { textToSpeech?.playNextChapter?.invoke() },
+                            enabled = !isLoading && isChapterSelected
+                        ) {
+                            Icon(
+                                Icons.Filled.SkipNext,
+                                "Next Chapter",
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
 
-                    // Settings Control
-                    Box {
-                        IconButton(onClick = { showSettingsPopup = true }) {
-                            Icon(Icons.Default.Tune, "Settings")
-                        }
-                        if (showSettingsPopup) {
-                            Popup(
-                                alignment = Alignment.BottomEnd,
-                                onDismissRequest = { showSettingsPopup = false }
-                            ) {
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.surfaceContainer,
-                                    tonalElevation = 8.dp,
-                                    modifier = Modifier.padding(bottom = 48.dp).width(250.dp)
+                    // Translation Control
+                    val liveTranslationSettings = state.readerState?.settings?.liveTranslation
+                    if (liveTranslationSettings != null) {
+                        Box {
+                            IconButton(onClick = {
+                                showTranslationPopup = true
+                            }) {
+                                Icon(
+                                    Icons.Filled.Translate,
+                                    stringResource(com.hiendao.coreui.R.string.translator)
+                                )
+                            }
+                            if (showTranslationPopup) {
+                                Popup(
+                                    alignment = Alignment.TopCenter,
+                                    onDismissRequest = { showTranslationPopup = false },
                                 ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        DataControlSlider(
-                                            icon = Icons.Default.Speed,
-                                            label = "Speed",
-                                            value = textToSpeech?.voiceSpeed?.value ?: 1f,
-                                            onValueChange = { textToSpeech?.setVoiceSpeed?.invoke(it) },
-                                            valueRange = 0.5f..3.0f,
-                                            displayValue = String.format("%.1fx", textToSpeech?.voiceSpeed?.value ?: 1f)
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        DataControlSlider(
-                                            icon = Icons.Default.GraphicEq,
-                                            label = "Pitch",
-                                            value = textToSpeech?.voicePitch?.value ?: 1f,
-                                            onValueChange = { textToSpeech?.setVoicePitch?.invoke(it) },
-                                            valueRange = 0.5f..2.0f,
-                                            displayValue = String.format("%.1f", textToSpeech?.voicePitch?.value ?: 1f)
-                                        )
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.surfaceContainer,
+                                        tonalElevation = 8.dp,
+                                        modifier = Modifier
+                                            .padding(bottom = 48.dp) // Offset above
+                                            .widthIn(min = 280.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.padding(12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            TranslatorSettingDialog(state = liveTranslationSettings)
+                                        }
                                     }
                                 }
                             }
@@ -324,7 +354,7 @@ internal fun VoiceScreenPart2(
             // Dialogs (Keep as is)
              if (showChapterDialog) {
                 SearchableSelectionDialog(
-                    title = "Select Chapter",
+                    title = stringResource(R.string.select_chapter),
                     items = chapters,
                     selectedItem = chapters.find { it.chapter.id == book.lastReadChapter },
                     onItemSelected = { 
@@ -362,7 +392,7 @@ internal fun VoiceScreenPart2(
                 }
 
                 SearchableSelectionDialog(
-                    title = "Select Voice",
+                    title = stringResource(R.string.select_voice),
                     items = voiceOptions.value,
                     selectedItem = voiceOptions.value.find { 
                         if (activeAiVoice != null) it.isAi && it.originalAi?.modelId == activeAiVoice.modelId
@@ -373,7 +403,8 @@ internal fun VoiceScreenPart2(
                             option.originalAi?.let { onSelectModelVoice(it) }
                         } else {
                             option.originalSystem?.let { 
-                                textToSpeech?.setVoiceId?.invoke(it.id) 
+                                textToSpeech?.setVoiceId?.invoke(it.id)
+                                textToSpeech?.activeAiVoice?.value = null
                             }
                         }
                         showVoiceDialog = false
@@ -387,6 +418,8 @@ internal fun VoiceScreenPart2(
                     }
                 )
             }
+            
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -398,11 +431,14 @@ internal fun VoiceScreenPart2(
                     .weight(1f) // Take remaining space
                     .fillMaxWidth()
                     .progressBorder(
-                        progress = progress, 
+                        progress = progress,
                         color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 3.dp
                     )
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f), RoundedCornerShape(0.dp))
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        RoundedCornerShape(0.dp)
+                    )
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {

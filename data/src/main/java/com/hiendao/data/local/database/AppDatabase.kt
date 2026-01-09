@@ -9,7 +9,7 @@ import com.hiendao.data.local.entity.BookEntity
 import com.hiendao.data.local.entity.ChapterBodyEntity
 import com.hiendao.data.local.entity.ChapterEntity
 
-@Database(entities = [BookEntity::class, ChapterEntity::class, ChapterBodyEntity::class], version = 4, exportSchema = false)
+@Database(entities = [BookEntity::class, ChapterEntity::class, ChapterBodyEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase: RoomDatabase() {
     abstract val libraryDao: LibraryDao
     abstract val chapterDao: ChapterDao

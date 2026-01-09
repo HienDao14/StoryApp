@@ -219,7 +219,7 @@ internal fun VoiceRoute(
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Loading audio...",
+                        text = stringResource(R.string.loading_audio),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

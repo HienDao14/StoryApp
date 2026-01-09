@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.hiendao.coreui.components.MyOutlinedTextField
+import com.hiendao.presentation.R
 import com.hiendao.coreui.R as CoreR
 import com.hiendao.presentation.voice.create.components.ActiveRecordingScreen
 import kotlin.random.Random
@@ -118,10 +119,10 @@ fun CreateVoiceScreen(
             AlertDialog(
                 onDismissRequest = onBackClick,
                 title = { Text(stringResource(CoreR.string.notification)) },
-                text = { Text("Đang trong quá trình huấn luyện, vui lòng quay lại sau") },
+                text = { Text(stringResource(CoreR.string.in_training_section)) },
                 confirmButton = {
                     androidx.compose.material3.TextButton(onClick = onBackClick) {
-                        Text("Đóng")
+                        Text(stringResource(CoreR.string.close))
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.surface

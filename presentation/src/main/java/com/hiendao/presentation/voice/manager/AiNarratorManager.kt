@@ -119,6 +119,8 @@ internal class AiNarratorManager @Inject constructor(
             
             if (itemIndex != -1) {
                 playAtIndex(itemIndex, currentVoice.modelId ?: "")
+            } else {
+                playAtIndex(0, currentVoice.modelId ?: "")
             }
         }
     }
@@ -234,6 +236,31 @@ internal class AiNarratorManager @Inject constructor(
             index++
         }
         return -1
+    }
+
+    private fun getTextToSpeakRemoveSpecialCharacters(item: ReaderItem): String {
+        val rawText = when {
+            item is ReaderItem.Body && item.isHtml -> {
+                androidx.core.text.HtmlCompat.fromHtml(
+                    item.textToDisplay,
+                    androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+                ).toString()
+            }
+
+            item is ReaderItem.Text -> item.textToDisplay
+            else -> ""
+        }
+
+        // 1. Xoá các dạng [1], [23], [100]...
+        val noBracketNumber = rawText.replace(Regex("\\[\\d+\\]"), "")
+
+        // 2. Xoá ký tự đặc biệt, giữ lại chữ, số, khoảng trắng, dấu , .
+        val cleanedText = noBracketNumber.replace(
+            Regex("[^\\p{L}\\p{N}\\s,\\.]"),
+            ""
+        )
+
+        return if (cleanedText.any { it.isLetterOrDigit() }) cleanedText else ""
     }
 
     private fun getTextToSpeak(item: ReaderItem): String {

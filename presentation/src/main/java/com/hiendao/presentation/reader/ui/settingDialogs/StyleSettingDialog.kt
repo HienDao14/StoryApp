@@ -106,7 +106,7 @@ internal fun StyleSettingDialog(
         // Alignment
         ListItem(
             modifier = Modifier.clickable { onTextAlignChange(if (state.textAlign.value == 0) 1 else 0) },
-            headlineContent = { Text("Text Alignment") },
+            headlineContent = { Text(stringResource(R.string.text_alignment)) },
             trailingContent = {
                  Text(if (state.textAlign.value == 0) "Left" else "Justify")
             }

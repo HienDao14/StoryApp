@@ -65,7 +65,7 @@ internal fun ChaptersScreenHeader(
     modifier: Modifier = Modifier,
     onCoverLongClick: () -> Unit,
     onGlobalSearchClick: (input: String) -> Unit,
-    listCategories: List<Category> = emptyList()
+    listCategories: List<String> = emptyList()
 ) {
     val coverImageModel = bookState.coverImageUrl?.let {
         rememberResolvedBookImagePath(
@@ -170,6 +170,16 @@ internal fun ChaptersScreenHeader(
                             color = MaterialTheme.colorScheme.onTertiary,
                         )
                     }
+                    if(bookState.ageRating != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SelectionContainer {
+                            Text(
+                                text = stringResource(id = R.string.ageRating) + bookState.ageRating,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onTertiary,
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     Column(
                         modifier = Modifier
@@ -185,9 +195,9 @@ internal fun ChaptersScreenHeader(
                             listCategories.forEach { category ->
                                 AssistChip(
                                     onClick = { /* Xử lý sự kiện click */
-                                        onCategoryClick.invoke(category.id, category.name)
+
                                     },
-                                    label = { Text(category.name) },
+                                    label = { Text(category) },
                                     modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
                                 )
                             }

@@ -48,7 +48,9 @@ fun BookEntity.toDomain(): Book {
         isFavourite = this.isFavourite,
         isDownloaded = this.inLibrary,       // inLibrary = đã tải về
         lastReadEpochTimeMilli = this.lastReadEpochTimeMilli,
-        inLibrary = this.inLibrary
+        inLibrary = this.inLibrary,
+        ageRating = ageRating?.toIntOrNull(),
+        categories = categories?.split(",")
     )
 }
 
@@ -63,7 +65,9 @@ fun Book.toEntity(): BookEntity {
         coverImageUrl = this.coverImageUrl,
         description = this.description,
         lastReadEpochTimeMilli = this.lastReadEpochTimeMilli,
-        isFavourite = isFavourite
+        isFavourite = isFavourite,
+        ageRating = ageRating.toString(),
+        categories = categories?.joinToString(",")
     )
 }
 
@@ -76,7 +80,8 @@ fun BookDTO.toBook(): Book {
         coverImageUrl = this.coverImageUrl,
         description = this.description,
         totalChapters = this.totalChapter,
-        completed = this.status == "completed"
+        completed = this.status == "completed",
+        ageRating = ageRating?.toIntOrNull()
     )
 }
 
@@ -97,7 +102,9 @@ fun BookResponseDTO.toDomain(): Book {
         createdAt = this.createDate?.toMillisLegacy() ?: 0L,
         updatedAt = this.lastUpdateDate?.toMillisLegacy() ?: 0L,
         isFavourite = this.isFavorite ?: false,
-        inLibrary = false
+        inLibrary = false,
+        ageRating = ageRating?.toIntOrNull(),
+        categories = categoryNames
     )
 }
 
@@ -110,6 +117,8 @@ fun BookResponseDTO.toEntity(inLibrary: Boolean = false): BookEntity {
         completed = this.status == Constants.BookStatus.COMPLETED,
         isFavourite = this.isFavorite ?: false,
         inLibrary = inLibrary,
-        author = author ?: ""
+        author = author ?: "",
+        ageRating = ageRating,
+        categories = categoryNames?.joinToString(",")
     )
 }

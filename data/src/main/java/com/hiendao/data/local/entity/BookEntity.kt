@@ -17,5 +17,7 @@ data class BookEntity(
     val description: String = "",
     val lastReadEpochTimeMilli: Long = 0,
     var isFavourite: Boolean = false,
-    var author: String = ""
+    var author: String = "",
+    var ageRating: String? = null,
+    var categories: String? = null
 ) : Parcelable

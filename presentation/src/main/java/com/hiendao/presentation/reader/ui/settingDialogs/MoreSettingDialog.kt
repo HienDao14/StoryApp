@@ -143,7 +143,7 @@ internal fun MoreSettingDialog(
         // Night Mode
         ListItem(
             modifier = Modifier.clickable { onNightModeChanged(!nightMode) },
-            headlineContent = { Text("Night Mode (Blue Light Filter)") },
+            headlineContent = { Text(stringResource(R.string.night_mode_blue_light_filter)) },
             trailingContent = {
                 Switch(
                     checked = nightMode,
@@ -154,7 +154,7 @@ internal fun MoreSettingDialog(
         // Volume Key Nav
         ListItem(
             modifier = Modifier.clickable { onVolumeKeyNavigationChanged(!volumeKeyNavigation) },
-            headlineContent = { Text("Volume Key Navigation") },
+            headlineContent = { Text(stringResource(R.string.volume_key_navigation)) },
             trailingContent = {
                 Switch(
                     checked = volumeKeyNavigation,

@@ -4,13 +4,14 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.hiendao.coreui.appPreferences.AppPreferences
+import com.hiendao.data.local.DatabaseMigrations
+import com.hiendao.data.local.DatabaseMigrations.getAllMigrations
 import com.hiendao.data.local.dao.ChapterBodyDao
 import com.hiendao.data.local.dao.ChapterDao
 import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.storyapp.di.MyInterceptor
 import com.hiendao.data.remote.retrofit.book.BookApi
-import com.hiendao.data.remote.retrofit.category.CategoryApi
 import com.hiendao.data.remote.retrofit.chapter.ChapterApi
 import com.hiendao.data.remote.retrofit.login.LoginAPI
 import com.hiendao.data.remote.retrofit.story.StoryApi
@@ -67,7 +68,7 @@ object AppModule {
             AppDatabase::class.java,
             "appdb.db"
         )
-            .fallbackToDestructiveMigration()
+            .addMigrations(*DatabaseMigrations.getAllMigrations())
             .build()
     }
 
@@ -143,8 +144,8 @@ object AppModule {
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(myInterceptor)
-            .readTimeout(10, TimeUnit.MINUTES)
-            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(600000L, TimeUnit.MILLISECONDS)
+            .connectTimeout(30000L, TimeUnit.MILLISECONDS)
             .retryOnConnectionFailure(true)
             .build()
     }
@@ -216,13 +217,6 @@ object AppModule {
     fun provideVoiceApi(@VoiceRetrofit retrofit: Retrofit): VoiceApi {
         return retrofit.create(VoiceApi::class.java)
     }
-
-    @Provides
-    fun provideCategoryApi( @DefaultRetrofit retrofit: Retrofit): CategoryApi {
-        return retrofit.create(CategoryApi::class.java)
-    }
-
-
 
     @Provides
     @Singleton

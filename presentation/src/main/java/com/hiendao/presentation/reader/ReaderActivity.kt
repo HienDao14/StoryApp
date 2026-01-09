@@ -50,6 +50,7 @@ import com.hiendao.presentation.reader.domain.ReaderState
 import com.hiendao.presentation.reader.domain.indexOfReaderItem
 import com.hiendao.presentation.reader.tools.FontsLoader
 import com.hiendao.presentation.reader.ui.ReaderScreen
+import com.hiendao.presentation.reader.ui.ReaderScreenState.Settings.Type
 import my.noveldokusha.features.reader.ui.ReaderViewHandlersActions
 import javax.inject.Inject
 
@@ -105,6 +106,7 @@ class ReaderActivity : BaseActivity() {
                 onReloadReader = viewModel::reloadReader,
                 onClick = {
                     viewModel.state.showReaderInfo.value = !viewModel.state.showReaderInfo.value
+                    viewModel.state.settings.selectedSetting.value = Type.None
                 },
             )
         }

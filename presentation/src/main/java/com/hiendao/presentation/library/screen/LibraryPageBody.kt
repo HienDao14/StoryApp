@@ -60,21 +60,6 @@ internal fun LibraryPageBody(
                     interactionSource = interactionSource,
                     modifier = Modifier.bounceOnPressed(interactionSource)
                 )
-                val notReadCount = it.chaptersCount - it.chaptersReadCount
-                AnimatedVisibility(
-                    visible = notReadCount != 0,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Text(
-                        text = notReadCount.toString(),
-                        color = Color.White,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .background(ColorAccent, ImageBorderShape)
-                            .padding(4.dp)
-                    )
-                }
 
                 if (it.book.id.isLocalUri) Text(
                     text = stringResource(R.string.local),

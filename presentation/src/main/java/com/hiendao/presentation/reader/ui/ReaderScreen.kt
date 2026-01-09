@@ -124,6 +124,7 @@ internal fun ReaderScreen(
     // Capture back action when viewing info
     BackHandler(enabled = state.showReaderInfo.value) {
         state.showReaderInfo.value = false
+        state.settings.selectedSetting.value = Type.None
     }
 
     Box {

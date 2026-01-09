@@ -184,7 +184,7 @@ fun HomeRoute(
                     color = MaterialTheme.colorScheme.primary
                 )
                 NavigationDrawerItem(
-                    label = { Text("Search") },
+                    label = { Text(stringResource(R.string.search)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -194,7 +194,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Import Story") },
+                    label = { Text(stringResource(R.string.import_story)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -214,7 +214,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Create Voice") },
+                    label = { Text(stringResource(R.string.create_new_voice_title)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -224,7 +224,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Change Theme") },
+                    label = { Text(stringResource(R.string.theme)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -254,7 +254,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Library") },
+                    label = { Text(stringResource(R.string.title_library)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -269,7 +269,7 @@ fun HomeRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 NavigationDrawerItem(
-                    label = { Text("Settings") },
+                    label = { Text(stringResource(R.string.title_settings)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -288,7 +288,7 @@ fun HomeRoute(
 
                 HorizontalDivider()
                 NavigationDrawerItem(
-                    label = { Text("Logout") },
+                    label = { Text(stringResource(R.string.log_out)) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -393,7 +393,7 @@ fun HomeRoute(
                                     title = stringResource(R.string.category),
                                     categories = categories,
                                     onCategoryClick = { category ->
-                                        onCategoryClick(category.id, category.name)
+//                                        onCategoryClick(category.id, category.name)
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
@@ -557,8 +557,7 @@ fun ExpandableFab(
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
+                    .clip(RoundedCornerShape(8.dp)),
                 horizontalAlignment = Alignment.End
             ) {
                 // Generate Story Button
@@ -569,7 +568,8 @@ fun ExpandableFab(
                 ) {
                     Text(
                         text = stringResource(R.string.generate_story),
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 8.dp)
+                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(4.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
                     SmallFloatingActionButton(
@@ -591,7 +591,8 @@ fun ExpandableFab(
                 ) {
                     Text(
                         text = stringResource(R.string.create_new_voice_title),
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 8.dp)
+                            .background((MaterialTheme.colorScheme.background).copy(alpha = 0.9f)).padding(4.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
                     SmallFloatingActionButton(

@@ -95,7 +95,7 @@
     <string name="status_recorded">Đã ghi âm: %1$s</string>
     <string name="hint_record_again">Nhấn ghi âm lại nếu chưa ưng ý</string>
     <string name="label_instructions">Hướng dẫn:</string>
-    <string name="instruction_1">Ghi âm ít nhất 30 giây</string>
+    <string name="instruction_1">Ghi âm ít nhất 60 giây</string>
     <string name="instruction_2">Nói rõ ràng và tự nhiên</string>
     <string name="instruction_3">Tránh tiếng ồn xung quanh</string>
     <string name="content_desc_back">Quay lại</string>

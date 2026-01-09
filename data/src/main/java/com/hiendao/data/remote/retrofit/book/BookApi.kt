@@ -4,9 +4,12 @@ import com.hiendao.data.remote.retrofit.book.model.BookResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.BooksResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.ListBookResponse
 import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -46,6 +49,12 @@ interface BookApi {
         @Query("size") size: Int = 10,
         @Query("sort") sort: String = "createDate"
     ): BooksResponseDTO
+
+    @Multipart
+    @POST("stories/import-epub")
+    suspend fun extractEpubBook(
+        @Part epubFile: MultipartBody.Part
+    ): BookResponseDTO
 
     @GET("")
     suspend fun getBookOfCategory(

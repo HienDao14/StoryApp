@@ -57,6 +57,7 @@ import android.content.Context
 import kotlinx.coroutines.flow.flatMapLatest
 import androidx.compose.runtime.snapshotFlow
 import com.hiendao.presentation.reader.domain.ChapterState
+import kotlinx.coroutines.flow.collectLatest
 
 
 @HiltViewModel
@@ -496,6 +497,14 @@ internal class VoiceViewModel @Inject constructor(
         viewModelScope.launch {
             aiNarratorManager.isLoading.collect { loading ->
                 _showVoiceLoadingDialog.value = loading
+            }
+        }
+
+        viewModelScope.launch {
+            readerSession.collectLatest { session ->
+                session.readerLiveTranslation.onTranslatorChanged.collect {
+                    reloadReader()
+                }
             }
         }
     }

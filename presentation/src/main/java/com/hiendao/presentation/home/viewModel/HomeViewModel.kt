@@ -10,7 +10,6 @@ import com.hiendao.domain.model.Book
 import com.hiendao.domain.model.Category
 import com.hiendao.domain.repository.AppRepository
 import com.hiendao.domain.repository.BooksRepository
-import com.hiendao.domain.repository.CategoryRepository
 import com.hiendao.domain.repository.LibraryBooksRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +20,8 @@ import javax.inject.Inject
 import com.hiendao.coreui.appPreferences.AppPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.coreui.theme.toPreferenceTheme
 import com.hiendao.domain.utils.Response
@@ -33,7 +34,6 @@ import java.io.File
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val libraryBooksRepository: LibraryBooksRepository,
-    private val categoryRepository: CategoryRepository,
     private val appRepository: AppRepository,
     private val appPreferences: AppPreferences,
     private val toasty: Toasty,
@@ -71,7 +71,6 @@ class HomeViewModel @Inject constructor(
         getNewestBooks()
         getRecentlyReadBooks()
         getFavouriteBooks()
-        getAllCategories()
     }
 
     fun getAllBooks(page: Int = 0){
@@ -158,13 +157,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun getAllCategories() {
-        viewModelScope.launch {
-            val categories = categoryRepository.getAllCategories()
-            _homeState.update { it.copy(categories = categories) }
-        }
-    }
-
     fun toggleFavourite(book: Book) {
         viewModelScope.launch {
             launch {
@@ -186,45 +178,61 @@ class HomeViewModel @Inject constructor(
         appPreferences.THEME_FOLLOW_SYSTEM.value = follow
     }
 
+    fun uriToTempFile(context: Context, uri: Uri): File {
+        val fileName = queryFileName(context, uri) ?: "temp.epub"
+        val tempFile = File(context.cacheDir, fileName)
+
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        return tempFile
+    }
+
+    fun queryFileName(context: Context, uri: Uri): String? {
+        val cursor = context.contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )
+
+        cursor?.use {
+            if (it.moveToFirst()) {
+                return it.getString(0)
+            }
+        }
+        return null
+    }
+
     fun importBook(uri: android.net.Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. Resolve file name
-                val returnCursor = context.contentResolver.query(uri, null, null, null, null)
-                val nameIndex = returnCursor?.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                returnCursor?.moveToFirst()
-                val fileName = (nameIndex?.let { returnCursor.getString(it) } ?: "Imported Book").substringBeforeLast(".")
-                returnCursor?.close()
-
-                // 2. Create destination file
-                val destinationFile = File(context.filesDir, "imported_books/${System.currentTimeMillis()}_$fileName")
-                destinationFile.parentFile?.mkdirs()
-
-                // 3. Copy content
-                context.contentResolver.openInputStream(uri)?.use { input ->
-                    destinationFile.outputStream().use { output ->
-                        input.copyTo(output)
+                val file = uriToTempFile(context, uri)
+                libraryBooksRepository.extractEpubBook(file).collect {
+                    when (it) {
+                        is Response.Loading -> {
+                            withContext(Dispatchers.Main) {
+                                toasty.show("Importing book...")
+                            }
+                        }
+                        is Response.Success -> {
+                            withContext(Dispatchers.Main) {
+                                toasty.show(R.string.added_to_library) // Ensure string exists or use generic
+                                getAllBooks() // Refresh list
+                            }
+                        }
+                        is Response.Error -> {
+                            withContext(Dispatchers.Main) {
+                                toasty.show("Import failed: ${it.message}")
+                            }
+                        }
+                        is Response.None -> Unit
                     }
                 }
-
-                // 4. Add to Library
-                val newBook = Book(
-                    id = destinationFile.absolutePath, // Use path as ID/URL
-                    title = fileName,
-                    url = destinationFile.absolutePath,
-                    coverImageUrl = "", // No cover for now
-                    inLibrary = true,
-                    isFavourite = false,
-                    completed = false,
-                    author = "Imported"
-                )
-                libraryBooksRepository.insert(newBook)
-
-                withContext(Dispatchers.Main) {
-                    toasty.show(R.string.added_to_library) // Ensure string exists or use generic
-                    getAllBooks() // Refresh list
-                }
-
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {

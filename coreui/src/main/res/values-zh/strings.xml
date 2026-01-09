@@ -95,7 +95,7 @@
     <string name="status_recorded">已录制: %1$s</string>
     <string name="hint_record_again">如果不满意，请重新录音</string>
     <string name="label_instructions">说明:</string>
-    <string name="instruction_1">至少录制 30 秒</string>
+    <string name="instruction_1">至少录制 60 秒</string>
     <string name="instruction_2">说话清晰自然</string>
     <string name="instruction_3">避免背景噪音</string>
     <string name="content_desc_back">返回</string>
