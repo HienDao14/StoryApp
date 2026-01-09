@@ -274,7 +274,7 @@
     <string name="select_voice">Select Voice</string>
     <string name="select_chapter">Select Chapter</string>
     <string name="loading_audio">Loading audio...</string>
-    <string name="ageRating">Age rating</string>
+    <string name="ageRating">Age rating: </string>
     <string name="navigation">Navigation</string>
     <string name="full_recording_script">
         Xin chào. Đây là bản ghi âm giọng nói của tôi để huấn luyện mô hình AI. Tôi đang cố gắng nói chuyện một cách tự nhiên nhất có thể. Mục tiêu là để máy tính có thể học được cách tôi phát âm, cách tôi ngắt nghỉ và ngữ điệu đặc trưng của tôi.\nHôm nay là một ngày đẹp trời, và tôi cảm thấy rất hào hứng với dự án này. Hy vọng kết quả đầu ra sẽ thật sự ấn tượng và giống với giọng thật của tôi.\n\n
@@ -289,5 +289,12 @@
     <string name="main_context">Main Context (Free Text)</string>
     <string name="story_title">Story Title</string>
     <string name="create_story">Create Story</string>
+    <string name="category_the_thao">Sports</string>
+    <string name="category_vo_thuat">Martial Arts</string>
+    <string name="category_hai_huoc">Comedy</string>
+    <string name="category_khoa_hoc_vien_tuong">Science Fiction</string>
+    <string name="category_co_tich">Fairy Tales</string>
+    <string name="category_khoa_hoc">Science</string>
+    <string name="category_gia_tuong">Fantasy</string>
 
 </resources>

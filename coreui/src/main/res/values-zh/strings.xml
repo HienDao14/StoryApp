@@ -279,7 +279,7 @@
     <string name="select_voice">选择语音</string>
     <string name="select_chapter">选择章节</string>
     <string name="loading_audio">正在加载音频...</string>
-    <string name="ageRating">分级</string>
+    <string name="ageRating">分级: </string>
     <string name="navigation">导航</string>
     <string name="logout_confirmation_title">退出登录</string>
     <string name="logout_confirmation_message">您确定要退出登录吗？</string>

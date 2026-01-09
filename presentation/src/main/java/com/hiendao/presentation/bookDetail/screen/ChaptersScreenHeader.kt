@@ -48,6 +48,7 @@ import com.hiendao.coreui.components.ExpandableText
 import com.hiendao.coreui.components.ImageView
 import com.hiendao.coreui.modifiers.bounceOnPressed
 import com.hiendao.coreui.theme.clickableNoIndicator
+import com.hiendao.coreui.utils.categoryStringToRes
 import com.hiendao.domain.model.Category
 import com.hiendao.domain.utils.rememberResolvedBookImagePath
 import com.hiendao.presentation.bookDetail.state.ChaptersScreenState
@@ -194,13 +195,16 @@ internal fun ChaptersScreenHeader(
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 listCategories.forEach { category ->
-                                    AssistChip(
-                                        onClick = { /* Xử lý sự kiện click */
+                                    val categoryName = categoryStringToRes(category)
+                                    if(categoryName != null){
+                                        AssistChip(
+                                            onClick = { /* Xử lý sự kiện click */
 
-                                        },
-                                        label = { Text(category) },
-                                        modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
-                                    )
+                                            },
+                                            label = { Text(stringResource(id = categoryName)) },
+                                            modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

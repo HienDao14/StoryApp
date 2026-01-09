@@ -289,9 +289,16 @@
     <string name="select_voice">Chọn giọng đọc</string>
     <string name="select_chapter">Chọn chương</string>
     <string name="loading_audio">Đang tải âm thanh...</string>
-    <string name="ageRating">Xếp hạng độ tuổi</string>
+    <string name="ageRating">Giới hạn độ tuổi: </string>
     <string name="navigation">Điều hướng</string>
     <string name="main_context">Ngữ cảnh chính (Văn bản tự do)</string>
     <string name="story_title">Tiêu đề truyện</string>
     <string name="create_story">Tạo truyện</string>
+    <string name="category_the_thao">Thể thao</string>
+    <string name="category_vo_thuat">Võ thuật</string>
+    <string name="category_hai_huoc">Hài hước</string>
+    <string name="category_khoa_hoc_vien_tuong">Khoa học viễn tưởng</string>
+    <string name="category_co_tich">Cổ tích</string>
+    <string name="category_khoa_hoc">Khoa học</string>
+    <string name="category_gia_tuong">Giả tưởng</string>
 </resources>
