@@ -1,9 +1,12 @@
 package com.hiendao.storyapp
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,15 +21,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.coreui.theme.InternalTheme
 import com.hiendao.coreui.theme.Theme
 import com.hiendao.coreui.theme.ThemeProvider
+import com.hiendao.coreui.utils.LocaleHelper
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.domain.mockData.MockData
 import com.hiendao.domain.model.*
 import com.hiendao.domain.repository.BooksRepository
 import com.hiendao.navigation.NavigationRoutes
 import com.hiendao.presentation.appRoute.AppHomeScreen
+import com.hiendao.presentation.login.LoginViewModel
 import com.hiendao.storyapp.ui.theme.StoryAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +56,25 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var themeProvider: ThemeProvider
 
+    @Inject
+    lateinit var appPreferences: AppPreferences
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
+
+    private val viewModel: LoginViewModel by viewModels()
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        viewModel.getCallbackManager()
+            .onActivityResult(requestCode, resultCode, data)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -65,8 +90,19 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize(),
                     onBookOpen = { bookId, chapterUrl ->
                         openBookAtChapter(chapterUrl, bookId)
-                    }
+                    },
+                    appPreferences
                 )
+            }
+        }
+        
+        lifecycleScope.launch {
+            appPreferences.APP_LANGUAGE.flow().collect {
+                val currentLang = com.hiendao.coreui.utils.LocaleHelper.getLanguage(this@MainActivity)
+                if (currentLang != it) {
+                    LocaleHelper.setLocale(this@MainActivity, it)
+                    recreate()
+                }
             }
         }
     }

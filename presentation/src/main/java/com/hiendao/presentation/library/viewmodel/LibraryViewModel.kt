@@ -13,12 +13,16 @@ import com.hiendao.coreui.utils.TernaryState
 import com.hiendao.coreui.utils.Toasty
 import com.hiendao.coreui.utils.toState
 import com.hiendao.data.local.entity.BookWithContext
+import com.hiendao.data.local.entity.BookEntity
 import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.map.toDomain
+import com.hiendao.domain.map.toEntity
 import com.hiendao.domain.model.Book
 import com.hiendao.domain.repository.AppRepository
+import com.hiendao.domain.repository.LibraryBooksRepository
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.domain.utils.Response
+import com.hiendao.domain.repository.StoryRepository
 import com.hiendao.presentation.bookDetail.ChaptersRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -41,11 +45,15 @@ import kotlin.text.get
 internal class LibraryViewModel @Inject constructor(
     private val appRepository: AppRepository,
     private val preferences: AppPreferences,
-    private val toasty: Toasty
+    private val toasty: Toasty,
+    private val libraryBooksRepository: LibraryBooksRepository,
+    private val storyRepository: StoryRepository
 ) : BaseViewModel() {
 
     private var _allBooks = MutableStateFlow<Response<List<BookWithContext>>>(Response.None)
     val allBooks = _allBooks.asStateFlow()
+
+    private var _apiFavorites = MutableStateFlow<List<Book>>(emptyList())
 
     private var _listReading = MutableStateFlow<List<BookWithContext>>(emptyList())
     val listReading = _listReading.asStateFlow()
@@ -67,6 +75,7 @@ internal class LibraryViewModel @Inject constructor(
     fun onLibraryCategoryRefresh() {
         showLoadingSpinner()
         toasty.show(R.string.updating_library_notice)
+        getApiFavorites()
     }
 
     private fun showLoadingSpinner() {
@@ -78,7 +87,21 @@ internal class LibraryViewModel @Inject constructor(
         }
     }
 
+    fun toggleFavourite(book: Book) {
+        viewModelScope.launch {
+            launch {
+                libraryBooksRepository.toggleFavourite(book.id)
+            }
+            val isBookmarked =
+                appRepository.toggleBookmark(bookTitle = book.title, bookUrl = book.url)
+            val msg = if (isBookmarked) R.string.added_to_library else R.string.removed_from_library
+            getApiFavorites()
+            toasty.show(msg)
+        }
+    }
+
     init {
+        getApiFavorites()
         initBooksFlow(
             onDone = {
                 // === Tối ưu listReading Flow ===
@@ -132,43 +155,68 @@ internal class LibraryViewModel @Inject constructor(
                         _listCompleted.value = it // Cập nhật MutableStateFlow
                     }
 
-                _allBooks
-                    .filterIsInstance<Response.Success<List<BookWithContext>>>()
-                    .map { it.data }
-                    .combine(preferences.LIBRARY_FILTER_READ.flow()) { list, filterRead ->
-                        // B1: Lọc sách chưa hoàn thành (book.completed == false)
-                        val readingList = list.filter { book -> book.book.isFavourite == true }
+                // === List Favourite from API merged with Local ===
+                combine(
+                    _allBooks,
+                    _apiFavorites,
+                    preferences.LIBRARY_FILTER_READ.flow(),
+                    preferences.LIBRARY_SORT_LAST_READ.flow()
+                ) { allBooksResponse, apiFavs, filterRead, sortRead ->
+                    val localBooks = (allBooksResponse as? Response.Success)?.data ?: emptyList()
+                    val localBooksMap = localBooks.associateBy { it.book.id }
 
-                        // B2: Áp dụng filterRead
-                        when (filterRead) {
-                            TernaryState.Active -> readingList.filter { it.chaptersCount == it.chaptersReadCount }
-                            TernaryState.Inverse -> readingList.filter { it.chaptersCount != it.chaptersReadCount }
-                            TernaryState.Inactive -> readingList
-                        }
-                    }.combine(preferences.LIBRARY_SORT_LAST_READ.flow()) { list, sortRead ->
-                        // B3: Áp dụng sortRead
-                        when (sortRead) {
-                            TernaryState.Active -> list.sortedByDescending { it.book.lastReadEpochTimeMilli }
-                            TernaryState.Inverse -> list.sortedBy { it.book.lastReadEpochTimeMilli }
-                            TernaryState.Inactive -> list
-                        }
-                    }.flowOn(Dispatchers.Default) // Chuyển việc tính toán sang Dispatchers.Default
-                    .collectIn(viewModelScope) {
-                        _listFavourite.value = it // Cập nhật MutableStateFlow
+                    val mergedFavList = apiFavs.map { apiBook ->
+                        localBooksMap[apiBook.id] ?: BookWithContext(
+                            book = apiBook.toEntity().copy(isFavourite = true),
+                            chaptersCount = apiBook.totalChapters,
+                            chaptersReadCount = 0 // Default to 0 if not in local library
+                        )
                     }
+
+                    // Apply filters if needed, passing through for now as favorites are usually just a list
+                    // Apply Sort
+                    when (sortRead) {
+                        TernaryState.Active -> mergedFavList.sortedByDescending { it.book.lastReadEpochTimeMilli }
+                        TernaryState.Inverse -> mergedFavList.sortedBy { it.book.lastReadEpochTimeMilli }
+                        TernaryState.Inactive -> mergedFavList
+                    }
+                }.flowOn(Dispatchers.Default)
+                .collectIn(viewModelScope) {
+                     _listFavourite.value = it
+                }
 
             }
         )
+    }
 
-        // === Tương tự cho listCompleted Flow ===
-        // (Bạn sẽ áp dụng logic tương tự, lọc những sách có book.completed == true)
+    private fun getApiFavorites() {
+        viewModelScope.launch {
+            libraryBooksRepository.getFavoriteBooks().collect { response ->
+                if (response is Response.Success) {
+                    _apiFavorites.value = response.data
+                }
+            }
+        }
     }
 
     fun initBooksFlow(onDone: () -> Unit = {}) { // Đổi tên để phản ánh mục đích khởi tạo Flow
         viewModelScope.launch(Dispatchers.IO) {
-            appRepository.libraryBooks.getBooksInLibraryWithContextFlow.collect {
-                _allBooks.emit(Response.Success(it))
-                onDone.invoke()
+            libraryBooksRepository.getLibraryBooks().collect { response ->
+                when(response){
+                    is Response.Loading -> {
+                        _allBooks.emit(Response.Loading)
+                    }
+                    is Response.Error -> {
+                        _allBooks.emit(Response.Error(response.message ?: "Unknown Error", response.exception))
+                        onDone.invoke()
+                    }
+                    is Response.Success -> {
+                        _allBooks.emit(Response.Success(response.data))
+                        onDone.invoke()
+                    }
+                    else -> Unit
+
+                }
             }
         }
     }
@@ -188,7 +236,25 @@ internal class LibraryViewModel @Inject constructor(
         }
     }
     fun getBook(bookId: String) = appRepository.libraryBooks.getFlow(bookId)
+
+    fun deleteStory(bookId: String) {
+        viewModelScope.launch {
+            storyRepository.deleteStory(bookId).collect {
+                when (it) {
+                    is Response.Loading -> showLoadingSpinner()
+                    is Response.Success -> {
+                        toasty.show(R.string.done)
+                    }
+                    is Response.Error -> {
+                        toasty.show(it.message ?: "Error deleting story")
+                    }
+                    else -> Unit
+                }
+            }
+        }
+    }
 }
+
 
 // Hàm mở rộng để đơn giản hóa việc thu thập
 private fun <T> Flow<T>.collectIn(scope: CoroutineScope, action: suspend (T) -> Unit) =

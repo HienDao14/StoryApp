@@ -9,6 +9,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
@@ -17,12 +19,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,7 +55,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.hiendao.coreui.R
+import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.coreui.theme.InternalTheme
 import com.hiendao.coreui.theme.Themes
 import com.hiendao.coreui.theme.colorApp
@@ -66,7 +71,6 @@ import com.hiendao.presentation.reader.features.LiveTranslationSettingData
 import com.hiendao.presentation.reader.features.TextSynthesis
 import com.hiendao.presentation.reader.features.TextToSpeechSettingData
 import com.hiendao.presentation.reader.ui.ReaderScreenState.Settings.Type
-import my.noveldokusha.features.reader.ui.ReaderScreenBottomBarDialogs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,14 +83,51 @@ internal fun ReaderScreen(
     onThemeSelected: (Themes) -> Unit,
     onTextFontChanged: (String) -> Unit,
     onTextSizeChanged: (Float) -> Unit,
+    onLineHeightChanged: (Float) -> Unit,
+    onTextAlignChanged: (Int) -> Unit,
+    onScreenMarginChanged: (Int) -> Unit,
+    onBrightnessChanged: (Float) -> Unit,
+    onNightModeChanged: (Boolean) -> Unit,
+    onAutoScrollSpeedChanged: (Int) -> Unit,
+    onVolumeKeyNavigationChanged: (Boolean) -> Unit,
     onPressBack: () -> Unit,
+    selectModelVoice: (VoicePredefineState) -> Unit,
     readerContent: @Composable (paddingValues: PaddingValues) -> Unit
 ) {
+    if (state.showVoiceLoadingDialog.value) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "(đang thực hiện, vui lòng chờ...)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+        }
+    }
     // Capture back action when viewing info
     BackHandler(enabled = state.showReaderInfo.value) {
         state.showReaderInfo.value = false
+        state.settings.selectedSetting.value = Type.None
     }
 
+    Box {
     Scaffold(
         topBar = {
             val fullScreen by rememberUpdatedState(state.showReaderInfo.value)
@@ -172,12 +213,21 @@ internal fun ReaderScreen(
                         settings = state.settings,
                         onTextFontChanged = onTextFontChanged,
                         onTextSizeChanged = onTextSizeChanged,
+                        onLineHeightChanged = onLineHeightChanged,
+                        onTextAlignChanged = onTextAlignChanged,
+                        onScreenMarginChanged = onScreenMarginChanged,
                         onSelectableTextChange = onSelectableTextChange,
                         onFollowSystem = onFollowSystem,
                         onThemeSelected = onThemeSelected,
                         onKeepScreenOn = onKeepScreenOn,
                         onFullScreen = onFullScreen,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        onBrightnessChanged = onBrightnessChanged,
+                        onNightModeChanged = onNightModeChanged,
+                        onAutoScrollSpeedChanged = onAutoScrollSpeedChanged,
+                        onVolumeKeyNavigationChanged = onVolumeKeyNavigationChanged,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        selectModelVoice = selectModelVoice,
+                        isLoading = state.showVoiceLoadingDialog.value
                     )
                     BottomAppBar(
                         modifier = Modifier
@@ -218,6 +268,14 @@ internal fun ReaderScreen(
             }
         }
     )
+        if (state.settings.nightMode.value) {
+             Box(
+                 modifier = Modifier
+                     .matchParentSize()
+                     .background(Color(0x33FF9800)) // Amber overlay
+             )
+        }
+    }
 }
 
 @Composable
@@ -314,7 +372,8 @@ private fun ViewsPreview(
         setVoiceSpeed = {},
         setVoicePitch = {},
         setCustomSavedVoices = {},
-        customSavedVoices = rememberMutableStateOf(value = listOf())
+        customSavedVoices = rememberMutableStateOf(value = listOf()),
+        activeAiVoice = rememberMutableStateOf(null)
     )
 
     val style = ReaderScreenState.Settings.StyleSettingsData(
@@ -322,6 +381,9 @@ private fun ViewsPreview(
         currentTheme = remember { mutableStateOf(Themes.DARK) },
         textFont = remember { mutableStateOf("Arial") },
         textSize = remember { mutableFloatStateOf(20f) },
+        lineHeight = remember { mutableFloatStateOf(1.5f) },
+        textAlign = remember { mutableIntStateOf(0) },
+        screenMargin = remember { mutableIntStateOf(16) }
     )
 
     InternalTheme {
@@ -344,7 +406,12 @@ private fun ViewsPreview(
                         style = style,
                         selectedSetting = remember { mutableStateOf(data.selectedSetting) },
                         fullScreen = remember { mutableStateOf(false) },
+                        brightness = remember { mutableFloatStateOf(0.5f) },
+                        nightMode = remember { mutableStateOf(false) },
+                        autoScrollSpeed = remember { mutableIntStateOf(0) },
+                        volumeKeyNavigation = remember { mutableStateOf(false) }
                     ),
+                    showVoiceLoadingDialog = remember { mutableStateOf(false) },
                     showInvalidChapterDialog = remember { mutableStateOf(false) }
                 ),
                 onTextSizeChanged = {},
@@ -355,7 +422,15 @@ private fun ViewsPreview(
                 onPressBack = {},
                 readerContent = {},
                 onKeepScreenOn = {},
-                onFullScreen = {}
+                onFullScreen = {},
+                selectModelVoice = {},
+                onLineHeightChanged = {},
+                onTextAlignChanged = {},
+                onScreenMarginChanged = {},
+                onBrightnessChanged = {},
+                onNightModeChanged = {},
+                onAutoScrollSpeedChanged = {},
+                onVolumeKeyNavigationChanged = {}
             )
         }
     }

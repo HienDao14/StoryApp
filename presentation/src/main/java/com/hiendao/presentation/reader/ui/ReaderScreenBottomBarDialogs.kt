@@ -1,4 +1,4 @@
-package my.noveldokusha.features.reader.ui
+package com.hiendao.presentation.reader.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hiendao.coreui.appPreferences.VoicePredefineState
 import com.hiendao.coreui.theme.Themes
-import com.hiendao.presentation.reader.ui.ReaderScreenState
 import com.hiendao.presentation.reader.ui.settingDialogs.MoreSettingDialog
 import com.hiendao.presentation.reader.ui.settingDialogs.StyleSettingDialog
 import com.hiendao.presentation.reader.ui.settingDialogs.TranslatorSettingDialog
@@ -26,7 +26,16 @@ internal fun ReaderScreenBottomBarDialogs(
     onThemeSelected: (Themes) -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
     onFullScreen: (Boolean) -> Unit,
+    onLineHeightChanged: (Float) -> Unit,
+    onTextAlignChanged: (Int) -> Unit,
+    onScreenMarginChanged: (Int) -> Unit,
+    onBrightnessChanged: (Float) -> Unit,
+    onNightModeChanged: (Boolean) -> Unit,
+    onAutoScrollSpeedChanged: (Int) -> Unit,
+    onVolumeKeyNavigationChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    selectModelVoice: (VoicePredefineState) -> Unit = { }
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -39,7 +48,9 @@ internal fun ReaderScreenBottomBarDialogs(
                         state = settings.liveTranslation
                     )
                     ReaderScreenState.Settings.Type.TextToSpeech -> VoiceReaderSettingDialog(
-                        state = settings.textToSpeech
+                        state = settings.textToSpeech,
+                        selectModelVoice = selectModelVoice,
+                        isLoading = isLoading
                     )
                     ReaderScreenState.Settings.Type.Style -> {
                         StyleSettingDialog(
@@ -48,6 +59,9 @@ internal fun ReaderScreenBottomBarDialogs(
                             onThemeChange = onThemeSelected,
                             onTextFontChange = onTextFontChanged,
                             onTextSizeChange = onTextSizeChanged,
+                            onLineHeightChange = onLineHeightChanged,
+                            onTextAlignChange = onTextAlignChanged,
+                            onScreenMarginChange = onScreenMarginChanged,
                         )
                     }
                     ReaderScreenState.Settings.Type.More -> MoreSettingDialog(
@@ -57,6 +71,14 @@ internal fun ReaderScreenBottomBarDialogs(
                         onKeepScreenOn = onKeepScreenOn,
                         fullScreen = settings.fullScreen.value,
                         onFullScreen = onFullScreen,
+                        brightness = settings.brightness.value,
+                        onBrightnessChanged = onBrightnessChanged,
+                        nightMode = settings.nightMode.value,
+                        onNightModeChanged = onNightModeChanged,
+                        autoScrollSpeed = settings.autoScrollSpeed.value,
+                        onAutoScrollSpeedChanged = onAutoScrollSpeedChanged,
+                        volumeKeyNavigation = settings.volumeKeyNavigation.value,
+                        onVolumeKeyNavigationChanged = onVolumeKeyNavigationChanged,
                     )
                     ReaderScreenState.Settings.Type.None -> Unit
                 }

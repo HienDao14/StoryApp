@@ -19,6 +19,7 @@ internal data class ChaptersScreenState(
     val settingChapterSort: MutableState<TernaryState>,
     val isLocalSource: State<Boolean>,
     val isRefreshable: State<Boolean>,
+    var isLoading: MutableState<Boolean>
 ) {
 
     val isInSelectionMode = derivedStateOf { selectedChaptersUrl.size != 0 }
@@ -33,7 +34,8 @@ internal data class ChaptersScreenState(
         val description: String = "",
         val author: String = "",
         val isFavourite: Boolean = false,
-        val categories: List<Category> = emptyList<Category>()
+        val ageRating: Int? = null,
+        val categories: List<String> = emptyList<String>()
     ) {
         constructor(book: Book) : this(
             title = book.title,
@@ -44,7 +46,9 @@ internal data class ChaptersScreenState(
             coverImageUrl = book.coverImageUrl,
             description = book.description,
             author = book.author,
-            isFavourite = book.isFavourite
+            isFavourite = book.isFavourite,
+            ageRating = book.ageRating,
+            categories = book.categories ?: emptyList<String>()
         )
     }
 }

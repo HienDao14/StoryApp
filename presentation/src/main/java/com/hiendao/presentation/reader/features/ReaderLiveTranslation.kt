@@ -86,7 +86,7 @@ internal class ReaderLiveTranslation(
         return when {
             old == null && new == null -> false
             old != null && new != null -> when {
-                old.source != new.source && old.target != new.target -> true
+                old.source != new.source || old.target != new.target -> true
                 else -> false
             }
             old == null && new != null -> new.source != new.target

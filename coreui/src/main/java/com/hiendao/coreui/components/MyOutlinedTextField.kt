@@ -20,12 +20,16 @@ fun MyOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeHolderText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    readOnly: Boolean = false,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
+        readOnly = readOnly,
+        trailingIcon = trailingIcon,
         placeholder = {
             Text(
                 text = placeHolderText,
@@ -38,7 +42,7 @@ fun MyOutlinedTextField(
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
         ),
         interactionSource = remember { MutableInteractionSource() }
     )

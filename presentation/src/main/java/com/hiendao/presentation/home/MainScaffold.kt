@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hiendao.presentation.model.BottomItem
@@ -40,7 +41,12 @@ fun MainScaffold(
                         icon = if(currentRoute == item.route) item.selectedIcon else item.icon,
                         label = {
                             Text(
-                                item.label,
+                                when(item.label){
+                                    "Home" -> stringResource(id = com.hiendao.coreui.R.string.title_home)
+                                    "Library" -> stringResource(id = com.hiendao.coreui.R.string.title_library)
+                                    "Settings" -> stringResource(id = com.hiendao.coreui.R.string.title_settings)
+                                    else -> item.label
+                                },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.labelMedium

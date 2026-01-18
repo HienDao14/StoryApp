@@ -59,7 +59,8 @@ fun FavouriteSection(
     onBookClick: (Book) -> Unit = {},
     onSeeAllClick: () -> Unit = {},
     onLoadMore: () -> Unit = {},
-    uiState: HomeState
+    uiState: HomeState,
+    isEndReached: Boolean = false
 ) {
     val context = LocalContext.current
 
@@ -106,13 +107,14 @@ fun FavouriteSection(
                         modifier = Modifier.bounceOnPressed(interactionSource)
                     )
                 }
-                if (it >= listBooks.size - 1 && !uiState.isLoading) {
+                if (it >= listBooks.size - 1 && !uiState.isLoading && !isEndReached) {
                     onLoadMore.invoke()
                 }
             }
         }
     }
 }
+
 
 // ====== 2) Categories (hình tròn + tên) ======
 @Composable
@@ -191,7 +193,10 @@ fun BookGridFlow(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
     onPlayClick: (Book) -> Unit,
-    onFavouriteClick: (Book) -> Unit
+    onFavouriteClick: (Book) -> Unit,
+    onLoadMore: () -> Unit = {},
+    isLoading: Boolean = false,
+    isEndReached: Boolean = false
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -218,6 +223,10 @@ fun BookGridFlow(
                     onPlayClick = {onPlayClick(book)},
                     onItemClick = { onBookClick(book) }
                 )
+
+                if (index >= books.size - 1 && !isLoading && !isEndReached) {
+                    onLoadMore.invoke()
+                }
             }
         }
     }

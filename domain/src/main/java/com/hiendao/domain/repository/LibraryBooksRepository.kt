@@ -3,23 +3,41 @@ package com.hiendao.domain.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.room.withTransaction
+import com.hiendao.data.local.dao.ChapterBodyDao
+import com.hiendao.data.local.dao.ChapterDao
 import com.hiendao.data.local.dao.LibraryDao
 import com.hiendao.data.local.database.AppDatabase
 import com.hiendao.data.local.entity.BookEntity
+import com.hiendao.data.local.entity.BookWithContext
+import com.hiendao.data.local.entity.ChapterBodyEntity
 import com.hiendao.data.remote.retrofit.book.BookApi
+import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
+import com.hiendao.data.remote.retrofit.voice.model.TrainModelResponse
 import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.data.utils.fileImporter
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.map.toDomainList
+import com.hiendao.domain.map.toDomainListFromContent
+import com.hiendao.domain.map.toDomainListFromContentLibrary
 import com.hiendao.domain.map.toEntity
 import com.hiendao.domain.model.Book
+import com.hiendao.domain.model.CreateVoiceRequest
+import com.hiendao.domain.utils.Response
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,6 +49,8 @@ class LibraryBooksRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appFileResolver: AppFileResolver,
     private val appCoroutineScope: AppCoroutineScope,
+    private val chapterDao: ChapterDao,
+    private val chapterBodyDao: ChapterBodyDao
 ) {
     val getBooksInLibraryWithContextFlow by lazy {
         libraryDao.getBooksInLibraryWithContextFlow()
@@ -66,7 +86,36 @@ class LibraryBooksRepository @Inject constructor(
             chapterUrl = lastReadChapterUrl
         )
 
-    suspend fun getAll() = libraryDao.getAll()
+    suspend fun getAll(
+        page: Int = 0
+    ): List<Book> {
+        return try {
+            bookApi.getBooks(page).content.toDomainListFromContent()
+        } catch (e : Exception){
+            emptyList()
+        }
+    }
+
+    suspend fun getAllBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>>{
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
     suspend fun getAllInLibrary() = libraryDao.getAllInLibrary()
     suspend fun existInLibrary(url: String) = libraryDao.existInLibrary(url)
     suspend fun toggleBookmark(
@@ -101,35 +150,119 @@ class LibraryBooksRepository @Inject constructor(
         }
     }
 
-    suspend fun searchBooks(query: String): Flow<List<Book>>{
+    suspend fun searchBooks(query: String, page: Int = 0): Flow<Response<List<Book>>>{
         return flow {
-            val books = libraryDao.searchBooks(query).map { it.toDomain() }
-            emit(books)
+            try {
+                val result = bookApi.searchBooks(
+                    page = page,
+                    searchBody = SearchBooksBody(
+                        keyword = query
+                    )
+                )
+                val books = result.content.toDomainListFromContent()
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "searchBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
+    suspend fun toggleFavourite(bookId: String) {
+        bookApi.toggleFavorite(bookId)
+    }
+
+    suspend fun getNewestBooksNormal(
+        page: Int = 0
+    ): List<Book>{
+        return try {
+            bookApi.getNewestBooks(page).content.toDomainListFromContent()
+        } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+            emptyList()
         }
     }
 
     suspend fun getNewestBooks(
-        page: Int = 1
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getNewestBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+    suspend fun getFavoriteBooksNormal(
+        page: Int = 0
     ): List<Book> {
         return try {
-            bookApi.getNewestBooks(page).results.toDomainList()
+            bookApi.getFavouriteBooks(page).content.toDomainListFromContent()
         } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
             emptyList()
         }
     }
-    suspend fun getFavoriteBooks(
-        page: Int = 1
+
+    suspend fun getRecentlyReadBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getRecentlyReadBooks(page)
+                val content = result.content
+                val books = content.toDomainListFromContent()
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
+    suspend fun getRecentlyReadBooksNormal(
+        page: Int = 0
     ): List<Book> {
         return try {
-            bookApi.getFavouriteBooks(page).results.toDomainList()
+            bookApi.getRecentlyReadBooks(page).content.toDomainListFromContent()
         } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
             emptyList()
+        }
+    }
+
+    suspend fun getFavoriteBooks(
+        page: Int = 0
+    ): Flow<Response<List<Book>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getFavouriteBooks(page)
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: ${result.toString()}")
+                val content = result.content
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: content size ${content}")
+                val books = content.toDomainListFromContent()
+                Timber.tag("LibraryBooksRepository").d("getAllBooks: books size ${books}")
+                emit(Response.Success(books))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getAllBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
         }
     }
 
     suspend fun getFeaturedBooks(): List<Book> {
         return try {
-            bookApi.getFeatureBooks().results.toDomainList()
+            bookApi.getNewestBooks().content.toDomainListFromContent()
         } catch (e : Exception){
             emptyList()
         }
@@ -137,12 +270,61 @@ class LibraryBooksRepository @Inject constructor(
 
     suspend fun getBooksByCategory(
         categoryId: String,
-        page: Int = 1
+        page: Int = 0
     ): List<Book> {
         return try {
             bookApi.getBookOfCategory(categoryId, page).results.toDomainList()
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    suspend fun getLibraryBooks(
+        page: Int = 0
+    ): Flow<Response<List<BookWithContext>>> {
+        return flow {
+            try {
+                emit(Response.Loading)
+                val result = bookApi.getLibraryBooks(page)
+                val content = result.content
+                val books = content.toDomainListFromContentLibrary()
+                val booksEntity = books.map { it.toEntity() }
+                libraryDao.insertReplace(booksEntity)
+                val booksWithContext = libraryDao.getBooksInLibraryWithContext()
+                emit(Response.Success(booksWithContext))
+            } catch (e : Exception){
+                Timber.tag("LibraryBooksRepository").e(e, "getLibraryBooks: error: ${e.message}")
+                emit(Response.Error(e.message.toString(), e))
+            }
+        }
+    }
+
+    suspend fun extractEpubBook(epubFile: File): Flow<Response<Book>> = flow {
+        try {
+            emit(Response.Loading)
+            val requestFile = epubFile.asRequestBody("application/epub+zip".toMediaTypeOrNull())
+            val epubPart = MultipartBody.Part.createFormData("file", epubFile.name, requestFile)
+            val response = bookApi.extractEpubBook(epubPart)
+            val bookEntity = response.toEntity()
+            libraryDao.upsertBook(bookEntity)
+            var chapters = response.chapters
+            chapters?.forEach {
+                if(it.id.isNullOrEmpty()){
+                    return@forEach
+                }
+                val server = it.toEntity(response.id.toString())
+                chapterDao.insertChapter(server)
+                chapterBodyDao.insertReplace(
+                    ChapterBodyEntity(
+                        chapterId = it.id!!,
+                        body = it.content?.replace("http://127.0.0.1:9000", "https://ctd37qdd-9000.asse.devtunnels.ms") ?: ""
+                    )
+                )
+            }
+            emit(Response.Success(bookEntity.toDomain()))
+        } catch (e : Exception){
+            Timber.tag("LibraryBooksRepository").d("extractEpubBook: error ${e.message}")
+            emit(Response.Error(e.message.toString(), e))
         }
     }
 }

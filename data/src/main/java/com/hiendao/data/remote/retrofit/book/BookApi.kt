@@ -1,30 +1,60 @@
 package com.hiendao.data.remote.retrofit.book
 
-import com.hiendao.data.remote.retrofit.book.model.BookResponse
+import com.hiendao.data.remote.retrofit.book.model.BookResponseDTO
+import com.hiendao.data.remote.retrofit.book.model.BooksResponseDTO
 import com.hiendao.data.remote.retrofit.book.model.ListBookResponse
+import com.hiendao.data.remote.retrofit.book.model.SearchBooksBody
+import okhttp3.MultipartBody
+import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.PUT
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface BookApi {
 
-    @GET("")
+    @GET("stories")
     suspend fun getBooks(
-        @Query("page") page: Int?
-    ): ListBookResponse
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate"
+    ): BooksResponseDTO
 
-    @GET("")
+    @GET("stories")
     suspend fun getNewestBooks(
-        @Query("page") page: Int?
-    ): ListBookResponse
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate"
+    ): BooksResponseDTO
 
-    @GET("")
-    suspend fun getFeatureBooks(): ListBookResponse
-
-    @GET("")
+    @GET("stories/favorites")
     suspend fun getFavouriteBooks(
-        @Query("page") page: Int?
-    ): ListBookResponse
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate"
+    ): BooksResponseDTO
+
+    @GET("stories/recently-read")
+    suspend fun getRecentlyReadBooks(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate"
+    ): BooksResponseDTO
+
+    @GET("stories/my-library")
+    suspend fun getLibraryBooks(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate"
+    ): BooksResponseDTO
+
+    @Multipart
+    @POST("stories/import-epub")
+    suspend fun extractEpubBook(
+        @Part epubFile: MultipartBody.Part
+    ): BookResponseDTO
 
     @GET("")
     suspend fun getBookOfCategory(
@@ -32,11 +62,21 @@ interface BookApi {
         @Query("page") page: Int?
     ): ListBookResponse
 
-    @GET("")
+    @GET("stories/{id}")
     suspend fun getBookDetail(
-        @Query("bookId") bookId: String
-    ): BookResponse
+        @Path("id") bookId: String
+    ): BookResponseDTO
 
-    @PUT("")
-    suspend fun updateBook(): BookResponse
+    @POST("stories/search")
+    suspend fun searchBooks(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 10,
+        @Query("sort") sort: String = "createDate",
+        @Body searchBody: SearchBooksBody
+    ): BooksResponseDTO
+
+    @POST("stories/{id}/favorite")
+    suspend fun toggleFavorite(
+        @Path("id") bookId: String
+    )
 }

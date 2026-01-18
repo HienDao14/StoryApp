@@ -24,6 +24,9 @@ abstract class LibraryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(book: BookEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun upsertBook(book: BookEntity)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract suspend fun insert(book: List<BookEntity>)
 
@@ -70,6 +73,17 @@ abstract class LibraryDao {
     """
     )
     abstract fun getBooksInLibraryWithContextFlow(): Flow<List<BookWithContext>>
+
+    @Query(
+        """
+        SELECT BookEntity.*, COUNT(ChapterEntity.read) AS chaptersCount, SUM(ChapterEntity.read) AS chaptersReadCount
+        FROM BookEntity
+        LEFT JOIN ChapterEntity ON ChapterEntity.bookId = BookEntity.id
+        WHERE BookEntity.inLibrary == 1
+        GROUP BY BookEntity.id
+    """
+    )
+    abstract fun getBooksInLibraryWithContext(): List<BookWithContext>
 
     @Query("DELETE FROM BookEntity WHERE inLibrary == 0")
     abstract suspend fun removeAllNonLibraryRows()

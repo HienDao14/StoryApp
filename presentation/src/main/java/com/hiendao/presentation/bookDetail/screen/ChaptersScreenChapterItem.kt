@@ -66,22 +66,6 @@ internal fun ChaptersScreenChapterItem(
                 }
             }
         },
-        trailingContent = if (isLocalSource) null else {
-            {
-                AnimatedTransition(
-                    targetState = chapterWithContext.downloaded,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() }
-                ) { downloaded ->
-                    IconButton(onClick = onDownload) {
-                        Icon(
-                            if (downloaded) Icons.Filled.CloudDownload
-                            else Icons.Outlined.CloudDownload,
-                            null
-                        )
-                    }
-                }
-            }
-        },
         colors = ListItemDefaults.colors(
             supportingColor = MaterialTheme.colorScheme.onTertiary,
             containerColor =

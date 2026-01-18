@@ -33,8 +33,9 @@ class CategoryDetailViewModel @Inject constructor(
         if (categoryId.isEmpty()) return
         viewModelScope.launch {
             val result = when (categoryId) {
-                "favourite" -> appRepository.libraryBooks.getFavoriteBooks()
-                "newest" -> appRepository.libraryBooks.getNewestBooks()
+                "favourite" -> appRepository.libraryBooks.getFavoriteBooksNormal()
+                "newest" -> appRepository.libraryBooks.getNewestBooksNormal()
+                "recentlyRead" -> appRepository.libraryBooks.getRecentlyReadBooksNormal()
                 else -> appRepository.libraryBooks.getBooksByCategory(categoryId)
             }
             _books.emit(result)

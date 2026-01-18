@@ -22,12 +22,7 @@ class GoogleAuthUIClient(
     private val tag = "GoogleAuthUIClient"
     private val credentialManager = CredentialManager.create(context)
 
-    fun isSignedIn(): Boolean {
-        return false
-    }
-
     suspend fun signIn(): Boolean {
-        if (isSignedIn()) return true
         try {
             val result = buildCredentialRequest()
             return handleSignIn(result)
@@ -48,17 +43,12 @@ class GoogleAuthUIClient(
 
             try {
                 val tokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                println(tag + "name: ${tokenCredential.displayName}")
-                println(tag + "email: ${tokenCredential.id}")
-                println(tag + "image: ${tokenCredential.profilePictureUri}")
-                println(tag + "phoneNumber: ${tokenCredential.phoneNumber}")
                 doSignIn(tokenCredential)
                 return true
             } catch (e: GoogleIdTokenParsingException) {
                 println(tag + "GoogleIdTokenParsingException: ${e.message}")
                 return false
             }
-
         } else {
             println(tag + "credential is not GoogleIdTokenCredential")
             return false

@@ -48,6 +48,7 @@ import com.hiendao.coreui.components.ExpandableText
 import com.hiendao.coreui.components.ImageView
 import com.hiendao.coreui.modifiers.bounceOnPressed
 import com.hiendao.coreui.theme.clickableNoIndicator
+import com.hiendao.coreui.utils.categoryStringToRes
 import com.hiendao.domain.model.Category
 import com.hiendao.domain.utils.rememberResolvedBookImagePath
 import com.hiendao.presentation.bookDetail.state.ChaptersScreenState
@@ -65,7 +66,7 @@ internal fun ChaptersScreenHeader(
     modifier: Modifier = Modifier,
     onCoverLongClick: () -> Unit,
     onGlobalSearchClick: (input: String) -> Unit,
-    listCategories: List<Category> = emptyList()
+    listCategories: List<String> = emptyList()
 ) {
     val coverImageModel = bookState.coverImageUrl?.let {
         rememberResolvedBookImagePath(
@@ -170,26 +171,41 @@ internal fun ChaptersScreenHeader(
                             color = MaterialTheme.colorScheme.onTertiary,
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
-                        FlowRow(
+                    if(bookState.ageRating != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SelectionContainer {
+                            Text(
+                                text = stringResource(id = R.string.ageRating) + bookState.ageRating,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onTertiary,
+                            )
+                        }
+                    }
+                    if(listCategories.isNotEmpty()){
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(max = 150.dp)
-                                .verticalScroll(rememberScrollState())
+                                .fillMaxHeight()
                         ) {
-                            listCategories.forEach { category ->
-                                AssistChip(
-                                    onClick = { /* Xử lý sự kiện click */
-                                        onCategoryClick.invoke(category.id, category.name)
-                                    },
-                                    label = { Text(category.name) },
-                                    modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
-                                )
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 150.dp)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                listCategories.forEach { category ->
+                                    val categoryName = categoryStringToRes(category)
+                                    if(categoryName != null){
+                                        AssistChip(
+                                            onClick = { /* Xử lý sự kiện click */
+
+                                            },
+                                            label = { Text(stringResource(id = categoryName)) },
+                                            modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

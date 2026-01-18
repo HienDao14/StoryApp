@@ -51,6 +51,7 @@ internal fun LibraryScreenBody(
     topAppBarState: TopAppBarState,
     onBookClick: (BookWithContext) -> Unit,
     onBookLongClick: (BookWithContext) -> Unit,
+    onFavoriteClick: (BookWithContext) -> Unit,
     viewModel: LibraryViewModel = viewModel()
 ) {
     val listReading = viewModel.listReading.collectAsStateWithLifecycle()
@@ -124,7 +125,8 @@ internal fun LibraryScreenBody(
                 LibraryPageBody(
                     list = list,
                     onClick = onBookClick,
-                    onLongClick = onBookLongClick
+                    onLongClick = onBookLongClick,
+                    onFavoriteClick = onFavoriteClick
                 )
             }
         }

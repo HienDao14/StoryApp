@@ -10,14 +10,15 @@ internal data class ReaderScreenState(
     val showReaderInfo: MutableState<Boolean>,
     val readerInfo: CurrentInfo,
     val settings: Settings,
-    val showInvalidChapterDialog: MutableState<Boolean>
+    val showInvalidChapterDialog: MutableState<Boolean>,
+    val showVoiceLoadingDialog: MutableState<Boolean>
 ) {
     data class CurrentInfo(
         val chapterTitle: State<String>,
         val chapterCurrentNumber: State<Int>,
         val chapterPercentageProgress: State<Float>,
         val chaptersCount: State<Int>,
-        val chapterUrl: State<String>
+        var chapterUrl: MutableState<String>
     )
 
     data class Settings(
@@ -27,6 +28,10 @@ internal data class ReaderScreenState(
         val textToSpeech: TextToSpeechSettingData,
         val liveTranslation: LiveTranslationSettingData,
         val style: StyleSettingsData,
+        val brightness: State<Float>,
+        val nightMode: State<Boolean>,
+        val autoScrollSpeed: State<Int>,
+        val volumeKeyNavigation: State<Boolean>,
         val selectedSetting: MutableState<Type>,
     ) {
         data class StyleSettingsData(
@@ -34,6 +39,9 @@ internal data class ReaderScreenState(
             val currentTheme: State<Themes>,
             val textFont: State<String>,
             val textSize: State<Float>,
+            val lineHeight: State<Float>,
+            val textAlign: State<Int>,
+            val screenMargin: State<Int>,
         )
 
         enum class Type {

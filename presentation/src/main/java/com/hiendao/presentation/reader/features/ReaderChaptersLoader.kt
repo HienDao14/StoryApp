@@ -21,6 +21,9 @@ import com.hiendao.presentation.reader.domain.ReadingChapterPosStats
 import com.hiendao.presentation.reader.domain.indexOfReaderItem
 import com.hiendao.presentation.reader.tools.textToItemsConverter
 import my.noveldokusha.features.reader.ui.ReaderViewHandlersActions
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.TextNode
 import kotlin.coroutines.CoroutineContext
 
 internal class ReaderChaptersLoader(
@@ -473,7 +476,12 @@ internal class ReaderChaptersLoader(
                 val items = when {
                     translatorIsActive() -> itemsOriginal.map {
                         if (it is ReaderItem.Body) {
-                            it.copy(textTranslated = translatorTranslateOrNull(it.text))
+                            val translatedText = if (it.isHtml) {
+                                translateHtml(it.text, translatorTranslateOrNull)
+                            } else {
+                                translatorTranslateOrNull(it.text)
+                            }
+                            it.copy(textTranslated = translatedText)
                         } else it
                     }
                     else -> itemsOriginal
@@ -525,5 +533,38 @@ internal class ReaderChaptersLoader(
             }
             is Response.None -> Unit
         }
+    }
+
+    private suspend fun translateHtml(
+        html: String,
+        translator: suspend (String) -> String?
+    ): String {
+        val doc = Jsoup.parseBodyFragment(html)
+        val body = doc.body()
+
+        suspend fun traverse(node: org.jsoup.nodes.Node) {
+            when (node) {
+                is TextNode -> {
+                    val text = node.text()
+                    if (text.isNotBlank()) {
+                        val translated = translator(text)
+                        if (!translated.isNullOrBlank()) {
+                            node.text(translated)
+                        }
+                    }
+                }
+                is Element -> {
+                    for (child in node.childNodes()) {
+                        traverse(child)
+                    }
+                }
+            }
+        }
+
+        for (child in body.childNodes()) {
+            traverse(child)
+        }
+
+        return body.html()
     }
 }

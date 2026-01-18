@@ -46,14 +46,17 @@ internal data class TextToSpeechSettingData(
     val setVoiceId: (voiceId: String) -> Unit,
     val setVoiceSpeed: (Float) -> Unit,
     val setVoicePitch: (Float) -> Unit,
+    val activeAiVoice: MutableState<VoicePredefineState?>
 )
 
 internal data class TextSynthesis(
     val itemPos: ReaderItem.Position,
-    override val playState: Utterance.PlayState
+    override val playState: Utterance.PlayState,
+    override val sentenceIndex: Int = 0
 ) : Utterance<TextSynthesis> {
     override val utteranceId = "${itemPos.chapterItemPosition}-${itemPos.chapterIndex}"
     override fun copyWithState(playState: Utterance.PlayState) = copy(playState = playState)
+    override fun updateProgress(index: Int) = copy(sentenceIndex = index)
 }
 
 internal class ReaderTextToSpeech(
@@ -76,7 +79,7 @@ internal class ReaderTextToSpeech(
 ) {
     private val halfBuffer = 2
     private var updateJob: Job? = null
-    private val manager = TextToSpeechManager(
+    internal val manager = TextToSpeechManager(
         context = context,
         initialItemState = TextSynthesis(
             itemPos = ReaderItem.Title(
@@ -121,6 +124,7 @@ internal class ReaderTextToSpeech(
         scrollToActiveItem = ::scrollToActiveItem,
         setVoicePitch = ::setVoicePitch,
         setVoiceSpeed = ::setVoiceSpeed,
+        activeAiVoice = mutableStateOf(null)
     )
 
     val isActive = derivedStateOf { state.isThereActiveItem.value || state.isPlaying.value }
@@ -237,6 +241,16 @@ internal class ReaderTextToSpeech(
         )
 
         nextItems.forEach(::speakItem)
+    }
+
+    fun setReadingPosition(itemIndex: Int) {
+        val item = items.getOrNull(itemIndex) as? ReaderItem.Position ?: return
+        manager.setCurrentSpeakState(
+            TextSynthesis(
+                itemPos = item,
+                playState = Utterance.PlayState.FINISHED
+            )
+        )
     }
 
     @Synchronized
@@ -502,17 +516,30 @@ internal class ReaderTextToSpeech(
     private fun speakItem(item: ReaderItem) {
         when (item) {
             is ReaderItem.Text -> {
+                val textToSpeak = if (item is ReaderItem.Body && item.isHtml) {
+                    androidx.core.text.HtmlCompat.fromHtml(
+                        item.textToDisplay,
+                        androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+                    ).toString()
+                } else {
+                    item.textToDisplay
+                }
+
+                // Check if we are resuming the same item
+                val current = state.currentActiveItemState.value
+                val isResuming = current.itemPos == item && current.playState != Utterance.PlayState.FINISHED
+                val startIndex = if (isResuming) current.sentenceIndex else 0
+
                 manager.speak(
-                    text = item.textToDisplay,
+                    text = textToSpeak,
                     textSynthesis = TextSynthesis(
                         itemPos = item,
                         playState = Utterance.PlayState.PLAYING
-                    )
+                    ),
+                    startFromIndex = startIndex
                 )
             }
             else -> Unit
         }
     }
 }
-
-

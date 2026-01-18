@@ -35,7 +35,18 @@ class AppPreferences @Inject constructor(
     private val preferencesChangeListeners =
         mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
+    val LOGGED_IN = object : Preference<Boolean>("LOGGED_IN") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
+    }
+
+    val USER_ID = object : Preference<String>("USER_ID") {
+        override var value by SharedPreference_String(name, preferences, "")
+    }
     val ACCESS_TOKEN = object : Preference<String>("ACCESS_TOKEN") {
+        override var value by SharedPreference_String(name, preferences, "")
+    }
+
+    val REFRESH_TOKEN = object : Preference<String>("REFRESH_TOKEN") {
         override var value by SharedPreference_String(name, preferences, "")
     }
 
@@ -79,6 +90,26 @@ class AppPreferences @Inject constructor(
             )
         }
 
+    val LAST_SELECTED_VOICE = object : Preference<VoicePredefineState?>(
+        "LAST_SELECTED_VOICE"
+    ) {
+        override var value by SharedPreference_Serializable<VoicePredefineState?>(
+            name = name,
+            sharedPreferences = preferences,
+            defaultValue = null,
+            encode = { if(it != null) Json.encodeToString(it) else "" },
+            decode = {
+                if (it.isNotEmpty()) {
+                    try {
+                        Json.decodeFromString<VoicePredefineState>(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else null
+            }
+        )
+    }
+
     val READER_SELECTABLE_TEXT = object : Preference<Boolean>("READER_SELECTABLE_TEXT") {
         override var value by SharedPreference_Boolean(name, preferences, false)
     }
@@ -89,6 +120,27 @@ class AppPreferences @Inject constructor(
 
     val READER_FULL_SCREEN = object : Preference<Boolean>("READER_FULL_SCREEN") {
         override var value by SharedPreference_Boolean(name, preferences, true)
+    }
+    val READER_LINE_HEIGHT = object : Preference<Float>("READER_LINE_HEIGHT") {
+        override var value by SharedPreference_Float(name, preferences, 1.4f)
+    }
+    val READER_TEXT_ALIGN = object : Preference<Int>("READER_TEXT_ALIGN") {
+        override var value by SharedPreference_Int(name, preferences, 0) // 0: Left, 1: Justify
+    }
+    val READER_SCREEN_MARGIN = object : Preference<Int>("READER_SCREEN_MARGIN") {
+        override var value by SharedPreference_Int(name, preferences, 16)
+    }
+    val READER_BRIGHTNESS = object : Preference<Float>("READER_BRIGHTNESS") {
+        override var value by SharedPreference_Float(name, preferences, -1f) // -1: System, 0..1: Manual
+    }
+    val READER_NIGHT_MODE = object : Preference<Boolean>("READER_NIGHT_MODE") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
+    }
+    val READER_AUTO_SCROLL_SPEED = object : Preference<Int>("READER_AUTO_SCROLL_SPEED") {
+        override var value by SharedPreference_Int(name, preferences, 0) // 0: Off
+    }
+    val READER_VOLUME_KEY_NAVIGATION = object : Preference<Boolean>("READER_VOLUME_KEY_NAVIGATION") {
+        override var value by SharedPreference_Boolean(name, preferences, false)
     }
 
     val CHAPTERS_SORT_ASCENDING = object : Preference<TernaryState>("CHAPTERS_SORT_ASCENDING") {
@@ -155,6 +207,10 @@ class AppPreferences @Inject constructor(
         object : Preference<Int>("GLOBAL_APP_AUTOMATIC_LIBRARY_UPDATES_INTERVAL_HOURS") {
             override var value by SharedPreference_Int(name, preferences, 24)
         }
+
+    val APP_LANGUAGE = object : Preference<String>("APP_LANGUAGE") {
+        override var value by SharedPreference_String(name, preferences, "vi")
+    }
 
 
     @Deprecated("Removed", level = DeprecationLevel.HIDDEN)

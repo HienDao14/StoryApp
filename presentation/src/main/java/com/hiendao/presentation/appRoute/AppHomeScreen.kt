@@ -29,15 +29,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.hiendao.coreui.appPreferences.AppPreferences
 import com.hiendao.presentation.model.BottomItem
 
 @Composable
 fun AppHomeScreen(
     modifier: Modifier = Modifier,
-    onBookOpen: ((bookId: String, chapterUrl: String) -> Unit)? = null
+    onBookOpen: ((bookId: String, chapterUrl: String) -> Unit)? = null,
+    appPreferences: AppPreferences
 ) {
     val navController = rememberNavController()
-    AppNavHost(navController, modifier, onBookOpen = onBookOpen)
+    AppNavHost(navController, modifier, onBookOpen = onBookOpen, appPreferences)
 }
 
 @Composable

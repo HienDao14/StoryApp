@@ -57,6 +57,8 @@ import com.hiendao.coreui.theme.colorApp
 import com.hiendao.domain.model.Book
 import com.hiendao.domain.utils.rememberResolvedBookImagePath
 import com.hiendao.presentation.R
+import com.hiendao.coreui.R as CoreR
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -181,7 +183,7 @@ fun HomeItem(
             ) {
                 Icon(
                     imageVector = if(book.isFavourite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    contentDescription = "Favorite",
+                    contentDescription = stringResource(CoreR.string.favourite),
                     tint = ColorFavourite
                 )
             }
@@ -208,12 +210,12 @@ fun HomeItem(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_play),
-                    contentDescription = "Play",
+                    contentDescription = stringResource(CoreR.string.action_play),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = "Play",
+                    text = stringResource(CoreR.string.action_play),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     modifier = Modifier
@@ -231,12 +233,12 @@ fun HomeItem(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_read_book),
-                    contentDescription = "Play",
+                    contentDescription = stringResource(CoreR.string.read),
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = "Read",
+                    text = stringResource(CoreR.string.str_read),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     modifier = Modifier

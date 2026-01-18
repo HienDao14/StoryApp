@@ -9,9 +9,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -34,10 +37,11 @@ internal fun LibraryPageBody(
     list: List<BookWithContext>,
     onClick: (BookWithContext) -> Unit,
     onLongClick: (BookWithContext) -> Unit,
+    onFavoriteClick: (BookWithContext) -> Unit = {}
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
-        contentPadding = PaddingValues(top = 4.dp, bottom = 400.dp, start = 4.dp, end = 4.dp)
+        contentPadding = PaddingValues(top = 4.dp, bottom = 10.dp, start = 4.dp, end = 4.dp)
     ) {
         items(
             items = list,
@@ -56,21 +60,6 @@ internal fun LibraryPageBody(
                     interactionSource = interactionSource,
                     modifier = Modifier.bounceOnPressed(interactionSource)
                 )
-                val notReadCount = it.chaptersCount - it.chaptersReadCount
-                AnimatedVisibility(
-                    visible = notReadCount != 0,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Text(
-                        text = notReadCount.toString(),
-                        color = Color.White,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .background(ColorAccent, ImageBorderShape)
-                            .padding(4.dp)
-                    )
-                }
 
                 if (it.book.id.isLocalUri) Text(
                     text = stringResource(R.string.local),
@@ -81,6 +70,22 @@ internal fun LibraryPageBody(
                         .background(ColorAccent, ImageBorderShape)
                         .padding(4.dp)
                 )
+
+                androidx.compose.material3.IconButton(
+                    onClick = {
+                        onFavoriteClick.invoke(it)
+                    },
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .align(Alignment.TopEnd)
+                        .size(24.dp)
+                ) {
+                    androidx.compose.material3.Icon(
+                        imageVector = if(it.book.isFavourite) androidx.compose.material.icons.Icons.Filled.Favorite else androidx.compose.material.icons.Icons.Outlined.FavoriteBorder,
+                        contentDescription = stringResource(R.string.favourite),
+                        tint = com.hiendao.coreui.theme.ColorFavourite
+                    )
+                }
             }
         }
     }

@@ -36,6 +36,7 @@ fun ThemeSelectionDialog(
     onDismissRequest: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
@@ -69,24 +70,26 @@ fun ThemeSelectionDialog(
                         )
                     }
                 )
-                // Themes
-                ListItem(
-                    headlineContent = {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Themes.entries.forEach {
-                                FilterChip(
-                                    selected = it == currentTheme,
-                                    onClick = { onCurrentThemeChange(it) },
-                                    label = { Text(text = stringResource(id = it.nameId)) }
-                                )
+                if(!currentFollowSystem){
+                    // Themes
+                    ListItem(
+                        headlineContent = {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Themes.entries.forEach {
+                                    FilterChip(
+                                        selected = it == currentTheme,
+                                        onClick = { onCurrentThemeChange(it) },
+                                        label = { Text(text = stringResource(id = it.nameId)) }
+                                    )
+                                }
                             }
-                        }
 
-                    },
-                    leadingContent = {
-                        Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                )
+                        },
+                        leadingContent = {
+                            Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    )
+                }
             }
         }
     )

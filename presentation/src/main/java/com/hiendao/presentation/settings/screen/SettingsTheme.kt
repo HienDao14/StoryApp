@@ -50,7 +50,7 @@ internal fun SettingsTheme(
                 Icon(
                     Icons.Outlined.AutoAwesome,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -58,30 +58,32 @@ internal fun SettingsTheme(
                     checked = currentFollowSystem,
                     onCheckedChange = onFollowSystemChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
         )
-        // Themes
-        ListItem(
-            headlineContent = {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Themes.entries.forEach {
-                        FilterChip(
-                            selected = it == currentTheme,
-                            onClick = { onCurrentThemeChange(it) },
-                            label = { Text(text = stringResource(id = it.nameId)) }
-                        )
+        if(!currentFollowSystem){
+            // Themes
+            ListItem(
+                headlineContent = {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Themes.entries.forEach {
+                            FilterChip(
+                                selected = it == currentTheme,
+                                onClick = { onCurrentThemeChange(it) },
+                                label = { Text(text = stringResource(id = it.nameId)) }
+                            )
+                        }
                     }
-                }
 
-            },
-            leadingContent = {
-                Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.onPrimary)
-            }
-        )
+                },
+                leadingContent = {
+                    Icon(Icons.Outlined.ColorLens, null, tint = MaterialTheme.colorScheme.primary)
+                }
+            )
+        }
     }
 }

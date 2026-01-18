@@ -7,6 +7,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -49,6 +50,19 @@ import com.hiendao.coreui.utils.isAtTop
 import com.hiendao.presentation.voice.section.VoiceReaderDropDown
 import com.hiendao.presentation.voice.state.VoiceReaderScreenState
 
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun VoiceRoute(
@@ -59,7 +73,8 @@ internal fun VoiceRoute(
     onChangeCover: () -> Unit,
     onPlayClick: () -> Unit = {},
     onPauseClick: () -> Unit = {},
-    onChapterSelected: (chapterUrl: String) -> Unit
+    onChapterSelected: (chapterUrl: String) -> Unit,
+    onSelectModelVoice: (com.hiendao.coreui.appPreferences.VoicePredefineState) -> Unit
 ) {
     var showDropDown by rememberSaveable { mutableStateOf(false) }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
@@ -67,98 +82,157 @@ internal fun VoiceRoute(
     val lazyListState = rememberLazyListState()
     val textToSpeech = state.readerState?.settings?.textToSpeech
 
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.primary,
-        topBar = {
-            val isAtTop by lazyListState.isAtTop(threshold = 40.dp)
-            val alpha by animateFloatAsState(targetValue = if (isAtTop) 0f else 1f, label = "")
-            val backgroundColor by animateColorAsState(
-                targetValue = MaterialTheme.colorScheme.background.copy(alpha = alpha),
-                label = ""
-            )
-            val titleColor by animateColorAsState(
-                targetValue = MaterialTheme.colorScheme.onPrimary.copy(alpha = alpha),
-                label = ""
-            )
-            Surface(color = backgroundColor) {
-                Column {
-                    TopAppBar(
-                        scrollBehavior = scrollBehavior,
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent,
-                        ),
-                        title = {
-                            Text(
-                                text = state.book.value.title,
-                                style = MaterialTheme.typography.headlineSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(
-                                onClick = onPressBack
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                onClick = onFavouriteToggle
-                            ) {
-                                Icon(
-                                    if (state.book.value.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                                    stringResource(R.string.open_the_web_view),
-                                    tint = ColorLike
-                                )
-                            }
-                        }
-                    )
-                    HorizontalDivider(Modifier.alpha(alpha))
-                }
-            }
-            AnimatedVisibility(
-                visible = state.isInSelectionMode.value,
-                enter = expandVertically(initialHeight = { it / 2 }, expandFrom = Alignment.Top)
-                        + fadeIn(),
-                exit = shrinkVertically(targetHeight = { it / 2 }, shrinkTowards = Alignment.Top)
-                        + fadeOut(),
-            ) {
+    val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
 
+    // System Settings Interactions
+    val brightness = state.readerState?.settings?.brightness?.value
+    val keepScreenOn = state.readerState?.settings?.keepScreenOn?.value ?: false
+    val nightMode = state.readerState?.settings?.nightMode?.value ?: false
+
+    // Apply brightness and keep screen on
+    DisposableEffect(brightness, keepScreenOn) {
+        if (window != null) {
+            val layoutParams = window.attributes
+            val originalBrightness = layoutParams.screenBrightness
+            
+            if (brightness != null) {
+                layoutParams.screenBrightness = brightness
             }
-        },
-        content = { innerPadding ->
-            VoiceScreenPart2(
-                modifier = Modifier.fillMaxSize(),
-                paddingValues = innerPadding,
-                state = state,
-                onChapterSelected = { chapterUrl ->
-                    onChapterSelected.invoke(chapterUrl)
-                },
-                onPlayClick = { onPlayClick.invoke() },
-                onPauseClick = { onPauseClick.invoke() }
-            )
-//            VoiceScreen(
-//                modifier = Modifier,
-//                paddingValues = innerPadding,
-//                state = state,
-//                onPlayClick = {
-//                    textToSpeech?.setPlaying(true)
-//                },
-//                onPauseClick = {
-//                    textToSpeech?.setPlaying(false)
-//                },
-//                onNextClick = {
-//                    textToSpeech?.playNextChapter()
-//                },
-//                onPreviousClick = {
-//                    textToSpeech?.playPreviousChapter()
-//                },
-//                onChapterSelected = onChapterSelected
-//            )
+            window.attributes = layoutParams
+            
+            if (keepScreenOn) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+
+            onDispose {
+                // Revert brightness to preferred/system (or separate handling) if needed, 
+                // but actually ReaderActivity doesn't revert strictly. 
+                // However, for a Route in a shared Activity, we usually want to revert or let the next screen decide.
+                // For now, we follow ReaderActivity's pattern but inside a Composable life-cycle.
+                // Restoring original brightness is safer.
+                layoutParams.screenBrightness = originalBrightness // This might be -1.0f (default)
+                window.attributes = layoutParams
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        } else {
+            onDispose { }
         }
-    )
+    }
+
+    // Non-blocking Loading Overlay
+    val isLoading = state.readerState?.showVoiceLoadingDialog?.value == true
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            containerColor = MaterialTheme.colorScheme.primary,
+            topBar = {
+                val isAtTop by lazyListState.isAtTop(threshold = 40.dp)
+                val alpha by animateFloatAsState(targetValue = if (isAtTop) 0f else 1f, label = "")
+                val backgroundColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.background.copy(alpha = alpha),
+                    label = ""
+                )
+                val titleColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.onPrimary.copy(alpha = alpha),
+                    label = ""
+                )
+                Surface(color = backgroundColor) {
+                    Column {
+                        TopAppBar(
+                            scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = Color.Transparent,
+                                scrolledContainerColor = Color.Transparent,
+                            ),
+                            title = {
+                                Text(
+                                    text = state.book.value.title,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            },
+                            navigationIcon = {
+                                IconButton(
+                                    onClick = onPressBack
+                                ) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                                }
+                            },
+                            actions = {
+                                IconButton(
+                                    onClick = onFavouriteToggle
+                                ) {
+                                    Icon(
+                                        if (state.book.value.isFavourite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                                        stringResource(R.string.open_the_web_view),
+                                        tint = ColorLike
+                                    )
+                                }
+                            }
+                        )
+                        HorizontalDivider(Modifier.alpha(alpha))
+                    }
+                }
+                AnimatedVisibility(
+                    visible = state.isInSelectionMode.value,
+                    enter = expandVertically(initialHeight = { it / 2 }, expandFrom = Alignment.Top)
+                            + fadeIn(),
+                    exit = shrinkVertically(targetHeight = { it / 2 }, shrinkTowards = Alignment.Top)
+                            + fadeOut(),
+                ) {
+    
+                }
+            },
+            content = { innerPadding ->
+                VoiceScreenPart2(
+                    modifier = Modifier.fillMaxSize(),
+                    paddingValues = innerPadding,
+                    state = state,
+                    isLoading = isLoading,
+                    onChapterSelected = { chapterUrl ->
+                        onChapterSelected.invoke(chapterUrl)
+                    },
+                    onPlayClick = { onPlayClick.invoke() },
+                    onPauseClick = { onPauseClick.invoke() },
+                    onSelectModelVoice = onSelectModelVoice
+                )
+            }
+        )
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp) // Lift above bottom sheet/player if any usually.
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = stringResource(R.string.loading_audio),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                 }
+            }
+        }
+    }
+
+    if (nightMode) {
+        Box(
+             modifier = Modifier
+                 .fillMaxSize()
+                 .background(Color(0x33FF9800)) // Amber overlay
+        )
+    }
 }

@@ -1,6 +1,7 @@
 package com.hiendao.presentation.reader.ui.settingDialogs
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.LightMode
@@ -18,7 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hiendao.coreui.theme.ColorAccent
-import com.hiendao.presentation.R
+import com.hiendao.presentation.component.MySlider
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.hiendao.coreui.theme.ColorAccent
+import com.hiendao.coreui.R
 
 @Composable
 internal fun MoreSettingDialog(
@@ -28,6 +35,14 @@ internal fun MoreSettingDialog(
     onKeepScreenOn: (Boolean) -> Unit,
     fullScreen: Boolean,
     onFullScreen: (Boolean) -> Unit,
+    brightness: Float,
+    onBrightnessChanged: (Float) -> Unit,
+    nightMode: Boolean,
+    onNightModeChanged: (Boolean) -> Unit,
+    autoScrollSpeed: Int,
+    onAutoScrollSpeedChanged: (Int) -> Unit,
+    volumeKeyNavigation: Boolean,
+    onVolumeKeyNavigationChanged: (Boolean) -> Unit,
 ) {
     ElevatedCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 12.dp),
@@ -46,7 +61,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.TouchApp,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -54,9 +69,9 @@ internal fun MoreSettingDialog(
                     checked = allowTextSelection,
                     onCheckedChange = onAllowTextSelectionChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
@@ -72,7 +87,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.LightMode,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -80,9 +95,9 @@ internal fun MoreSettingDialog(
                     checked = keepScreenOn,
                     onCheckedChange = onKeepScreenOn,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
@@ -98,7 +113,7 @@ internal fun MoreSettingDialog(
                 Icon(
                     Icons.Outlined.Fullscreen,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -106,12 +121,58 @@ internal fun MoreSettingDialog(
                     checked = fullScreen,
                     onCheckedChange = onFullScreen,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             }
+        )
+        // Brightness
+        var currentBrightness by remember(brightness) { mutableFloatStateOf(brightness) }
+        MySlider(
+            value = if (currentBrightness < 0) 0.5f else currentBrightness,
+            valueRange = 0f..1f,
+            onValueChange = {
+                currentBrightness = it
+                onBrightnessChanged(currentBrightness)
+            },
+            text = "Brightness: ${if (brightness < 0) "System" else "%.0f%%".format(brightness * 100)}",
+            modifier = Modifier.padding(16.dp)
+        )
+        // Night Mode
+        ListItem(
+            modifier = Modifier.clickable { onNightModeChanged(!nightMode) },
+            headlineContent = { Text(stringResource(R.string.night_mode_blue_light_filter)) },
+            trailingContent = {
+                Switch(
+                    checked = nightMode,
+                    onCheckedChange = onNightModeChanged
+                )
+            }
+        )
+        // Volume Key Nav
+        ListItem(
+            modifier = Modifier.clickable { onVolumeKeyNavigationChanged(!volumeKeyNavigation) },
+            headlineContent = { Text(stringResource(R.string.volume_key_navigation)) },
+            trailingContent = {
+                Switch(
+                    checked = volumeKeyNavigation,
+                    onCheckedChange = onVolumeKeyNavigationChanged
+                )
+            }
+        )
+         // Auto Scroll
+        var currentAutoScroll by remember(autoScrollSpeed) { mutableFloatStateOf(autoScrollSpeed.toFloat()) }
+        MySlider(
+            value = currentAutoScroll,
+            valueRange = 0f..50f,
+            onValueChange = {
+                currentAutoScroll = it
+                onAutoScrollSpeedChanged(currentAutoScroll.toInt())
+            },
+            text = "Auto Scroll Speed: ${currentAutoScroll.toInt()}",
+            modifier = Modifier.padding(16.dp)
         )
     }
 }

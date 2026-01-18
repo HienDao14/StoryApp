@@ -3,12 +3,14 @@ package com.hiendao.presentation.library
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -66,7 +68,7 @@ fun LibraryRoute(
                 ),
                 title = {
                     Text(
-                        text = stringResource(id = R.string.app_name),
+                        text = stringResource(id = R.string.title_library),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
@@ -103,7 +105,7 @@ fun LibraryRoute(
         },
         content = { innerPadding ->
             LibraryScreenBody(
-                tabs = listOf("Default", "Completed", "Favourite"),
+                tabs = listOf(context.getString(R.string.str_default), context.getString(R.string.completed), context.getString(R.string.favourite)),
                 innerPadding = innerPadding,
                 topAppBarState = scrollBehavior.state,
                 onBookClick = { book ->
@@ -111,10 +113,15 @@ fun LibraryRoute(
                 },
                 onBookLongClick = {
                     bookSettingsDialogState = BookSettingsDialogState.Show(it.book.toDomain())
+                },
+                onFavoriteClick = {
+                    libraryModel.toggleFavourite(it.book.toDomain())
                 }
             )
         }
     )
+
+    var showDeleteConfirmationDialog by remember { mutableStateOf<Book?>(null) }
 
     // Book selected options dialog
     when (val state = bookSettingsDialogState) {
@@ -124,11 +131,40 @@ fun LibraryRoute(
             BookSettingsDialog(
                 book = book,
                 onDismiss = { bookSettingsDialogState = BookSettingsDialogState.Hide },
-                onToggleCompleted = { libraryModel.bookCompletedToggle(state.book.url) }
+                onToggleCompleted = { libraryModel.bookCompletedToggle(state.book.url) },
+                onDelete = {
+                    bookSettingsDialogState = BookSettingsDialogState.Hide
+                    showDeleteConfirmationDialog = state.book
+                }
             )
         }
 
         else -> Unit
+    }
+
+    if (showDeleteConfirmationDialog != null) {
+        val book = showDeleteConfirmationDialog!!
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmationDialog = null },
+            title = { Text(stringResource(R.string.delete_story_title)) },
+            text = { Text(stringResource(R.string.delete_story_confirmation)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        libraryModel.deleteStory(book.url)
+                        showDeleteConfirmationDialog = null
+                    }
+                ) {
+                    Text(stringResource(R.string.str_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmationDialog = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        )
     }
 
     LibraryBottomSheet(

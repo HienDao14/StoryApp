@@ -58,7 +58,7 @@ internal class ReaderSession(
     private val orderedChapters = mutableListOf<Chapter>()
 
     var bookTitle: String? = null
-    private var bookCoverUrl: String? = null
+    var bookCoverUrl: String? = null
 
     var currentChapter: ChapterState by Delegates.observable(
         ChapterState(
@@ -241,6 +241,11 @@ internal class ReaderSession(
                 chapterIndex = startingItem.chapterIndex
             )
         }
+    }
+
+    fun prepareSpeaker(itemIndex: Int) {
+        // Just set the position, do not start playback
+        readerTextToSpeech.setReadingPosition(itemIndex)
     }
 
     fun close() {

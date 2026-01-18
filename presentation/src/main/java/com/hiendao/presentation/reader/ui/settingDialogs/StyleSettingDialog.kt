@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.hiendao.coreui.theme.ColorAccent
 import com.hiendao.coreui.theme.Themes
-import com.hiendao.presentation.R
+import com.hiendao.coreui.R
 import com.hiendao.presentation.component.MySlider
 import com.hiendao.presentation.reader.tools.FontsLoader
 import com.hiendao.presentation.reader.ui.ReaderScreenState
@@ -57,6 +57,9 @@ internal fun StyleSettingDialog(
     onTextFontChange: (String) -> Unit,
     onFollowSystemChange: (Boolean) -> Unit,
     onThemeChange: (Themes) -> Unit,
+    onLineHeightChange: (Float) -> Unit,
+    onTextAlignChange: (Int) -> Unit,
+    onScreenMarginChange: (Int) -> Unit,
 ) {
     ElevatedCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 12.dp),
@@ -76,6 +79,38 @@ internal fun StyleSettingDialog(
             text = stringResource(R.string.text_size) + ": %.2f".format(currentTextSize),
             modifier = Modifier.padding(16.dp)
         )
+        // Line Height
+        var currentLineHeight by remember { mutableFloatStateOf(state.lineHeight.value) }
+        MySlider(
+            value = currentLineHeight,
+            valueRange = 1.0f..3.0f,
+            onValueChange = {
+                currentLineHeight = it
+                onLineHeightChange(currentLineHeight)
+            },
+            text = "Line Height: %.1f".format(currentLineHeight),
+            modifier = Modifier.padding(16.dp)
+        )
+        // Screen Margin
+        var currentMargin by remember { mutableFloatStateOf(state.screenMargin.value.toFloat()) }
+        MySlider(
+            value = currentMargin,
+            valueRange = 0f..64f,
+            onValueChange = {
+                currentMargin = it
+                onScreenMarginChange(currentMargin.toInt())
+            },
+            text = "Margin: ${currentMargin.toInt()} dp",
+            modifier = Modifier.padding(16.dp)
+        )
+        // Alignment
+        ListItem(
+            modifier = Modifier.clickable { onTextAlignChange(if (state.textAlign.value == 0) 1 else 0) },
+            headlineContent = { Text(stringResource(R.string.text_alignment)) },
+            trailingContent = {
+                 Text(if (state.textAlign.value == 0) "Left" else "Justify")
+            }
+        )
         // Text font
         Box {
             var showFontsDropdown by rememberSaveable { mutableStateOf(false) }
@@ -93,7 +128,7 @@ internal fun StyleSettingDialog(
                 },
                 leadingContent = { Icon(Icons.Filled.TextFields, null) },
                 colors = ListItemDefaults.colors(
-                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    leadingIconColor = MaterialTheme.colorScheme.primary
                 ),
             )
             DropdownMenu(
@@ -131,7 +166,7 @@ internal fun StyleSettingDialog(
                 Icon(
                     Icons.Outlined.AutoAwesome,
                     null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             trailingContent = {
@@ -139,9 +174,9 @@ internal fun StyleSettingDialog(
                     checked = state.followSystem.value,
                     onCheckedChange = onFollowSystemChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = ColorAccent,
-                        checkedBorderColor = MaterialTheme.colorScheme.onPrimary,
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedBorderColor = MaterialTheme.colorScheme.onBackground,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.onBackground,
                     )
                 )
             },
@@ -149,34 +184,36 @@ internal fun StyleSettingDialog(
                 leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
         )
-        // Themes
-        ListItem(
-            headlineContent = {
-                FlowRow(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Themes.entries.forEach {
-                        FilterChip(
-                            selected = it == state.currentTheme.value,
-                            onClick = { onThemeChange(it) },
-                            label = { Text(text = stringResource(id = it.nameId)) }
-                        )
+        if(!state.followSystem.value){
+            // Themes
+            ListItem(
+                headlineContent = {
+                    FlowRow(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Themes.entries.forEach {
+                            FilterChip(
+                                selected = it == state.currentTheme.value,
+                                onClick = { onThemeChange(it) },
+                                label = { Text(text = stringResource(id = it.nameId)) }
+                            )
+                        }
                     }
-                }
-            },
-            leadingContent = {
-                Icon(
-                    Icons.Outlined.ColorLens,
-                    null,
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            },
-            colors = ListItemDefaults.colors(
-                leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-        )
+                },
+                leadingContent = {
+                    Icon(
+                        Icons.Outlined.ColorLens,
+                        null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+            )
+        }
     }
 }

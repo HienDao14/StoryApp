@@ -55,7 +55,7 @@ fun MyButton(
     shape: Shape = MaterialTheme.shapes.small,
     borderWidth: Dp = 1.dp,
     borderColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-    backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    backgroundColor: Color = MaterialTheme.colorScheme.onPrimary,
     textStyle: TextStyle = LocalTextStyle.current,
     selected: Boolean = false,
     selectedBackgroundColor: Color = ColorAccent,

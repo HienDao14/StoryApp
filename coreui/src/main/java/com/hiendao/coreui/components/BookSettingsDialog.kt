@@ -12,6 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ fun BookSettingsDialog(
     book: Book,
     onDismiss: () -> Unit,
     onToggleCompleted: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -63,26 +67,48 @@ fun BookSettingsDialog(
         },
         confirmButton = {},
         text = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onToggleCompleted)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Checkbox(
-                    checked = book.completed,
-                    onCheckedChange = null,
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorApp.checkboxPositive,
-                        checkmarkColor = MaterialTheme.colorScheme.inverseOnSurface
+            androidx.compose.foundation.layout.Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable(onClick = onToggleCompleted)
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Checkbox(
+                        checked = book.completed,
+                        onCheckedChange = null,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorApp.checkboxPositive,
+                            checkmarkColor = MaterialTheme.colorScheme.inverseOnSurface
+                        )
                     )
-                )
-                Text(
-                    text = stringResource(R.string.completed),
-                )
+                    Text(
+                        text = stringResource(R.string.completed),
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable(onClick = onDelete)
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = stringResource(R.string.delete),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.surface

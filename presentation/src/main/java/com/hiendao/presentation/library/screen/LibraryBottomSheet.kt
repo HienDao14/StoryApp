@@ -45,7 +45,7 @@ internal fun LibraryBottomSheet(
                 style = MaterialTheme.typography.titleMedium
             )
             PosNegCheckbox(
-                text = stringResource(id = R.string.read),
+                text = stringResource(id = R.string.str_read),
                 state = model.readFilter.toToggleableState(),
                 onStateChange = { model.readFilterToggle() },
                 modifier = Modifier.fillMaxWidth()

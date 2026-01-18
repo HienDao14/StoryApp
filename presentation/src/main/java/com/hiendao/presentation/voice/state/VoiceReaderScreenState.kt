@@ -3,6 +3,7 @@ package com.hiendao.presentation.voice.state
 import androidx.compose.runtime.State
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.hiendao.coreui.utils.TernaryState
@@ -21,9 +22,10 @@ internal data class VoiceReaderScreenState(
     val chapters: SnapshotStateList<ChapterWithContext>,
     val settingChapterSort: MutableState<TernaryState>,
     val readerState: ReaderScreenState?,
-    val speakerStats: State<ReadingChapterPosStats?>? = null,
-    val currentTextPlaying: State<TextSynthesis?>? = null,
-    val isSpeaking: State<Boolean?>? = null
+    val speakerStats: ReadingChapterPosStats? = null,
+    val currentTextPlaying: TextSynthesis? = null,
+    val isSpeaking: Boolean? = null,
+    val isInitializing: MutableState<Boolean> = mutableStateOf(false)
 ) {
 
     val isInSelectionMode = derivedStateOf { selectedChaptersUrl.size != 0 }
@@ -57,20 +59,18 @@ internal data class VoiceReaderScreenState(
         }
     }
 
-    val audioProgress = derivedStateOf {
-        AudioProgress.from(
-            stats = speakerStats?.value,
-            currentText = currentTextPlaying?.value?.itemPos?.let { itemPos ->
-                when (itemPos) {
-                    is ReaderItem.Text -> {
-                        val text = itemPos.textToDisplay
-                        text.take(50) + if (text.length > 50) "..." else ""
-                    }
-                    else -> null
+    val audioProgress = AudioProgress.from(
+        stats = speakerStats,
+        currentText = currentTextPlaying?.itemPos?.let { itemPos ->
+            when (itemPos) {
+                is ReaderItem.Text -> {
+                    val text = itemPos.textToDisplay
+                    text.take(50) + if (text.length > 50) "..." else ""
                 }
+                else -> null
             }
-        )
-    }
+        }
+    )
 
     data class BookState(
         val title: String,

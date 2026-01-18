@@ -15,6 +15,15 @@ internal suspend fun textToItemsConverter(
     chapterItemPositionDisplacement: Int,
     text: String
 ): List<ReaderItem> = withContext(Dispatchers.Default) {
+    if (isHtml(text)) {
+        return@withContext htmlToItemsConverter(
+            chapterUrl = chapterUrl,
+            chapterIndex = chapterIndex,
+            chapterItemPositionDisplacement = chapterItemPositionDisplacement,
+            text = text
+        )
+    }
+
     val paragraphs = text
         .splitToSequence("\n\n")
         .filter { it.isNotBlank() }
@@ -43,6 +52,15 @@ internal suspend fun textToItemsConverter(
                 )
             }
         }.awaitAll()
+}
+
+private fun isHtml(text: String): Boolean {
+    val checkRange = text.take(1000)
+    return checkRange.contains("<p") ||
+            checkRange.contains("<div") ||
+            checkRange.contains("<br") ||
+            checkRange.contains("<img") ||
+            text.contains("</html>")
 }
 
 private fun generateITEM(

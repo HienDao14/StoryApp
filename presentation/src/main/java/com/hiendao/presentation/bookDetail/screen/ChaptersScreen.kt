@@ -40,6 +40,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -79,6 +83,7 @@ internal fun ChaptersScreen(
     state: ChaptersScreenState,
     onFavouriteToggle: () -> Unit,
     onResumeReading: () -> Unit,
+    onListenToBook: () -> Unit,
     onPressBack: () -> Unit,
     onSelectedDeleteDownloads: () -> Unit,
     onSelectedDownload: () -> Unit,
@@ -323,28 +328,10 @@ internal fun ChaptersScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                containerColor = ColorAccent,
-                onClick = onResumeReading
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.textPadding()
-                ) {
-                    Icon(
-                        Icons.Filled.PlayArrow,
-                        contentDescription = stringResource(id = R.string.open_last_read_chapter),
-                        tint = Color.White
-                    )
-                    AnimatedVisibility(visible = lazyListState.isAtTop(threshold = 100.dp).value) {
-                        Text(
-                            text = stringResource(id = R.string.read),
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                    }
-                }
-            }
+            ExpandableFab(
+                onResumeReading = onResumeReading,
+                onListenToBook = onListenToBook
+            )
         }
     )
 
@@ -353,4 +340,78 @@ internal fun ChaptersScreen(
         onDismiss = { showBottomSheet = false },
         state = state
     )
+}
+
+@Composable
+fun ExpandableFab(
+    onResumeReading: () -> Unit,
+    onListenToBook: () -> Unit
+) {
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    val rotation by animateFloatAsState(
+        targetValue = if (isExpanded) 90f else 0f,
+        label = "fab_rotation"
+    )
+
+    Column(horizontalAlignment = Alignment.End) {
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                // Resume Reading Button
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.continue_reading),
+                        modifier = Modifier.padding(end = 8.dp),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    androidx.compose.material3.SmallFloatingActionButton(
+                        onClick = {
+                            isExpanded = false
+                            onResumeReading()
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.MenuBook, contentDescription = "Read")
+                    }
+                }
+
+                // Listen Button
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.continue_listening),
+                        modifier = Modifier.padding(end = 8.dp),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    androidx.compose.material3.SmallFloatingActionButton(
+                        onClick = {
+                            isExpanded = false
+                            onListenToBook()
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Icon(androidx.compose.material.icons.Icons.Filled.Headphones, contentDescription = "Listen")
+                    }
+                }
+            }
+        }
+
+        FloatingActionButton(
+            onClick = { isExpanded = !isExpanded },
+            containerColor = ColorAccent
+        ) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
+                contentDescription = if (isExpanded) "Close" else "Play",
+                modifier = Modifier.rotate(rotation),
+                tint = Color.White
+            )
+        }
+    }
 }

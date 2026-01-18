@@ -17,6 +17,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.hiendao.domain.text_to_speech.Utterance
 import com.hiendao.domain.utils.AppFileResolver
 import com.hiendao.presentation.R
+import com.hiendao.coreui.R as CoreR
 import com.hiendao.presentation.databinding.ActivityReaderListItemBodyBinding
 import com.hiendao.presentation.databinding.ActivityReaderListItemDividerBinding
 import com.hiendao.presentation.databinding.ActivityReaderListItemErrorBinding
@@ -39,6 +40,9 @@ internal class ReaderItemAdapter(
     private val currentFontSize: () -> Float,
     private val currentTypeface: () -> Typeface,
     private val currentTypefaceBold: () -> Typeface,
+    private val currentLineHeight: () -> Float,
+    private val currentTextAlign: () -> Int,
+    private val currentScreenMargin: () -> Int,
     private val onChapterStartVisible: (chapterUrl: String) -> Unit,
     private val onChapterEndVisible: (chapterUrl: String) -> Unit,
     private val onReloadReader: () -> Unit,
@@ -114,8 +118,28 @@ internal class ReaderItemAdapter(
 
         bind.body.updateTextSelectability()
         bind.root.background = getItemReadingStateBackground(item)
-        val paragraph = item.textToDisplay + "\n"
-        bind.body.text = paragraph
+        val margin = currentScreenMargin()
+        if (margin > 0) {
+             val px = (margin * ctx.resources.displayMetrics.density).toInt()
+             bind.root.setPadding(px, 0, px, 0)
+        } else {
+             bind.root.setPadding(0, 0, 0, 0)
+        }
+        
+        bind.body.setLineSpacing(0f, currentLineHeight())
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            bind.body.justificationMode = if (currentTextAlign() == 1) android.graphics.text.LineBreaker.JUSTIFICATION_MODE_INTER_WORD else android.graphics.text.LineBreaker.JUSTIFICATION_MODE_NONE
+        }
+
+        if (item.isHtml) {
+            bind.body.text = androidx.core.text.HtmlCompat.fromHtml(
+                item.textToDisplay,
+                androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY
+            )
+        } else {
+            val paragraph = item.textToDisplay + "\n"
+            bind.body.text = paragraph
+        }
         bind.body.textSize = currentFontSize()
         bind.body.typeface = currentTypeface()
 
@@ -139,7 +163,14 @@ internal class ReaderItemAdapter(
         }
 
         bind.image.updateLayoutParams<ConstraintLayout.LayoutParams> {
-            dimensionRatio = "1:${item.image.yrel}"
+            val ratio = item.image.yrel
+            if (ratio > 0) {
+                dimensionRatio = "1:$ratio"
+                height = 0 // Match constraint
+            } else {
+                dimensionRatio = null
+                height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+            }
         }
 
         val imageModel = appFileResolver.resolvedBookImagePath(
@@ -184,7 +215,7 @@ internal class ReaderItemAdapter(
         }
 
         bind.specialTitle.updateTextSelectability()
-        bind.specialTitle.text = ctx.getString(R.string.reader_no_more_chapters)
+        bind.specialTitle.text = ctx.getString(CoreR.string.reader_no_more_chapters)
         bind.specialTitle.typeface = currentTypefaceBold()
         return bind.root
     }
@@ -204,7 +235,7 @@ internal class ReaderItemAdapter(
         }
 
         bind.specialTitle.updateTextSelectability()
-        bind.specialTitle.text = ctx.getString(R.string.reader_first_chapter)
+        bind.specialTitle.text = ctx.getString(CoreR.string.reader_first_chapter)
         bind.specialTitle.typeface = currentTypefaceBold()
         return bind.root
     }
@@ -232,7 +263,7 @@ internal class ReaderItemAdapter(
             else -> ActivityReaderListItemTranslatingBinding.bind(convertView)
         }
         bind.text.text = context.getString(
-            R.string.translating_from_lang_a_to_lang_b,
+            CoreR.string.translating_from_lang_a_to_lang_b,
             item.sourceLang,
             item.targetLang
         )

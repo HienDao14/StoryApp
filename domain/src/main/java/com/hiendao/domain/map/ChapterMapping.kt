@@ -1,6 +1,7 @@
 package com.hiendao.domain.map
 
 import com.hiendao.data.local.entity.ChapterEntity
+import com.hiendao.data.remote.retrofit.chapter.model.ChapterDTO
 import com.hiendao.domain.model.Chapter
 
 fun ChapterEntity.toDomain(): Chapter {
@@ -29,5 +30,17 @@ fun Chapter.toEntity(): ChapterEntity {
         read = this.isRead,
         lastReadPosition = this.lastReadPosition,
         lastReadOffset = this.lastReadOffset
+    )
+}
+
+fun ChapterDTO.toEntity(bookId: String): ChapterEntity {
+    return ChapterEntity(
+        id = this.id ?: "",
+        title = this.title ?: "",
+        bookId = bookId,
+        position = this.chapterNumber ?: 0,
+        read = false,
+        lastReadPosition = 0,
+        lastReadOffset = 0
     )
 }

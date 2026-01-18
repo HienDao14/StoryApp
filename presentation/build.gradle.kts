@@ -27,7 +27,7 @@ android {
 
         buildConfigField("String", "SERVER_CLIENT_ID", properties.getProperty("server_client_id"))
 
-        resourceConfigurations += listOf("en", "vi")
+        resourceConfigurations += listOf("en", "vi", "zh")
     }
 
     buildTypes {
@@ -114,6 +114,7 @@ dependencies {
     implementation(libs.retrofit)
 
     implementation(libs.compose.coil)
+    implementation(libs.jsoup)
 
     // Room components
     implementation(libs.androidx.room.runtime)
@@ -126,4 +127,5 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.timber)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.facebook.android.sdk)
 }

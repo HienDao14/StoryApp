@@ -21,14 +21,17 @@ import com.hiendao.data.utils.AppCoroutineScope
 import com.hiendao.data.utils.isContentUri
 import com.hiendao.domain.map.toDomain
 import com.hiendao.domain.repository.AppRepository
+import com.hiendao.domain.repository.LibraryBooksRepository
 import com.hiendao.presentation.bookDetail.ChaptersRepository
 import com.hiendao.domain.utils.AppFileResolver
+import com.hiendao.domain.utils.Response
 import com.hiendao.presentation.bookDetail.state.ChaptersScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -57,7 +60,8 @@ internal class ChaptersViewModel @Inject constructor(
     appPreferences: AppPreferences,
     appFileResolver: AppFileResolver,
     stateHandle: SavedStateHandle,
-    private val chaptersRepository: ChaptersRepository
+    private val chaptersRepository: ChaptersRepository,
+    private val libraryBooksRepository: LibraryBooksRepository
 ) : BaseViewModel() {
     @Volatile
     private var loadChaptersJob: Job? = null
@@ -89,35 +93,76 @@ internal class ChaptersViewModel @Inject constructor(
         isRefreshing = mutableStateOf(false),
         settingChapterSort = appPreferences.CHAPTERS_SORT_ASCENDING.state(viewModelScope),
         isLocalSource = mutableStateOf(false),
-        isRefreshable = mutableStateOf(true)
+        isRefreshable = mutableStateOf(true),
+        isLoading = mutableStateOf(false)
     )
 
     fun updateState(bookUrl: String, bookTitle: String){
         _bookUrl.value = bookUrl
         _bookTitle.value = bookTitle
-        reload()
+        reload(showLoading = true)
     }
 
-    fun reload(){
+    fun reloadChapters(){
+        viewModelScope.launch {
+            chaptersRepository.getChaptersSortedFlow(bookUrl = bookUrl.value).collect {
+                state.chapters.clear()
+                state.chapters.addAll(it)
+            }
+        }
+    }
+
+    fun getBookDetailAll(bookId: String){
         viewModelScope.launch {
             launch {
-                chaptersRepository.getChaptersSortedFlow(bookUrl = bookUrl.value).collect {
-                    state.chapters.clear()
-                    state.chapters.addAll(it)
+                chaptersRepository.getBookDetail(bookId = bookId).collect { response ->
+                    when(response){
+                        is Response.Loading -> {
+
+                        }
+                        is Response.Success -> {
+                            val book = response.data
+
+                        }
+                        is Response.Error -> {
+
+                        }
+                        is Response.None -> Unit
+                    }
                 }
             }
+        }
+    }
+
+    fun reload(showLoading: Boolean = false){
+        viewModelScope.launch {
             launch {
-                appRepository.libraryBooks.getFlow(bookUrl.value)
-                    .filterNotNull()
-                    .map { ChaptersScreenState.BookState(it.toDomain()) }.collect {
-                        _bookState.value = it
+                chaptersRepository.getBookDetail(bookId = bookUrl.value).collect { response ->
+                    when(response){
+                        is Response.Loading -> {
+                            if (showLoading) state.isLoading.value = true
+                        }
+                        is Response.Success -> {
+                            state.isLoading.value = false
+                            val book = response.data
+                            _bookState.emit(ChaptersScreenState.BookState(book))
+                            reloadChapters()
+                        }
+                        is Response.Error -> {
+                             state.isLoading.value = false
+                        }
+                        is Response.None -> Unit
                     }
+                }
             }
         }
     }
 
     fun toggleBookmark() {
         viewModelScope.launch {
+            launch {
+                libraryBooksRepository.toggleFavourite(bookUrl.value)
+            }
             val isBookmarked =
                 appRepository.toggleBookmark(bookTitle = bookTitle.value, bookUrl = bookUrl.value)
             val msg = if (isBookmarked) R.string.added_to_library else R.string.removed_from_library
@@ -133,6 +178,10 @@ internal class ChaptersViewModel @Inject constructor(
             return
         }
         toasty.show(R.string.updating_book_info)
+    }
+
+    suspend fun getChapterDetail(bookId: String, chapterId: String){
+        chaptersRepository.getChapterDetail(chapterId = chapterId, bookId = bookId)
     }
 
     suspend fun getLastReadChapter(): String? =
